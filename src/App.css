@@ -1,0 +1,54 @@
+:root {
+    /* Cores base */
+    --primary-color: #6366f1;
+    /* Índigo/violeta - cor de identidade */
+    --primary-color-light: #818cf8;
+    --primary-color-dark: #4f46e5;
+
+    /* Tema claro (padrão) */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-tertiary: #f3f4f6;
+
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-tertiary: #6b7280;
+
+    --border-color: #e5e7eb;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+
+    /* Cores de feedback */
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+}
+
+/* Tema escuro */
+.dark-theme {
+    --bg-primary: #111827;
+    --bg-secondary: #1f2937;
+    --bg-tertiary: #374151;
+
+    --text-primary: #f9fafb;
+    --text-secondary: #e5e7eb;
+    --text-tertiary: #d1d5db;
+
+    --border-color: #374151;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+
+    /* Cores de feedback ajustadas para o tema escuro */
+    --success: #34d399;
+    --error: #f87171;
+    --warning: #fbbf24;
+    --info: #60a5fa;
+}
+
+/* Estilos básicos */
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.5;
+}

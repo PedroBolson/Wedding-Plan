@@ -1,0 +1,960 @@
+/* Adicione estas regras no início do seu arquivo CSS */
+* {
+    box-sizing: border-box;
+}
+
+body,
+html {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Modificar o container principal para garantir largura adequada */
+.planning-container {
+    padding: 1rem;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    margin: 0 auto;
+}
+
+/* Ajustar o card para não ultrapassar o limite da tela */
+.card,
+.venue-card,
+.professional-card,
+.type-card {
+    width: 100%;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Ajuste para texto longo em cards não ultrapassar limites */
+.venue-card h3,
+.professional-card h3,
+.type-card h3,
+.card h3 {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+.venue-card p,
+.professional-card p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+/* Garantir que a grid não ultrapasse a largura da tela */
+.grid,
+.venues-grid,
+.professionals-grid,
+.types-grid {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Ajuste para o container modal não estourar a largura */
+.modal-content {
+    width: 100%;
+    max-width: calc(100vw - 2rem);
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+/* Ajustes adicionais para dispositivos muito pequenos */
+@media (max-width: 320px) {
+    .planning-container {
+        padding: 0.5rem;
+    }
+
+    .card,
+    .venue-card,
+    .professional-card,
+    .type-card {
+        padding: 1rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.3rem;
+        word-break: break-word;
+    }
+
+    .modal-content {
+        padding: 1rem;
+    }
+
+    .back-button {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.6rem;
+    }
+}
+
+.planning-container {
+    padding: 1rem;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+}
+
+.error {
+    padding: 1rem;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    color: var(--text-primary);
+}
+
+.navigation-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.back-button {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    margin-right: 1rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.back-button:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.back-button::before {
+    content: "←";
+    font-size: 1.2rem;
+}
+
+.category-toggle {
+    margin-top: 2rem;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.category-toggle:hover {
+    background-color: var(--primary-color-dark);
+}
+
+/* Grids */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow-color);
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+.card h3 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* Venues */
+.venues-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.venue-card {
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow-color);
+    padding: 1.5rem;
+    position: relative;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.venue-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+.venue-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.venue-card-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.venue-card p {
+    margin: 0.4rem 0;
+    color: var(--text-primary);
+}
+
+.venue-card .notes {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.venue-card .edit-button {
+    background-color: var(--info);
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.venue-card .edit-button:hover {
+    background-color: #2563eb;
+}
+
+.venue-card .delete-button {
+    margin-top: 0;
+}
+
+.favorite-toggle {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    transition: color 0.3s, transform 0.3s;
+    padding: 0.25rem;
+    line-height: 1;
+}
+
+.favorite-toggle:hover {
+    transform: scale(1.2);
+}
+
+.favorite-toggle.is-favorite {
+    color: var(--warning);
+}
+
+.pdf-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.pdf-link:hover {
+    text-decoration: underline;
+}
+
+/* Professionals */
+.professionals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.professional-card {
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow-color);
+    padding: 1.5rem;
+}
+
+.professional-card h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.professional-card p {
+    margin: 0.4rem 0;
+    color: var(--text-primary);
+}
+
+.professional-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.professional-card-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+/* Seções e headers */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.section-header.with-tabs {
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* Botões e ações */
+.add-button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.add-button:hover {
+    background-color: var(--primary-color-dark);
+}
+
+.delete-button {
+    background-color: var(--bg-tertiary);
+    color: var(--error);
+    border: 1px solid var(--error);
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.delete-button:hover {
+    background-color: var(--error);
+    color: white;
+}
+
+.standard-button {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.standard-button:hover {
+    background-color: var(--border-color);
+}
+
+.view-tab {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-tab.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.view-tab:hover:not(.active) {
+    background-color: var(--border-color);
+}
+
+/* Card styles */
+.city-card {
+    position: relative;
+}
+
+.city-card .card-content {
+    cursor: pointer;
+}
+
+/* Confirmação de exclusão */
+.confirm-delete {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 90%;
+    height: 83%;
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 5;
+    border: 2px solid var(--error);
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.confirm-yes {
+    background-color: var(--error);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.confirm-no {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.card-confirm-delete {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--bg-primary-rgb), 0.95);
+    backdrop-filter: blur(2px);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 5;
+    border: 2px solid var(--error);
+    box-sizing: border-box;
+}
+
+.card-confirm-delete p {
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.card-confirm-buttons {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    justify-content: center;
+}
+
+.card-confirm-yes {
+    background-color: var(--error);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    min-width: 100px;
+}
+
+.card-confirm-yes:hover {
+    background-color: #e53935;
+}
+
+.card-confirm-no {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    min-width: 100px;
+}
+
+.card-confirm-no:hover {
+    background-color: var(--border-color);
+}
+
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal-content {
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-family: inherit;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.submit-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.submit-button:hover {
+    background-color: var(--primary-color-dark);
+}
+
+.cancel-button {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.cancel-button:hover {
+    background-color: var(--border-color);
+}
+
+/* Seção de gerenciamento de tipos de profissionais */
+.professional-types-management {
+    padding: 1rem;
+}
+
+.planning-actions {
+    margin: 1.5rem 0;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.secondary-button {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.secondary-button:hover {
+    background-color: var(--border-color);
+}
+
+.types-list {
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.types-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.type-card {
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow-color);
+    padding: 1.5rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.type-card-content {
+    flex: 1;
+    margin-bottom: 1rem;
+}
+
+.type-card h3 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+}
+
+.type-card .edit-button {
+    background-color: var(--info);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+    width: 100%;
+}
+
+.type-card .edit-button:hover {
+    background-color: #2563eb;
+}
+
+.type-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    background-color: var(--bg-primary);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+.type-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.type-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.edit-button {
+    background-color: var(--info);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color 0.2s ease;
+}
+
+.edit-button:hover {
+    background-color: #2563eb;
+}
+
+/* Estilizando o formulário de tipo */
+#typeName {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+
+    .venues-grid,
+    .professionals-grid,
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* Media queries para responsividade */
+@media (max-width: 768px) {
+
+    /* Ajustes gerais */
+    .planning-container {
+        padding: 0.75rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Headers e navegação */
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .section-header.with-tabs {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .section-header.with-tabs h2 {
+        margin-bottom: 0.5rem;
+    }
+
+    .header-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .view-tab {
+        flex: 1;
+        text-align: center;
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .add-button {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    /* Grids */
+    .venues-grid,
+    .professionals-grid,
+    .types-grid,
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* Cards */
+    .venue-card,
+    .professional-card,
+    .type-card,
+    .card {
+        padding: 1.25rem;
+    }
+
+    /* Confirmação de exclusão */
+    .confirm-delete {
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+    }
+
+    /* Modal de formulário */
+    .modal-content {
+        padding: 1.25rem;
+        max-width: 100%;
+        margin: 0 1rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .form-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .submit-button,
+    .cancel-button {
+        width: 100%;
+        padding: 0.75rem 1rem;
+    }
+
+    /* Botões de ação */
+    .planning-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .secondary-button {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Botão de voltar */
+    .back-button {
+        margin-right: 0;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Ajustes específicos para telas muito pequenas */
+@media (max-width: 480px) {
+    .venue-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .venue-card-header h3 {
+        font-size: 1.3rem;
+    }
+
+    .favorite-toggle {
+        align-self: flex-end;
+        margin-top: -2rem;
+    }
+
+    .confirm-buttons,
+    .card-confirm-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .confirm-yes,
+    .confirm-no,
+    .card-confirm-yes,
+    .card-confirm-no {
+        width: 100%;
+    }
+
+    /* Substituir a visualização em grade por uma lista para melhor utilização do espaço em telas pequenas */
+    .venues-grid,
+    .professionals-grid,
+    .types-grid,
+    .grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    /* Ajuste de fontes */
+    .venue-card p,
+    .professional-card p {
+        font-size: 0.9rem;
+    }
+
+    /* Reduzir tamanho de ícones */
+    .favorite-toggle {
+        font-size: 1.3rem;
+    }
+}
+
+/* Ajustes específicos para orientação paisagem em dispositivos móveis */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-content {
+        max-height: 90vh;
+    }
+
+    .modal-overlay {
+        align-items: flex-start;
+        padding-top: 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem;
+    }
+
+    .form-group label {
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 0.5rem;
+    }
+}
