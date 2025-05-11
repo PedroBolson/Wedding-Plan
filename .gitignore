@@ -34,6 +34,8 @@ node_modules
 firebase-debug.log
 ui-debug.log
 .firebase/
+.firebaserc
+firebase.json
 
 # Editor directories and files
 /.idea
