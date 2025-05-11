@@ -13,10 +13,10 @@ interface City {
 }
 
 interface PdfDocument {
-    id: string; // ID único para o documento
-    name: string; // Nome do arquivo original
-    url: string; // URL do Firebase Storage
-    uploadedAt: Date; // Data de upload
+    id: string;
+    name: string;
+    url: string;
+    uploadedAt: Date;
 }
 
 interface Venue {
@@ -30,7 +30,7 @@ interface Venue {
     drinkPrice: number;
     formats: string;
     installmentPlan: string;
-    pdfDocuments: PdfDocument[]; // Array de documentos em vez de um único pdfUrl
+    pdfDocuments: PdfDocument[];
     notes: string;
     isFavorite: boolean;
     favoritedAt?: Date;
@@ -69,7 +69,7 @@ interface VenueFormData {
     formats: string;
     installmentPlan: string;
     notes: string;
-    pdfDocuments: PdfDocument[]; // Lista de documentos
+    pdfDocuments: PdfDocument[];
 }
 
 interface ProfessionalFormData {
@@ -172,7 +172,7 @@ const Planning = () => {
                     return {
                         id: doc.id,
                         ...data,
-                        isFavorite: data.isFavorite === true, // Se não existir, será falso
+                        isFavorite: data.isFavorite === true,
                         selectedProfessionalIds: data.selectedProfessionalIds || []
                     } as Venue;
                 });
@@ -481,7 +481,7 @@ const Planning = () => {
             formats: venue.formats,
             installmentPlan: venue.installmentPlan,
             notes: venue.notes,
-            pdfDocuments: venue.pdfDocuments || [] // Use o array de PDFs em vez de pdfUrl
+            pdfDocuments: venue.pdfDocuments || []
         });
         setSelectedFiles([]); // Limpar qualquer arquivo selecionado anteriormente
         setShowVenueForm(true);
