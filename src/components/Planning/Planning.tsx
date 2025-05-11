@@ -2,12 +2,21 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, doc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import './Planning.css';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { storage } from '../../firebase/config';
 
 // Interfaces para os tipos de dados
 interface City {
     id?: string;
     name: string;
     state: string;
+}
+
+interface PdfDocument {
+    id: string; // ID único para o documento
+    name: string; // Nome do arquivo original
+    url: string; // URL do Firebase Storage
+    uploadedAt: Date; // Data de upload
 }
 
 interface Venue {
@@ -21,7 +30,7 @@ interface Venue {
     drinkPrice: number;
     formats: string;
     installmentPlan: string;
-    pdfUrl: string | null;
+    pdfDocuments: PdfDocument[]; // Array de documentos em vez de um único pdfUrl
     notes: string;
     isFavorite: boolean;
     favoritedAt?: Date;
@@ -60,6 +69,7 @@ interface VenueFormData {
     formats: string;
     installmentPlan: string;
     notes: string;
+    pdfDocuments: PdfDocument[]; // Lista de documentos
 }
 
 interface ProfessionalFormData {
@@ -99,7 +109,8 @@ const Planning = () => {
         drinkPrice: 0,
         formats: '',
         installmentPlan: '',
-        notes: ''
+        notes: '',
+        pdfDocuments: []
     });
     const [professionalFormData, setProfessionalFormData] = useState<ProfessionalFormData>({
         name: '',
@@ -110,6 +121,10 @@ const Planning = () => {
     });
     const [typeFormData, setTypeFormData] = useState<{ name: string }>({ name: '' });
 
+    // E estados adicionais para gerenciar uploads
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [currentUploads, setCurrentUploads] = useState<{ [key: string]: boolean }>({});
+
     // Estado para edição
     const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
 
@@ -117,7 +132,6 @@ const Planning = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-
     // Carregar cidades
     useEffect(() => {
         const fetchCities = async () => {
@@ -370,13 +384,22 @@ const Planning = () => {
         }
 
         try {
+            let pdfDocuments = [...venueFormData.pdfDocuments];
+
             if (editingVenueId) {
                 // Modo de edição - atualizar local existente
+
+                // Fazer upload de novos arquivos, se houver
+                if (selectedFiles.length > 0) {
+                    const newDocs = await handleMultipleUploads(editingVenueId);
+                    pdfDocuments = [...pdfDocuments, ...newDocs];
+                }
+
+                // Atualizar no Firestore
                 const venueRef = doc(db, 'venues', editingVenueId);
                 await updateDoc(venueRef, {
-                    ...venueFormData
-                    // Não atualizamos cityId, isFavorite, selectedProfessionalIds e pdfUrl aqui
-                    // pois estes campos não estão no formulário
+                    ...venueFormData,
+                    pdfDocuments
                 });
 
                 // Atualizar localmente
@@ -384,10 +407,12 @@ const Planning = () => {
                     venue.id === editingVenueId
                         ? {
                             ...venue,
-                            ...venueFormData
+                            ...venueFormData,
+                            pdfDocuments
                         }
                         : venue
                 ));
+
             } else {
                 // Modo de adição - criar novo local
                 const venuesRef = collection(db, 'venues');
@@ -396,13 +421,29 @@ const Planning = () => {
                     cityId: selectedCityId,
                     isFavorite: false,
                     selectedProfessionalIds: [],
-                    pdfUrl: null
+                    pdfDocuments: [] // Inicialmente sem PDFs
                 };
 
+                // Adicionar ao Firestore
                 const newVenueRef = await addDoc(venuesRef, newVenue);
+                const venueId = newVenueRef.id;
+
+                // Fazer upload dos arquivos, se houver
+                if (selectedFiles.length > 0) {
+                    pdfDocuments = await handleMultipleUploads(venueId);
+
+                    // Atualizar o documento com as URLs dos PDFs
+                    if (pdfDocuments.length > 0) {
+                        await updateDoc(doc(db, 'venues', venueId), { pdfDocuments });
+                    }
+                }
 
                 // Adicionar à lista local
-                setVenues([...venues, { ...newVenue, id: newVenueRef.id }]);
+                setVenues([...venues, {
+                    ...newVenue,
+                    id: venueId,
+                    pdfDocuments
+                }]);
             }
 
             // Limpar formulário e fechar modal
@@ -415,10 +456,13 @@ const Planning = () => {
                 drinkPrice: 0,
                 formats: '',
                 installmentPlan: '',
-                notes: ''
+                notes: '',
+                pdfDocuments: []
             });
+            setSelectedFiles([]);
             setEditingVenueId(null);
             setShowVenueForm(false);
+
         } catch (err) {
             console.error(`Erro ao ${editingVenueId ? 'atualizar' : 'adicionar'} local:`, err);
             setError(`Não foi possível ${editingVenueId ? 'atualizar' : 'adicionar'} o local. Por favor, tente novamente.`);
@@ -436,9 +480,99 @@ const Planning = () => {
             drinkPrice: venue.drinkPrice,
             formats: venue.formats,
             installmentPlan: venue.installmentPlan,
-            notes: venue.notes
+            notes: venue.notes,
+            pdfDocuments: venue.pdfDocuments || [] // Use o array de PDFs em vez de pdfUrl
         });
+        setSelectedFiles([]); // Limpar qualquer arquivo selecionado anteriormente
         setShowVenueForm(true);
+    };
+
+    const handleDeletePDF = async (venueId: string, pdfDoc: PdfDocument) => {
+        try {
+            // Deletar do Firebase Storage
+            const fileRef = ref(storage, pdfDoc.url);
+            await deleteObject(fileRef);
+
+            // Filtrar o PDF excluído do array de documentos
+            const updatedDocs = venueFormData.pdfDocuments.filter(doc => doc.id !== pdfDoc.id);
+
+            // Atualizar no Firestore
+            const venueRef = doc(db, 'venues', venueId);
+            await updateDoc(venueRef, {
+                pdfDocuments: updatedDocs
+            });
+
+            // Atualizar estado local
+            setVenueFormData({
+                ...venueFormData,
+                pdfDocuments: updatedDocs
+            });
+
+            // Atualizar a lista de venues
+            if (venueId) {
+                setVenues(venues.map(venue =>
+                    venue.id === venueId
+                        ? { ...venue, pdfDocuments: updatedDocs }
+                        : venue
+                ));
+            }
+
+            setError(null);
+        } catch (err) {
+            console.error('Erro ao excluir PDF:', err);
+            setError('Não foi possível excluir o arquivo PDF.');
+        }
+    };
+
+    const handleUploadPDF = async (venueId: string, file: File): Promise<PdfDocument | null> => {
+        if (!file) return null;
+
+        const fileId = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+        setCurrentUploads(prev => ({ ...prev, [fileId]: true }));
+
+        try {
+            // Create a reference to the file in Firebase Storage
+            const fileRef = ref(storage, `venues/${venueId}/pdfs/${fileId}`);
+
+            // Upload the file
+            await uploadBytes(fileRef, file);
+
+            // Get the download URL
+            const downloadURL = await getDownloadURL(fileRef);
+
+            // Create PDF document object
+            const pdfDoc: PdfDocument = {
+                id: fileId,
+                name: file.name,
+                url: downloadURL,
+                uploadedAt: new Date()
+            };
+
+            return pdfDoc;
+        } catch (err) {
+            console.error('Erro ao fazer upload do PDF:', err);
+            setError('Falha ao fazer upload do arquivo PDF.');
+            return null;
+        } finally {
+            setCurrentUploads(prev => {
+                const newUploads = { ...prev };
+                delete newUploads[fileId];
+                return newUploads;
+            });
+        }
+    };
+
+    const handleMultipleUploads = async (venueId: string): Promise<PdfDocument[]> => {
+        const uploadResults: PdfDocument[] = [];
+
+        for (const file of selectedFiles) {
+            const result = await handleUploadPDF(venueId, file);
+            if (result) {
+                uploadResults.push(result);
+            }
+        }
+
+        return uploadResults;
     };
 
     // Funções de formulário para profissional
@@ -633,7 +767,7 @@ const Planning = () => {
                         <div className="planning-actions">
                             <button
                                 className="secondary-button"
-                                onClick={() => setActiveView('professionalTypes')}
+                                onClick={handleViewProfessionalTypes}
                             >
                                 <i className="icon-manage"></i> Gerenciar Tipos de Profissionais
                             </button>
@@ -795,17 +929,24 @@ const Planning = () => {
                                         <p><strong>Total Estimado:</strong> R$ {(venue.venuePrice + venue.foodPrice + venue.drinkPrice).toLocaleString('pt-BR')}</p>
                                         <p><strong>Formatos:</strong> {venue.formats}</p>
                                         <p><strong>Parcelamento:</strong> {venue.installmentPlan}</p>
-                                        {venue.pdfUrl && (
-                                            <p>
-                                                <a
-                                                    href={venue.pdfUrl}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="pdf-link"
-                                                >
-                                                    Ver PDF com detalhes
-                                                </a>
-                                            </p>
+                                        {venue.pdfDocuments && venue.pdfDocuments.length > 0 && (
+                                            <div className="pdf-links">
+                                                <p><strong>Documentos:</strong></p>
+                                                <ul className="pdf-list">
+                                                    {venue.pdfDocuments.map(doc => (
+                                                        <li key={doc.id}>
+                                                            <a
+                                                                href={doc.url}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="pdf-link"
+                                                            >
+                                                                {doc.name}
+                                                            </a>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
                                         )}
                                         <div className="notes">
                                             <strong>Observações:</strong>
@@ -953,6 +1094,54 @@ const Planning = () => {
                                                 rows={4}
                                             ></textarea>
                                         </div>
+                                        <div className="form-group">
+                                            <label>Orçamentos/Detalhes (PDFs):</label>
+                                            <div className="file-upload-container">
+                                                <input
+                                                    type="file"
+                                                    accept="application/pdf"
+                                                    multiple
+                                                    onChange={(e) => {
+                                                        const files = e.target.files;
+                                                        if (files) {
+                                                            setSelectedFiles(Array.from(files));
+                                                        }
+                                                    }}
+                                                />
+                                                {selectedFiles.length > 0 && (
+                                                    <p className="file-selected">{selectedFiles.length} arquivo(s) selecionado(s)</p>
+                                                )}
+                                            </div>
+
+                                            {/* Lista de PDFs existentes */}
+                                            {venueFormData.pdfDocuments && venueFormData.pdfDocuments.length > 0 && (
+                                                <div className="current-pdfs">
+                                                    <p><strong>Documentos existentes:</strong></p>
+                                                    <ul className="pdf-list">
+                                                        {venueFormData.pdfDocuments.map(doc => (
+                                                            <li key={doc.id} className="pdf-item">
+                                                                <a href={doc.url} target="_blank" rel="noreferrer">{doc.name}</a>
+                                                                <button
+                                                                    type="button"
+                                                                    className="delete-pdf-button"
+                                                                    onClick={() => handleDeletePDF(editingVenueId!, doc)}
+                                                                >
+                                                                    Remover
+                                                                </button>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Indicador de uploads em andamento */}
+                                        {Object.keys(currentUploads).length > 0 && (
+                                            <div className="upload-indicator">
+                                                <div className="upload-spinner"></div>
+                                                Fazendo upload de {Object.keys(currentUploads).length} arquivo(s)...
+                                            </div>
+                                        )}
                                         <div className="form-buttons">
                                             <button type="submit" className="submit-button">
                                                 {editingVenueId ? 'Atualizar' : 'Salvar'}
@@ -972,8 +1161,10 @@ const Planning = () => {
                                                         drinkPrice: 0,
                                                         formats: '',
                                                         installmentPlan: '',
-                                                        notes: ''
+                                                        notes: '',
+                                                        pdfDocuments: []
                                                     });
+                                                    setSelectedFiles([]);
                                                 }}
                                             >
                                                 Cancelar

@@ -10,7 +10,7 @@ const LoginPage = () => {
 
                 <div className="login-content">
                     <div className="login-logo">
-                        <h1>Casamento <br /> Mari e Pedro</h1>
+                        <h1>Wedding <br /> Mari e Pedro</h1>
                         <p>Bem-vindo à plataforma de administração</p>
                     </div>
                     <LoginForm />

@@ -240,6 +240,7 @@ h2 {
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid var(--border-color);
+    white-space: pre-wrap;
 }
 
 .venue-card .edit-button {
@@ -282,13 +283,48 @@ h2 {
 }
 
 .pdf-link {
+    display: inline-block;
     color: var(--primary-color);
     text-decoration: none;
+    margin-top: 0.5rem;
     font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 .pdf-link:hover {
     text-decoration: underline;
+}
+
+.pdf-link::before {
+    content: "📄 ";
+}
+
+/* Estilo para a lista de PDFs */
+.pdf-links {
+    margin-top: 1rem;
+}
+
+.pdf-list {
+    list-style: none;
+    padding-left: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.pdf-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: var(--bg-tertiary);
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+}
+
+.current-pdfs {
+    margin-top: 1rem;
+    background-color: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: 4px;
 }
 
 /* Professionals */
@@ -754,6 +790,81 @@ h2 {
     border-radius: 4px;
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
+}
+
+/* Estilo para o container de upload de arquivos */
+.file-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.file-selected {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    font-style: italic;
+}
+
+.current-pdf {
+    margin-top: 0.5rem;
+    background-color: var(--bg-tertiary);
+    padding: 0.75rem;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.current-pdf a {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.delete-pdf-button {
+    background-color: transparent;
+    color: var(--error);
+    border: none;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.delete-pdf-button:hover {
+    text-decoration: underline;
+}
+
+/* Indicador de upload */
+.upload-indicator {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.upload-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--bg-tertiary);
+    border-radius: 50%;
+    border-top: 2px solid var(--primary-color);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 @media (max-width: 768px) {
