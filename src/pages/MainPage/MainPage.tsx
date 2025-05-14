@@ -7,6 +7,7 @@ import "./MainPage.css";
 import Nav from "../../components/Nav/Nav";
 import Planning from "../../components/Planning/Planning";
 import Favorites from "../../components/Favorites/Favorites";
+import Calendar from "../../components/Calendar/Calendar";
 
 const MainPage = () => {
     const navigate = useNavigate();
@@ -30,6 +31,8 @@ const MainPage = () => {
                 return <Planning />;
             case 'favorites':
                 return <Favorites />;
+            case 'calendar':
+                return <Calendar />;
             case 'guests':
             case 'budget':
                 return (

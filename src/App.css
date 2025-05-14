@@ -1,9 +1,9 @@
 :root {
     /* Cores base */
     --primary-color: #6366f1;
-    /* Índigo/violeta - cor de identidade */
     --primary-color-light: #818cf8;
     --primary-color-dark: #4f46e5;
+    --primary-color-rgb: 99, 102, 241;
 
     /* Tema claro (padrão) */
     --bg-primary: #ffffff;
