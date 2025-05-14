@@ -29,12 +29,26 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({ event, onClick }) => {
         return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     };
 
+    // Formatar horários: se tiver horário de fim, mostrar "início - fim"
+    const formatTimeDisplay = () => {
+        const startTime = getTimeString(new Date(event.date));
+
+        // Se tiver data de término, mostrar com hífen
+        if (event.endDate) {
+            const endTime = getTimeString(new Date(event.endDate));
+            return `${startTime} - ${endTime}`;
+        }
+
+        // Caso contrário, mostrar apenas o horário de início
+        return startTime;
+    };
+
     return (
         <div
             className={`calendar-event ${getEventColor(event.type)}`}
             onClick={onClick}
         >
-            <div className="calendar-event-time">{getTimeString(new Date(event.date))}</div>
+            <div className="calendar-event-time">{formatTimeDisplay()}</div>
             <div className="calendar-event-title">{event.title}</div>
         </div>
     );

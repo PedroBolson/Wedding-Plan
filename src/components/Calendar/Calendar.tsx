@@ -77,7 +77,6 @@ const Calendar: React.FC = () => {
                 return;
             }
 
-            // Remove the id field before saving to Firestore
             const { id, ...eventWithoutId } = event;
 
             // Certificar-se de que as datas são no formato correto do Firestore
@@ -138,11 +137,17 @@ const Calendar: React.FC = () => {
         try {
             await deleteDoc(doc(db, 'events', id));
             setEvents(events.filter(event => event.id !== id));
-            setSelectedEvent(null);
             setShowEventForm(false);
+            setSelectedEvent(null);
+            console.log("Evento excluído com sucesso");
         } catch (error) {
             console.error("Erro ao excluir evento:", error);
+            alert("Ocorreu um erro ao excluir o evento. Por favor, tente novamente.");
         }
+    };
+
+    const confirmDeleteEvent = (id: string) => {
+        return () => deleteEvent(id);
     };
 
     // Abrir modal com eventos do dia
@@ -155,7 +160,6 @@ const Calendar: React.FC = () => {
         setSelectedDay(null);
     };
 
-    // Atualização do componente renderCalendar para responsividade
     const renderCalendar = () => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
@@ -169,7 +173,6 @@ const Calendar: React.FC = () => {
             days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
         }
 
-        // Dias do mês - limitando eventos visíveis com base no tamanho da tela
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(year, month, day);
             const isToday = new Date().toDateString() === date.toDateString();
@@ -183,10 +186,10 @@ const Calendar: React.FC = () => {
             // Ordenar eventos por hora
             const sortedDayEvents = dayEvents.sort((a, b) => a.date.getTime() - b.date.getTime());
 
-            // Em telas pequenas, exibir menos eventos
             const isMobile = window.innerWidth <= 480;
-            const visibleEvents = sortedDayEvents.slice(0, isMobile ? 1 : 3);
-            const hasMoreEvents = sortedDayEvents.length > (isMobile ? 1 : 3);
+
+            const visibleEvents = isMobile ? [] : sortedDayEvents.slice(0, 2);
+            const hasMoreEvents = !isMobile && sortedDayEvents.length > 2;
 
             days.push(
                 <div
@@ -195,24 +198,35 @@ const Calendar: React.FC = () => {
                     onClick={() => openDayEvents(date)}
                 >
                     <div className="calendar-day-number">{day}</div>
-                    <div className="calendar-day-events">
-                        {visibleEvents.map((event: Event) => (
-                            <CalendarEvent
-                                key={event.id}
-                                event={event}
-                                onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-                                    e.stopPropagation();
-                                    setSelectedEvent(event);
-                                    setShowEventForm(true);
-                                }}
-                            />
-                        ))}
-                        {hasMoreEvents && (
-                            <div className="calendar-more-events">
-                                +{sortedDayEvents.length - (isMobile ? 1 : 3)} evento(s)
-                            </div>
-                        )}
-                    </div>
+
+                    {/* Indicador de eventos centralizado */}
+                    {sortedDayEvents.length > 0 && isMobile && (
+                        <div className="calendar-mobile-events-count">
+                            {sortedDayEvents.length}
+                        </div>
+                    )}
+
+                    {/* Apenas no desktop, mostrar eventos detalhados */}
+                    {!isMobile && (
+                        <div className="calendar-day-events">
+                            {visibleEvents.map((event: Event) => (
+                                <CalendarEvent
+                                    key={event.id}
+                                    event={event}
+                                    onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+                                        e.stopPropagation();
+                                        setSelectedEvent(event);
+                                        setShowEventForm(true);
+                                    }}
+                                />
+                            ))}
+                            {hasMoreEvents && (
+                                <div className="calendar-more-events">
+                                    +{sortedDayEvents.length - 2} evento(s) {/* Alterado de 3 para 2 */}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -279,7 +293,7 @@ const Calendar: React.FC = () => {
                         setShowEventForm(false);
                         setSelectedEvent(null);
                     }}
-                    onDelete={selectedEvent?.id ? () => deleteEvent(selectedEvent.id!) : undefined}
+                    onDelete={selectedEvent?.id ? confirmDeleteEvent(selectedEvent.id) : undefined}
                 />
             )}
 
