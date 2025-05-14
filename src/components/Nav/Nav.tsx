@@ -25,6 +25,11 @@ const Nav = ({ activeSection, onSectionChange }: NavProps) => {
             isAvailable: true
         },
         {
+            id: 'calendar',
+            label: 'Calendário',
+            isAvailable: true
+        },
+        {
             id: 'guests',
             label: 'Lista de Convidados',
             isAvailable: false
