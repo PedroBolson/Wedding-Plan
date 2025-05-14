@@ -328,4 +328,3 @@ This project was developed with ❤️ by Pedro Bolson.
 ## 📄 License
 
 This project is for personal use and does not have a specific license.
-```
