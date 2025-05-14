@@ -4,10 +4,11 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+![Google Calendar](https://img.shields.io/badge/Google_Calendar-4285F4?style=for-the-badge&logo=google-calendar&logoColor=white)
 
 ## 📝 Description
 
-This is a comprehensive wedding planning web application built with React, TypeScript, Vite, and Firebase. The application allows you to manage venues, professionals, favorites, and events in a calendar, all integrated with Firebase for authentication and data storage.
+This is a comprehensive wedding planning web application built with React, TypeScript, Vite, and Firebase. The application allows you to manage venues, professionals, favorites, and events in a calendar, all integrated with Firebase for authentication and data storage. It also features Google Calendar integration for seamless event management.
 
 ## ✨ Features
 
@@ -17,6 +18,7 @@ This is a comprehensive wedding planning web application built with React, TypeS
 - 👨‍🍳 **Professional registration** by type (photographer, DJ, catering, etc.)
 - 💖 **Favorites system** to mark and compare preferred venues
 - 📅 **Event calendar** to organize visits and appointments
+- 🔄 **Google Calendar integration** to import and export events
 - 📄 **Upload and management of PDF documents**
 - 🌙 **Light/dark theme** for better user experience
 - 📱 **Responsive design** adapted for mobile devices
@@ -28,12 +30,14 @@ This is a comprehensive wedding planning web application built with React, TypeS
   - TypeScript
   - React Router 7
   - CSS with variables for light/dark theme
+  - Google OAuth Client Library
 
 - **Backend/Infrastructure**:
   - Firebase Authentication
   - Firebase Firestore (NoSQL database)
   - Firebase Storage (file storage)
   - Firebase Hosting
+  - Google Calendar API
 
 - **Development Tools**:
   - Vite (build tool)
@@ -115,8 +119,10 @@ The application uses the following collections in Firestore:
     createdAt: Timestamp,
     updatedAt: Timestamp,
     userId: string,
-    userEmail: string
-  }
+    userEmail: string,
+    googleId?: string,
+    importedFromGoogleCalendar?: boolean
+  } 
   ```
 
 ## 📁 Folder Structure
@@ -128,6 +134,10 @@ The application uses the following collections in Firestore:
 │   ├── assets/              # Images, fonts and other resources
 │   ├── components/
 │   │   ├── Calendar/        # Calendar-related components
+│   │   │   ├── Calendar.tsx           # Main calendar component
+│   │   │   ├── Calendar.css           # Calendar styles
+│   │   │   ├── GoogleCalendarIntegration.tsx # Google Calendar integration
+│   │   │   └── DayEventsModal.tsx     # Day events modal
 │   │   ├── Favorites/       # Component to manage favorites
 │   │   ├── LoginForm/       # Login form
 │   │   ├── Nav/             # Main navigation
@@ -144,7 +154,6 @@ The application uses the following collections in Firestore:
 │   ├── main.tsx             # Application entry point
 │   └── vite-env.d.ts        # Type definitions for Vite
 ├── .gitignore               # Files ignored by Git
-├── eslint.config.js         # ESLint configuration
 ├── firebase.json            # Firebase deployment configuration
 ├── index.html               # Base HTML file
 ├── package.json             # Dependencies and scripts
@@ -161,6 +170,7 @@ The application uses the following collections in Firestore:
 - Node.js (version 18 or higher)
 - npm or yarn
 - Firebase account
+- Google Cloud account
 
 ### Firebase Configuration
 
@@ -169,6 +179,20 @@ The application uses the following collections in Firestore:
 3. In Authentication, enable the email/password provider
 4. In Firestore, create a database and configure security rules
 5. In Storage, configure security rules to allow file uploads
+
+### Google Calendar API Configuration
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google Calendar API
+4. Configure OAuth consent screen:
+   - Set application name, support email, and authorized domains
+   - Add necessary scopes: `.../auth/calendar` and `.../auth/calendar.events`
+5. Create OAuth Client ID credentials:
+   - Application type: Web application
+   - Add authorized JavaScript origins (your domain and localhost for development)
+   - Add authorized redirect URIs
+6. Copy the Client ID to use in your application
 
 ### Project Setup
 
@@ -187,13 +211,14 @@ The application uses the following collections in Firestore:
 
 3. Create a `.env.local` file in the project root with the following variables:
    ```
-   VITE_FIREBASE_API_KEY=your-api-key
-   VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-   VITE_FIREBASE_PROJECT_ID=your-project-id
-   VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your-messaging-id
-   VITE_FIREBASE_APP_ID=your-app-id
-   VITE_FIREBASE_MEASUREMENT_ID=your-measurement-id
+    VITE_FIREBASE_API_KEY=your-api-key
+    VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+    VITE_FIREBASE_PROJECT_ID=your-project-id
+    VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+    VITE_FIREBASE_MESSAGING_SENDER_ID=your-messaging-id
+    VITE_FIREBASE_APP_ID=your-app-id
+    VITE_FIREBASE_MEASUREMENT_ID=your-measurement-id
+    VITE_FIREBASE_OAUTH_CLIENT_ID=your-client-id
    ```
 
 4. Set up Firebase configuration files (not included in git for security reasons):
@@ -217,7 +242,7 @@ The application uses the following collections in Firestore:
      export const db = getFirestore(app);
      export const storage = getStorage(app);
      ```
-     
+
 5. Create admin user functionality:
    - Create a `createadmin.ts` file in the `src/firebase` directory:
      ```typescript
@@ -242,7 +267,7 @@ The application uses the following collections in Firestore:
      };
      ```
    
-7. Making a user an admin (safely):
+6. Making a user an admin (safely):
    - First, create a regular user through the login interface
    - Use Firebase Console to get the user ID from Authentication section
    - Create a temporary script file (not committed to git) that imports and calls the makeUserAdmin function:
@@ -312,6 +337,8 @@ yarn build
 
 4. In the Calendar, click on a date to add events such as visits, meetings, etc.
 
+5. Use the Google Calendar integration to import and export events seamlessly.
+
 ## 🔒 Security
 
 The application employs the following security measures:
@@ -320,6 +347,7 @@ The application employs the following security measures:
 - Protected routes that verify user authentication
 - Role-based permission system
 - Security rules in Firestore and Storage
+- OAuth 2.0 for Google Calendar integration
 
 ## 🛠️ Development
 
