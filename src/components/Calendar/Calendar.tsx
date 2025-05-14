@@ -4,6 +4,8 @@ import { db, auth } from '../../firebase/config';
 import EventForm from './EventForm';
 import CalendarEvent from './CalendarEvent';
 import DayEventsModal from './DayEventsModal';
+import GoogleCalendarIntegration from './GoogleCalendarIntegration';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import './Calendar.css';
 
 interface Event {
@@ -160,6 +162,41 @@ const Calendar: React.FC = () => {
         setSelectedDay(null);
     };
 
+    const handleImportEvents = (importedEvents: Event[]) => {
+        // Função para adicionar eventos importados ao banco de dados e estado local
+        const addImportedEvents = async () => {
+            try {
+                const newEvents: Event[] = [];
+
+                for (const event of importedEvents) {
+                    const docRef = await addDoc(collection(db, 'events'), {
+                        ...event,
+                        date: new Date(event.date),
+                        endDate: event.endDate ? new Date(event.endDate) : null,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        userId: auth.currentUser?.uid,
+                        userEmail: auth.currentUser?.email,
+                        importedFromGoogleCalendar: true
+                    });
+
+                    newEvents.push({
+                        ...event,
+                        id: docRef.id
+                    });
+                }
+
+                setEvents(prev => [...prev, ...newEvents]);
+            } catch (error) {
+                console.error("Erro ao importar eventos:", error);
+            }
+        };
+
+        if (importedEvents.length > 0) {
+            addImportedEvents();
+        }
+    };
+
     const renderCalendar = () => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
@@ -270,6 +307,13 @@ const Calendar: React.FC = () => {
                     </button>
                 </div>
             </div>
+
+            <GoogleOAuthProvider clientId={import.meta.env.VITE_FIREBASE_OAUTH_CLIENT_ID}>
+                <GoogleCalendarIntegration
+                    events={events}
+                    onImportEvents={handleImportEvents}
+                />
+            </GoogleOAuthProvider>
 
             <div className="calendar-weekdays">
                 <div>Dom</div>
