@@ -711,6 +711,43 @@ h2 {
     background-color: var(--border-color);
 }
 
+/* Estilos específicos para o select */
+.form-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'><path d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 12px) center;
+    padding-right: 30px;
+    cursor: pointer;
+}
+
+.form-group select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.form-group select option {
+    padding: 10px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.form-group select:focus option:checked {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.form-group select option:checked {
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .form-group select {
+        font-size: 16px;
+    }
+}
+
 /* Seção de gerenciamento de tipos de profissionais */
 .professional-types-management {
     padding: 1rem;
