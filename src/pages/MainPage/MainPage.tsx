@@ -8,6 +8,7 @@ import Nav from "../../components/Nav/Nav";
 import Planning from "../../components/Planning/Planning";
 import Favorites from "../../components/Favorites/Favorites";
 import Calendar from "../../components/Calendar/Calendar";
+import Budget from "../../components/Budget/Budget";
 
 const MainPage = () => {
     const navigate = useNavigate();
@@ -15,14 +16,10 @@ const MainPage = () => {
     const [activeSection, setActiveSection] = useState('planning');
 
     const handleLogout = async () => {
-        // Remove o token do Google (e quaisquer outros dados sensíveis):
         sessionStorage.removeItem('google_access_token');
         localStorage.removeItem('google_access_token');
-        // Desloga do Firebase Auth
         await signOut(auth);
-        // Leva para a rota de login
         navigate("/login");
-        // Faz um reload completo para limpar todos os componentes em memória
         window.location.reload();
     };
 
@@ -40,8 +37,9 @@ const MainPage = () => {
                 return <Favorites />;
             case 'calendar':
                 return <Calendar />;
-            case 'guests':
             case 'budget':
+                return <Budget />;
+            case 'guests':
                 return (
                     <div className="coming-soon">
                         <h2>Em breve!</h2>

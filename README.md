@@ -17,6 +17,7 @@ This is a comprehensive wedding planning web application built with React, TypeS
 - 🏨 **Event venue management** with price details, formats, and payment plans
 - 👨‍🍳 **Professional registration** by type (photographer, DJ, catering, etc.)
 - 💖 **Favorites system** to mark and compare preferred venues
+- 💰 **Budget management** for tracking extra expenses with estimated and actual costs
 - 📅 **Event calendar** to organize visits and appointments
 - 🔄 **Google Calendar integration** to import and export events
 - 📄 **Upload and management of PDF documents**
@@ -125,14 +126,30 @@ The application uses the following collections in Firestore:
   } 
   ```
 
+  - **budgetExtras**: Additional budget items
+  ```typescript
+  {
+    description: string,
+    category: string,
+    cityId: string,
+    estimatedCost: number,
+    actualCost: number,
+    paid: boolean,
+    notes: string,
+    isFavorite: boolean,
+    userId: string,
+    createdAt: Timestamp
+  }
+
 ## 📁 Folder Structure
 
-```
+```markdown
 /
-├── public/                  # Static public files
 ├── src/
-│   ├── assets/              # Images, fonts and other resources
 │   ├── components/
+│   │   ├── Budget/          # Budget management components
+│   │   │   ├── Budget.tsx           # Main budget component
+│   │   │   └── Budget.css           # Budget styles
 │   │   ├── Calendar/        # Calendar-related components
 │   │   │   ├── Calendar.tsx           # Main calendar component
 │   │   │   ├── Calendar.css           # Calendar styles
@@ -409,9 +426,10 @@ yarn build
 ## 📱 Using the Application
 
 1. Log in with an admin user
-2. On the main page, you will see three main sections:
+2. On the main page, you will see four main sections:
    - **Planning**: Manage cities, venues, and professionals
-   - **Favorites**: View and compare favorited venues
+   - **Budget**: Track and manage extra expenses not included in venues or professionals
+   - **Favorites**: View and compare favorited venues and extra budget items
    - **Calendar**: Create and manage events
 
 3. In the Planning module:
@@ -420,9 +438,15 @@ yarn build
    - For each venue, you can add PDF documents and mark as favorite
    - For professionals, you can organize them by type and associate them with venues
 
-4. In the Calendar, click on a date to add events such as visits, meetings, etc.
+4. In the Budget module:
+   - Add extra expenses categorized by type (decoration, dress, rings, etc.)
+   - Track both estimated and actual costs
+   - Mark items as favorites to include them in cost calculations
+   - Filter items by category and city
 
-5. Use the Google Calendar integration to import and export events seamlessly.
+5. In the Calendar, click on a date to add events such as visits, meetings, etc.
+
+6. Use the Google Calendar integration to import and export events seamlessly.
 
 ## 🔒 Security
 

@@ -83,6 +83,7 @@
 
 .venue-cost,
 .professionals-cost,
+.budget-extras-cost,
 .total-cost {
     display: flex;
     justify-content: space-between;
@@ -90,7 +91,8 @@
 }
 
 .venue-cost span:last-child,
-.professionals-cost span:last-child {
+.professionals-cost span:last-child,
+.budget-extras-cost span:last-child {
     font-weight: 500;
 }
 
@@ -102,22 +104,53 @@
     color: var(--success);
 }
 
-.professional-list {
+.professional-list,
+.budget-extras-list {
     margin: 0.75rem 0;
+    padding: 0.5rem;
+    background-color: var(--bg-tertiary);
+    border-radius: 4px;
     font-size: 0.9rem;
 }
 
-.professional-list-title {
-    font-weight: 500;
-    margin-bottom: 0.25rem;
+.professional-list-title,
+.budget-extras-list-title {
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
 }
 
-.professional-list ul {
-    list-style-position: inside;
-    padding-left: 0.5rem;
-    margin: 0.25rem 0;
+.professional-list ul,
+.budget-extras-list ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    font-size: 0.85rem;
 }
 
-.professional-list li {
-    margin-bottom: 0.25rem;
+.professional-list li,
+.budget-extras-list li {
+    margin-bottom: 0.3rem;
+}
+
+.dark-theme .professional-list,
+.dark-theme .budget-extras-list {
+    background-color: var(--bg-secondary-dark);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .favorites-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .favorite-card {
+        padding: 1.25rem;
+    }
+
+    .date-added {
+        position: static;
+        margin-top: 1rem;
+        text-align: right;
+    }
 }

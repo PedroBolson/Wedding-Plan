@@ -6,13 +6,16 @@ import './Favorites.css';
 interface FavoriteVenue {
     id: string;
     venueId: string;
+    cityId?: string;
     venueName?: string;
     cityName?: string;
     venueCost?: number;
     professionalsCost?: number;
+    budgetExtrasCost?: number;
     totalCost?: number;
     dateAdded: Date;
-    selectedProfessionalNames?: string[];
+    selectedProfessionalNames?: { name: string; price: number }[];
+    budgetExtrasItems?: { description: string; cost: number }[];
 }
 
 interface Professional {
@@ -21,6 +24,17 @@ interface Professional {
     price: number;
     isFavorite: boolean;
     cityId: string;
+}
+
+interface BudgetExtra {
+    id: string;
+    description: string;
+    category: string;
+    cityId: string;
+    estimatedCost: number;
+    actualCost: number;
+    paid: boolean;
+    isFavorite: boolean;
 }
 
 const Favorites = () => {
@@ -53,6 +67,16 @@ const Favorites = () => {
                     ...doc.data()
                 } as Professional));
 
+                // Buscar todos os itens de orçamento extras favoritos
+                const budgetExtrasRef = collection(db, 'budgetExtras');
+                const budgetExtrasQuery = query(budgetExtrasRef, where('isFavorite', '==', true));
+                const budgetExtrasSnapshot = await getDocs(budgetExtrasQuery);
+
+                const favoriteBudgetExtras = budgetExtrasSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                } as BudgetExtra));
+
                 // Para cada local favorito, buscar os detalhes da cidade
                 const favoritesWithDetails = await Promise.all(
                     favoritesSnapshot.docs.map(async (docSnap) => {
@@ -69,17 +93,38 @@ const Favorites = () => {
                             0
                         );
 
-                        const totalCost = venueCost + professionalsCost;
+                        // Filtrar itens extras desta cidade que são favoritos
+                        const cityBudgetExtras = favoriteBudgetExtras.filter(
+                            item => item.cityId === venueData.cityId
+                        );
+
+                        // Calcular custo total dos extras (usar actualCost se disponível, senão estimatedCost)
+                        const budgetExtrasCost = cityBudgetExtras.reduce(
+                            (total, item) => total + (item.actualCost > 0 ? item.actualCost : item.estimatedCost),
+                            0
+                        );
+
+                        // Calcular custo total incluindo os extras
+                        const totalCost = venueCost + professionalsCost + budgetExtrasCost;
 
                         const favorite = {
                             id: docSnap.id,
                             venueId: docSnap.id,
+                            cityId: venueData.cityId,
                             venueName: venueData.name,
                             venueCost: venueCost,
                             professionalsCost: professionalsCost,
+                            budgetExtrasCost: budgetExtrasCost,
                             totalCost: totalCost,
                             dateAdded: venueData.favoritedAt ? new Date(venueData.favoritedAt.seconds * 1000) : new Date(),
-                            selectedProfessionalNames: cityProfessionals.map(p => p.name)
+                            selectedProfessionalNames: cityProfessionals.map(p => ({
+                                name: p.name,
+                                price: p.price
+                            })),
+                            budgetExtrasItems: cityBudgetExtras.map(item => ({
+                                description: item.description,
+                                cost: item.actualCost > 0 ? item.actualCost : item.estimatedCost
+                            }))
                         } as FavoriteVenue;
 
                         // Buscar o nome da cidade
@@ -138,7 +183,6 @@ const Favorites = () => {
                                         <span>Custo do Local:</span>
                                         <span>R$ {favorite.venueCost.toLocaleString('pt-BR')}</span>
                                     </p>
-
                                     {(favorite.professionalsCost ?? 0) > 0 && (
                                         <>
                                             <p className="professionals-cost">
@@ -149,8 +193,27 @@ const Favorites = () => {
                                             <div className="professional-list">
                                                 <p className="professional-list-title">Profissionais Incluídos:</p>
                                                 <ul>
-                                                    {favorite.selectedProfessionalNames?.map((name, index) => (
-                                                        <li key={index}>{name}</li>
+                                                    {favorite.selectedProfessionalNames?.map((prof, index) => (
+                                                        <li key={index}>{prof.name}: R$ {prof.price.toLocaleString('pt-BR')}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* Exibir custos e itens extras */}
+                                    {(favorite.budgetExtrasCost ?? 0) > 0 && (
+                                        <>
+                                            <p className="budget-extras-cost">
+                                                <span>Custos Extras:</span>
+                                                <span>R$ {(favorite.budgetExtrasCost ?? 0).toLocaleString('pt-BR')}</span>
+                                            </p>
+
+                                            <div className="budget-extras-list">
+                                                <p className="budget-extras-list-title">Itens Extras Incluídos:</p>
+                                                <ul>
+                                                    {favorite.budgetExtrasItems?.map((item, index) => (
+                                                        <li key={index}>{item.description}: R$ {item.cost.toLocaleString('pt-BR')}</li>
                                                     ))}
                                                 </ul>
                                             </div>
