@@ -94,6 +94,7 @@ const Planning = () => {
     const [showTypeForm, setShowTypeForm] = useState(false);
 
     const [editingVenueId, setEditingVenueId] = useState<string | null>(null);
+    const [editingProfessionalId, setEditingProfessionalId] = useState<string | null>(null);
     const [cityFormData, setCityFormData] = useState<CityFormData>({ name: '', state: '' });
     const [venueFormData, setVenueFormData] = useState<VenueFormData>({
         name: '',
@@ -575,18 +576,40 @@ const Planning = () => {
         }
 
         try {
-            const professionalsRef = collection(db, 'professionals');
-            const newProfessional = {
-                ...professionalFormData,
-                cityId: selectedCityId,
-                isFavorite: false
-            };
+            if (editingProfessionalId) {
+                // Atualizar profissional existente
+                const professionalRef = doc(db, 'professionals', editingProfessionalId);
+                await updateDoc(professionalRef, {
+                    name: professionalFormData.name,
+                    typeId: professionalFormData.typeId,
+                    price: professionalFormData.price,
+                    paymentOptions: professionalFormData.paymentOptions,
+                    installmentPlan: professionalFormData.installmentPlan,
+                    notes: professionalFormData.notes
+                });
 
-            const newProfessionalRef = await addDoc(professionalsRef, newProfessional);
+                // Atualizar estado local
+                setProfessionals(professionals.map(prof =>
+                    prof.id === editingProfessionalId
+                        ? { ...prof, ...professionalFormData }
+                        : prof
+                ));
+            } else {
+                // Criar novo profissional
+                const professionalsRef = collection(db, 'professionals');
+                const newProfessional = {
+                    ...professionalFormData,
+                    cityId: selectedCityId,
+                    isFavorite: false
+                };
 
-            // Adicionar à lista local
-            setProfessionals([...professionals, { ...newProfessional, id: newProfessionalRef.id }]);
+                const newProfessionalRef = await addDoc(professionalsRef, newProfessional);
 
+                // Adicionar à lista local
+                setProfessionals([...professionals, { ...newProfessional, id: newProfessionalRef.id }]);
+            }
+
+            // Limpar formulário e fechar modal
             setProfessionalFormData({
                 name: '',
                 typeId: '',
@@ -595,11 +618,25 @@ const Planning = () => {
                 installmentPlan: '',
                 notes: ''
             });
+            setEditingProfessionalId(null);
             setShowProfessionalForm(false);
         } catch (err) {
-            console.error('Erro ao adicionar profissional:', err);
-            setError('Não foi possível adicionar o profissional. Por favor, tente novamente.');
+            console.error(`Erro ao ${editingProfessionalId ? 'atualizar' : 'adicionar'} profissional:`, err);
+            setError(`Não foi possível ${editingProfessionalId ? 'atualizar' : 'adicionar'} o profissional. Por favor, tente novamente.`);
         }
+    };
+
+    const handleEditProfessional = (professional: Professional) => {
+        setEditingProfessionalId(professional.id || null);
+        setProfessionalFormData({
+            name: professional.name,
+            typeId: professional.typeId,
+            price: professional.price,
+            paymentOptions: professional.paymentOptions || '',
+            installmentPlan: professional.installmentPlan || '',
+            notes: professional.notes || ''
+        });
+        setShowProfessionalForm(true);
     };
 
     // Funções de formulário para tipo de profissional
@@ -1211,12 +1248,20 @@ const Planning = () => {
                                             </div>
                                         )}
 
-                                        <button
-                                            className="delete-button"
-                                            onClick={() => setConfirmDelete(`professional-${professional.id}`)}
-                                        >
-                                            Excluir
-                                        </button>
+                                        <div className="professional-actions">
+                                            <button
+                                                className="edit-button"
+                                                onClick={() => handleEditProfessional(professional)}
+                                            >
+                                                Editar
+                                            </button>
+                                            <button
+                                                className="delete-button"
+                                                onClick={() => setConfirmDelete(`professional-${professional.id}`)}
+                                            >
+                                                Excluir
+                                            </button>
+                                        </div>
 
                                         {confirmDelete === `professional-${professional.id}` && (
                                             <div className="card-confirm-delete">
@@ -1245,7 +1290,7 @@ const Planning = () => {
                         {showProfessionalForm && (
                             <div className="modal-overlay">
                                 <div className="modal-content">
-                                    <h3>Adicionar Novo Profissional</h3>
+                                    <h3>{editingProfessionalId ? 'Editar Profissional' : 'Adicionar Novo Profissional'}</h3>
                                     <form onSubmit={handleProfessionalFormSubmit}>
                                         <div className="form-group">
                                             <label htmlFor="name">Nome:</label>
@@ -1324,7 +1369,18 @@ const Planning = () => {
                                             <button
                                                 type="button"
                                                 className="cancel-button"
-                                                onClick={() => setShowProfessionalForm(false)}
+                                                onClick={() => {
+                                                    setShowProfessionalForm(false);
+                                                    setEditingProfessionalId(null);
+                                                    setProfessionalFormData({
+                                                        name: '',
+                                                        typeId: '',
+                                                        price: 0,
+                                                        paymentOptions: '',
+                                                        installmentPlan: '',
+                                                        notes: ''
+                                                    });
+                                                }}
                                             >
                                                 Cancelar
                                             </button>
