@@ -30,13 +30,13 @@ const Nav = ({ activeSection, onSectionChange }: NavProps) => {
             isAvailable: true
         },
         {
-            id: 'guests',
-            label: 'Lista de Convidados',
-            isAvailable: false
-        },
-        {
             id: 'budget',
             label: 'Orçamento',
+            isAvailable: true
+        },
+        {
+            id: 'guests',
+            label: 'Lista de Convidados',
             isAvailable: false
         }
     ]);
