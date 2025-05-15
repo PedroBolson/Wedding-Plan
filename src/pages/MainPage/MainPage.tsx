@@ -15,8 +15,15 @@ const MainPage = () => {
     const [activeSection, setActiveSection] = useState('planning');
 
     const handleLogout = async () => {
+        // Remove o token do Google (e quaisquer outros dados sensíveis):
+        sessionStorage.removeItem('google_access_token');
+        localStorage.removeItem('google_access_token');
+        // Desloga do Firebase Auth
         await signOut(auth);
+        // Leva para a rota de login
         navigate("/login");
+        // Faz um reload completo para limpar todos os componentes em memória
+        window.location.reload();
     };
 
     const toggleTheme = () => {
@@ -72,26 +79,6 @@ const MainPage = () => {
 
             <main className="main-container">
                 {renderActiveSection()}
-
-                {/* <div className="card-grid">
-                    <div className="info-card">
-                        <h3>Convidados Confirmados</h3>
-                        <div className="info-card-value">0</div>
-                        <div className="info-card-label">de um total de 0 convidados</div>
-                    </div>
-
-                    <div className="info-card">
-                        <h3>Mensagens</h3>
-                        <div className="info-card-value">0</div>
-                        <div className="info-card-label">mensagens recebidas</div>
-                    </div>
-
-                    <div className="info-card">
-                        <h3>Dias Restantes</h3>
-                        <div className="info-card-value">30</div>
-                        <div className="info-card-label">para o grande dia</div>
-                    </div>
-                </div> */}
             </main>
         </div>
     );
