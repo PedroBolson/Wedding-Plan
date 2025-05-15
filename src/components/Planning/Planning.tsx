@@ -4,8 +4,6 @@ import { db } from '../../firebase/config';
 import './Planning.css';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '../../firebase/config';
-
-// Interfaces para os tipos de dados
 interface City {
     id?: string;
     name: string;
@@ -48,12 +46,12 @@ interface Professional {
     typeId: string;
     cityId: string;
     price: number;
-    formats: string;
+    paymentOptions: string;
     installmentPlan: string;
     isFavorite: boolean;
+    notes: string;
 }
 
-// Interfaces para formulários
 interface CityFormData {
     name: string;
     state: string;
@@ -76,28 +74,25 @@ interface ProfessionalFormData {
     name: string;
     typeId: string;
     price: number;
-    formats: string;
+    paymentOptions: string;
     installmentPlan: string;
+    notes: string;
 }
 
 const Planning = () => {
-    // Estado para dados
     const [activeView, setActiveView] = useState<'cities' | 'venues' | 'cityProfessionals' | 'professionalTypes'>('cities');
     const [cities, setCities] = useState<City[]>([]);
     const [venues, setVenues] = useState<Venue[]>([]);
     const [professionals, setProfessionals] = useState<Professional[]>([]);
     const [professionalTypes, setProfessionalTypes] = useState<ProfessionalType[]>([]);
 
-    // Estado para seleções
     const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
 
-    // Estado para modais de formulários
     const [showCityForm, setShowCityForm] = useState(false);
     const [showVenueForm, setShowVenueForm] = useState(false);
     const [showProfessionalForm, setShowProfessionalForm] = useState(false);
     const [showTypeForm, setShowTypeForm] = useState(false);
 
-    // Estado para dados de formulários
     const [editingVenueId, setEditingVenueId] = useState<string | null>(null);
     const [cityFormData, setCityFormData] = useState<CityFormData>({ name: '', state: '' });
     const [venueFormData, setVenueFormData] = useState<VenueFormData>({
@@ -116,23 +111,20 @@ const Planning = () => {
         name: '',
         typeId: '',
         price: 0,
-        formats: '',
-        installmentPlan: ''
+        paymentOptions: '',
+        installmentPlan: '',
+        notes: ''
     });
     const [typeFormData, setTypeFormData] = useState<{ name: string }>({ name: '' });
 
-    // E estados adicionais para gerenciar uploads
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [currentUploads, setCurrentUploads] = useState<{ [key: string]: boolean }>({});
 
-    // Estado para edição
     const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
 
-    // Estado para UI
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-    // Carregar cidades
     useEffect(() => {
         const fetchCities = async () => {
             setLoading(true);
@@ -157,7 +149,6 @@ const Planning = () => {
         }
     }, [activeView]);
 
-    // Carregar locais quando uma cidade for selecionada
     useEffect(() => {
         const fetchVenues = async () => {
             if (!selectedCityId) return;
@@ -190,7 +181,6 @@ const Planning = () => {
         }
     }, [selectedCityId, activeView]);
 
-    // Carregar profissionais de uma cidade
     useEffect(() => {
         const fetchProfessionals = async () => {
             if (!selectedCityId) return;
@@ -207,7 +197,6 @@ const Planning = () => {
                 } as Professional));
                 setProfessionals(professionalsList);
 
-                // Carregar também os tipos de profissionais
                 const typesRef = collection(db, 'professionalTypes');
                 const typesSnapshot = await getDocs(typesRef);
                 const typesList = typesSnapshot.docs.map(doc => ({
@@ -228,7 +217,6 @@ const Planning = () => {
         }
     }, [selectedCityId, activeView]);
 
-    // Carregar tipos de profissionais
     useEffect(() => {
         const fetchProfessionalTypes = async () => {
             setLoading(true);
@@ -287,12 +275,10 @@ const Planning = () => {
         try {
             const newFavoriteStatus = !professional.isFavorite;
 
-            // Atualizar no Firestore
             await updateDoc(doc(db, 'professionals', professional.id), {
                 isFavorite: newFavoriteStatus
             });
 
-            // Atualizar localmente
             setProfessionals(professionals.map(p =>
                 p.id === professional.id
                     ? { ...p, isFavorite: newFavoriteStatus }
@@ -348,7 +334,6 @@ const Planning = () => {
             const citiesRef = collection(db, 'cities');
             const newCityRef = await addDoc(citiesRef, cityFormData);
 
-            // Adicionar à lista local
             setCities([...cities, { ...cityFormData, id: newCityRef.id }]);
 
             // Limpar formulário e fechar modal
@@ -387,9 +372,7 @@ const Planning = () => {
             let pdfDocuments = [...venueFormData.pdfDocuments];
 
             if (editingVenueId) {
-                // Modo de edição - atualizar local existente
 
-                // Fazer upload de novos arquivos, se houver
                 if (selectedFiles.length > 0) {
                     const newDocs = await handleMultipleUploads(editingVenueId);
                     pdfDocuments = [...pdfDocuments, ...newDocs];
@@ -402,7 +385,6 @@ const Planning = () => {
                     pdfDocuments
                 });
 
-                // Atualizar localmente
                 setVenues(venues.map(venue =>
                     venue.id === editingVenueId
                         ? {
@@ -414,31 +396,26 @@ const Planning = () => {
                 ));
 
             } else {
-                // Modo de adição - criar novo local
                 const venuesRef = collection(db, 'venues');
                 const newVenue = {
                     ...venueFormData,
                     cityId: selectedCityId,
                     isFavorite: false,
                     selectedProfessionalIds: [],
-                    pdfDocuments: [] // Inicialmente sem PDFs
+                    pdfDocuments: []
                 };
 
-                // Adicionar ao Firestore
                 const newVenueRef = await addDoc(venuesRef, newVenue);
                 const venueId = newVenueRef.id;
 
-                // Fazer upload dos arquivos, se houver
                 if (selectedFiles.length > 0) {
                     pdfDocuments = await handleMultipleUploads(venueId);
 
-                    // Atualizar o documento com as URLs dos PDFs
                     if (pdfDocuments.length > 0) {
                         await updateDoc(doc(db, 'venues', venueId), { pdfDocuments });
                     }
                 }
 
-                // Adicionar à lista local
                 setVenues([...venues, {
                     ...newVenue,
                     id: venueId,
@@ -446,7 +423,6 @@ const Planning = () => {
                 }]);
             }
 
-            // Limpar formulário e fechar modal
             setVenueFormData({
                 name: '',
                 address: '',
@@ -483,7 +459,7 @@ const Planning = () => {
             notes: venue.notes,
             pdfDocuments: venue.pdfDocuments || []
         });
-        setSelectedFiles([]); // Limpar qualquer arquivo selecionado anteriormente
+        setSelectedFiles([]);
         setShowVenueForm(true);
     };
 
@@ -576,7 +552,7 @@ const Planning = () => {
     };
 
     // Funções de formulário para profissional
-    const handleProfessionalFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleProfessionalFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         const numericFields = ['price'];
 
@@ -611,13 +587,13 @@ const Planning = () => {
             // Adicionar à lista local
             setProfessionals([...professionals, { ...newProfessional, id: newProfessionalRef.id }]);
 
-            // Limpar formulário e fechar modal
             setProfessionalFormData({
                 name: '',
                 typeId: '',
                 price: 0,
-                formats: '',
-                installmentPlan: ''
+                paymentOptions: '',
+                installmentPlan: '',
+                notes: ''
             });
             setShowProfessionalForm(false);
         } catch (err) {
@@ -637,7 +613,6 @@ const Planning = () => {
 
         try {
             if (editingTypeId) {
-                // Atualizar tipo existente
                 await updateDoc(doc(db, 'professionalTypes', editingTypeId), {
                     name: typeFormData.name
                 });
@@ -823,7 +798,6 @@ const Planning = () => {
                             </div>
                         )}
 
-                        {/* Modal para adicionar cidade */}
                         {showCityForm && (
                             <div className="modal-overlay">
                                 <div className="modal-content">
@@ -953,7 +927,6 @@ const Planning = () => {
                                             <p>{venue.notes || "Nenhuma observação"}</p>
                                         </div>
 
-                                        {/* Adicione os botões em um container de ações */}
                                         <div className="card-actions">
                                             <button
                                                 className="edit-button"
@@ -1113,7 +1086,6 @@ const Planning = () => {
                                                 )}
                                             </div>
 
-                                            {/* Lista de PDFs existentes */}
                                             {venueFormData.pdfDocuments && venueFormData.pdfDocuments.length > 0 && (
                                                 <div className="current-pdfs">
                                                     <p><strong>Documentos existentes:</strong></p>
@@ -1135,7 +1107,6 @@ const Planning = () => {
                                             )}
                                         </div>
 
-                                        {/* Indicador de uploads em andamento */}
                                         {Object.keys(currentUploads).length > 0 && (
                                             <div className="upload-indicator">
                                                 <div className="upload-spinner"></div>
@@ -1151,7 +1122,7 @@ const Planning = () => {
                                                 className="cancel-button"
                                                 onClick={() => {
                                                     setShowVenueForm(false);
-                                                    setEditingVenueId(null);  // Limpar ID de edição ao cancelar
+                                                    setEditingVenueId(null);
                                                     setVenueFormData({
                                                         name: '',
                                                         address: '',
@@ -1231,8 +1202,14 @@ const Planning = () => {
                                             }
                                         </p>
                                         <p><strong>Preço:</strong> R$ {professional.price.toLocaleString('pt-BR')}</p>
-                                        <p><strong>Formatos:</strong> {professional.formats}</p>
-                                        <p><strong>Parcelamento:</strong> {professional.installmentPlan}</p>
+                                        <p><strong>Opções de Pagamento:</strong> {professional.paymentOptions || 'Não especificado'}</p>
+                                        <p><strong>Parcelamento:</strong> {professional.installmentPlan || 'Não especificado'}</p>
+                                        {professional.notes && (
+                                            <div className="notes">
+                                                <strong>Observações:</strong>
+                                                <p>{professional.notes}</p>
+                                            </div>
+                                        )}
 
                                         <button
                                             className="delete-button"
@@ -1265,7 +1242,6 @@ const Planning = () => {
                             </div>
                         )}
 
-                        {/* Modal para adicionar profissional */}
                         {showProfessionalForm && (
                             <div className="modal-overlay">
                                 <div className="modal-content">
@@ -1311,13 +1287,14 @@ const Planning = () => {
                                             />
                                         </div>
                                         <div className="form-group">
-                                            <label htmlFor="formats">Formatos/Serviços:</label>
+                                            <label htmlFor="paymentOptions">Opções de Pagamento:</label>
                                             <input
                                                 type="text"
-                                                id="formats"
-                                                name="formats"
-                                                value={professionalFormData.formats}
+                                                id="paymentOptions"
+                                                name="paymentOptions"
+                                                value={professionalFormData.paymentOptions}
                                                 onChange={handleProfessionalFormChange}
+                                                placeholder="Ex: À vista com 10% de desconto, Parcelado sem juros, etc."
                                             />
                                         </div>
                                         <div className="form-group">
@@ -1328,7 +1305,19 @@ const Planning = () => {
                                                 name="installmentPlan"
                                                 value={professionalFormData.installmentPlan}
                                                 onChange={handleProfessionalFormChange}
+                                                placeholder="Ex: Em até 12x no cartão"
                                             />
+                                        </div>
+                                        <div className="form-group">
+                                            <label htmlFor="notes">Observações sobre os serviços:</label>
+                                            <textarea
+                                                id="notes"
+                                                name="notes"
+                                                value={professionalFormData.notes}
+                                                onChange={handleProfessionalFormChange}
+                                                rows={4}
+                                                placeholder="Inclui itens adicionais? Detalhes sobre o pacote? Outras informações relevantes?"
+                                            ></textarea>
                                         </div>
                                         <div className="form-buttons">
                                             <button type="submit" className="submit-button">Salvar</button>
@@ -1413,7 +1402,6 @@ const Planning = () => {
                             </div>
                         )}
 
-                        {/* Modal para adicionar/editar tipo */}
                         {
                             showTypeForm && (
                                 <div className="modal-overlay">
