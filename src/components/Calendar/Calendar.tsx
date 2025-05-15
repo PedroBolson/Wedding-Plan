@@ -294,7 +294,7 @@ const Calendar: React.FC = () => {
                 <h2>Calendário de Eventos</h2>
                 <div className="calendar-controls">
                     <button onClick={prevMonth}>&lt;</button>
-                    <h3 style={{ paddingTop: '6%' }}>{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h3>
+                    <h3 style={{ paddingTop: '4%' }}>{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h3>
                     <button onClick={nextMonth}>&gt;</button>
                     <button
                         className="calendar-add-event-btn"
