@@ -219,6 +219,8 @@ The application uses the following collections in Firestore:
     VITE_FIREBASE_APP_ID=your-app-id
     VITE_FIREBASE_MEASUREMENT_ID=your-measurement-id
     VITE_FIREBASE_OAUTH_CLIENT_ID=your-client-id
+    VITE_FIREBASE_EXPORT_API=your-export-api-link-to-calendar
+    VITE_FIREBASE_IMPORT_API=your-import-api-link-to-calendar
    ```
 
 4. Set up Firebase configuration files (not included in git for security reasons):
@@ -320,6 +322,89 @@ yarn build
    ```bash
    firebase deploy
    ```
+
+## 📦 Cloud Functions Setup
+1. **Type on bash**
+  ```bash
+    firebase init functions
+  ```
+
+2. **This will create a functions folder with:**
+  ```
+  /
+  functions/
+  ├── lib/ 
+  ├── node_modules/
+  ├── src/
+  │   └── index.ts   # Functions to firebase
+  ├── .gitignore
+  ├── package.json
+  ├── package-lock.json
+  └── tsconfig.json
+  ```
+
+3. **Install dependencies**
+
+   ```bash
+   cd functions
+   npm install cors node-fetch
+   ```
+
+4. **Outline your `index.ts` as follows**
+
+   * **Imports**:
+
+     ```ts
+     import * as functions from "firebase-functions";
+     import type { Request, Response } from "express";
+     import cors from "cors";
+     ```
+   * **CORS middleware** to allow browser requests:
+
+     ```ts
+     const corsHandler = cors({ origin: true });
+     ```
+   * **Two HTTP functions** wrapped in CORS:
+
+     1. **`exportEventToGoogle`**
+
+        * Accepts a JSON body `{ accessToken, event }`
+        * Calls `POST https://www.googleapis.com/calendar/v3/calendars/primary/events`
+        * Returns the Google Calendar API response or an error status (`405` for non-POST, `500` for server errors)
+     2. **`importEventsFromGoogle`**
+
+        * Accepts a JSON body `{ accessToken }`
+        * Builds a URL with `timeMin=now` and `timeMax=now+30 days`
+        * Fetches events via `GET` and returns the raw JSON (same error handling)
+   * **Dynamic fetch import**:
+
+     ```ts
+     const { default: fetch } = await import("node-fetch");
+     ```
+
+5. **Compile and deploy**
+
+   ```bash
+   npm run build
+   firebase deploy --only functions
+   ```
+
+---
+
+#### 📝 Example “prompt” to generate this file via an AI assistant
+
+> “I need a `functions/src/index.ts` for Firebase Cloud Functions in TypeScript. It should:
+>
+> 1. Import `firebase-functions`, Express types, and the `cors` package
+> 2. Apply CORS middleware for all origins
+> 3. Define two HTTPS functions:
+>
+>    * `exportEventToGoogle`: accepts `{ accessToken, event }`, posts to the Google Calendar API, and returns JSON
+>    * `importEventsFromGoogle`: accepts `{ accessToken }`, queries events for the next 30 days, and returns JSON
+> 4. Handle non-POST requests with 405 and internal errors with 500
+> 5. Use dynamic `node-fetch` import for HTTP calls
+>    Please generate the complete `index.ts` file.”
+
 
 ## 📱 Using the Application
 
