@@ -18,6 +18,7 @@ This is a comprehensive wedding planning web application built with React, TypeS
 - 👨‍🍳 **Professional registration** by type (photographer, DJ, catering, etc.)
 - 💖 **Favorites system** to mark and compare preferred venues
 - 💰 **Budget management** for tracking extra expenses with estimated and actual costs
+- 📊 **Budget visualizations** with interactive charts to analyze spending distribution
 - 📅 **Event calendar** to organize visits and appointments
 - 🔄 **Google Calendar integration** to import and export events
 - 📄 **Upload and management of PDF documents**
@@ -32,6 +33,7 @@ This is a comprehensive wedding planning web application built with React, TypeS
   - React Router 7
   - CSS with variables for light/dark theme
   - Google OAuth Client Library
+  - Recharts (for data visualization and charts)
 
 - **Backend/Infrastructure**:
   - Firebase Authentication
@@ -148,13 +150,13 @@ The application uses the following collections in Firestore:
 ├── src/
 │   ├── components/
 │   │   ├── Budget/          # Budget management components
-│   │   │   ├── Budget.tsx           # Main budget component
-│   │   │   └── Budget.css           # Budget styles
 │   │   ├── Calendar/        # Calendar-related components
-│   │   │   ├── Calendar.tsx           # Main calendar component
-│   │   │   ├── Calendar.css           # Calendar styles
+│   │   │   ├── Calendar.tsx                  # Main calendar component
+│   │   │   ├── Calendar.css                  # Calendar styles
 │   │   │   ├── GoogleCalendarIntegration.tsx # Google Calendar integration
-│   │   │   └── DayEventsModal.tsx     # Day events modal
+│   │   │   └── DayEventsModal.tsx            # Day events modal
+│   │   ├── common/          # Common components used on code
+│   │   ├── Chart/           # Chart visualization components
 │   │   ├── Favorites/       # Component to manage favorites
 │   │   ├── LoginForm/       # Login form
 │   │   ├── Nav/             # Main navigation
@@ -430,6 +432,7 @@ yarn build
    - **Planning**: Manage cities, venues, and professionals
    - **Budget**: Track and manage extra expenses not included in venues or professionals
    - **Favorites**: View and compare favorited venues and extra budget items
+   - **Chart**: Visualize budget distribution and spending analysis
    - **Calendar**: Create and manage events
 
 3. In the Planning module:
@@ -444,9 +447,15 @@ yarn build
    - Mark items as favorites to include them in cost calculations
    - Filter items by category and city
 
-5. In the Calendar, click on a date to add events such as visits, meetings, etc.
+5. In the Chart module:
+   - View pie charts showing expense distribution by category
+   - Compare estimated vs. actual costs across different categories
+   - Monitor spending trends over time with line charts
+   - Export chart data or screenshots for external use
 
-6. Use the Google Calendar integration to import and export events seamlessly.
+6. In the Calendar, click on a date to add events such as visits, meetings, etc.
+
+7. Use the Google Calendar integration to import and export events seamlessly.
 
 ## 🔒 Security
 
