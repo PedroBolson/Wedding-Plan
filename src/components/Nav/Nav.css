@@ -202,7 +202,7 @@
     z-index: 999;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1050px) {
 
     .nav-sidebar {
         transform: translateX(-100%);
@@ -239,7 +239,7 @@
     }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1051px) {
 
     body {
         padding-left: 260px;

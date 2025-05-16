@@ -37,7 +37,7 @@ const Nav: React.FC<NavProps> = ({
     useEffect(() => {
         const handleResize = () => {
             setWindowWidth(window.innerWidth);
-            if (window.innerWidth >= 768) {
+            if (window.innerWidth >= 1051) {
                 setMobileMenuOpen(false);
             }
         };
@@ -60,7 +60,7 @@ const Nav: React.FC<NavProps> = ({
 
     return (
         <>
-            {windowWidth < 768 && (
+            {windowWidth < 1051 && (
                 <button
                     className={`nav-mobile-toggle ${mobileMenuOpen ? 'mobile-open' : ''}`}
                     onClick={toggleMobileMenu}
