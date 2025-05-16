@@ -37,7 +37,7 @@ const Nav: React.FC<NavProps> = ({
     useEffect(() => {
         const handleResize = () => {
             setWindowWidth(window.innerWidth);
-            if (window.innerWidth >= 1051) {
+            if (window.innerWidth >= 1026) {
                 setMobileMenuOpen(false);
             }
         };
