@@ -10,6 +10,7 @@ import Favorites from "../../components/Favorites/Favorites";
 import Calendar from "../../components/Calendar/Calendar";
 import Budget from "../../components/Budget/Budget";
 import { ThemeContext } from "../../contexts/ThemeContext";
+import ExpenseChart from "../../components/ExpenseChart/ExpenseChart";
 
 const MainPage = () => {
     const navigate = useNavigate();
@@ -35,6 +36,8 @@ const MainPage = () => {
                 return <Calendar />;
             case 'budget':
                 return <Budget />;
+            case 'chart':
+                return <ExpenseChart />;
             case 'guests':
                 return (
                     <div className="coming-soon">

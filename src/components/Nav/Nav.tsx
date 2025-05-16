@@ -20,18 +20,23 @@ const Nav = ({ activeSection, onSectionChange }: NavProps) => {
             isAvailable: true
         },
         {
+            id: 'budget',
+            label: 'Orçamento',
+            isAvailable: true
+        },
+        {
             id: 'favorites',
             label: 'Locais Favoritos',
             isAvailable: true
         },
         {
-            id: 'calendar',
-            label: 'Calendário',
+            id: 'chart',
+            label: 'Gráfico de Orçamento',
             isAvailable: true
         },
         {
-            id: 'budget',
-            label: 'Orçamento',
+            id: 'calendar',
+            label: 'Calendário',
             isAvailable: true
         },
         {
