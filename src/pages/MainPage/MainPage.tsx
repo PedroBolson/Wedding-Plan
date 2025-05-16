@@ -1,5 +1,5 @@
 // src/pages/MainPage.tsx
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/config";
 import { useNavigate } from "react-router-dom";
@@ -9,10 +9,11 @@ import Planning from "../../components/Planning/Planning";
 import Favorites from "../../components/Favorites/Favorites";
 import Calendar from "../../components/Calendar/Calendar";
 import Budget from "../../components/Budget/Budget";
+import { ThemeContext } from "../../contexts/ThemeContext";
 
 const MainPage = () => {
     const navigate = useNavigate();
-    const [darkTheme, setDarkTheme] = useState(false);
+    const { darkTheme, toggleTheme } = useContext(ThemeContext);
     const [activeSection, setActiveSection] = useState('planning');
 
     const handleLogout = async () => {
@@ -21,11 +22,6 @@ const MainPage = () => {
         await signOut(auth);
         navigate("/login");
         window.location.reload();
-    };
-
-    const toggleTheme = () => {
-        setDarkTheme(!darkTheme);
-        document.body.classList.toggle("dark-theme");
     };
 
     // Renderizar conteúdo com base na seção ativa

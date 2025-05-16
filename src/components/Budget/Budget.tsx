@@ -46,6 +46,7 @@ const Budget = () => {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [isFormExpanded, setIsFormExpanded] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
     const categories = [
         "decoração",
@@ -214,6 +215,10 @@ const Budget = () => {
         }
     };
 
+    const handleDeleteConfirmation = (id: string) => {
+        setConfirmDelete(id);
+    };
+
     const deleteBudgetItem = async (id: string) => {
         try {
             setLoading(true);
@@ -221,6 +226,7 @@ const Budget = () => {
             await deleteDoc(itemRef);
             await fetchBudgetItems();
             setError(null);
+            setConfirmDelete(null);
         } catch (error) {
             console.error("Erro ao excluir item:", error);
             setError("Erro ao excluir item. Tente novamente.");
@@ -668,11 +674,33 @@ const Budget = () => {
                                             </button>
                                             <button
                                                 className="budget-delete-button"
-                                                onClick={() => deleteBudgetItem(item.id!)}
+                                                onClick={() => handleDeleteConfirmation(item.id!)}
                                                 disabled={loading}
                                             >
                                                 Excluir
                                             </button>
+
+                                            {confirmDelete === item.id && (
+                                                <div className="budget-confirm-delete">
+                                                    <p>Tem certeza que deseja excluir este item?</p>
+                                                    <div className="budget-confirm-buttons">
+                                                        <button
+                                                            className="budget-confirm-yes"
+                                                            onClick={() => deleteBudgetItem(item.id!)}
+                                                            disabled={loading}
+                                                        >
+                                                            Sim
+                                                        </button>
+                                                        <button
+                                                            className="budget-confirm-no"
+                                                            onClick={() => setConfirmDelete(null)}
+                                                            disabled={loading}
+                                                        >
+                                                            Não
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </>
                                 )}
