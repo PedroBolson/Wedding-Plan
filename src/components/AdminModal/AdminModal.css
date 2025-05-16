@@ -1,0 +1,267 @@
+.admin-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1100;
+}
+
+.admin-modal {
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-secondary);
+    z-index: 1;
+}
+
+.admin-header h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+}
+
+.admin-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.admin-close-btn:hover {
+    background-color: var(--bg-tertiary);
+    filter: brightness(0.8);
+}
+
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 1rem 0;
+    flex-wrap: wrap;
+}
+
+.admin-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    background-color: var(--primary-color);
+    color: white;
+    transition: filter 0.2s ease, background-color 0.2s ease, transform 0.1s ease;
+}
+
+.admin-btn:hover {
+    filter: brightness(0.85);
+    transform: translateY(-1px);
+}
+
+.admin-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+@keyframes admin-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.admin-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: admin-spin 0.6s linear infinite;
+    vertical-align: middle;
+}
+
+/* Formulário de criação */
+.admin-add-form {
+    background-color: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.admin-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.admin-submit-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--success);
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+}
+
+.admin-submit-btn:hover {
+    background-color: #2e7d32;
+}
+
+.admin-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.admin-error,
+.admin-success {
+    margin: 1rem;
+    padding: 0.75rem;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.admin-error {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: var(--error);
+}
+
+.admin-success {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Linhas e botões de ação */
+.admin-row td:last-child {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.admin-action-btn {
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: filter 0.2s ease, background-color 0.2s ease, transform 0.1s ease;
+}
+
+.admin-action-btn:hover {
+    filter: brightness(0.85);
+    transform: translateY(-1px);
+}
+
+.admin-action-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.admin-action-btn.grant {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.admin-action-btn.grant:hover {
+    background-color: #333;
+    color: white;
+    filter: none;
+    transform: translateY(-1px);
+}
+
+.admin-action-btn.revoke {
+    background-color: var(--error);
+    color: white;
+}
+
+.admin-action-btn.revoke:hover {
+    background-color: #c62828;
+}
+
+.admin-action-btn.remove-user {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.admin-action-btn.remove-user:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+@media (max-width: 1024px) {
+    .admin-modal {
+        width: 95%;
+        margin: 0 1rem;
+    }
+
+    .admin-actions {
+        flex-direction: column;
+        margin: 1rem;
+    }
+
+    .admin-btn {
+        width: 100%;
+    }
+
+    .admin-add-form {
+        margin: 1rem 0;
+    }
+
+    .admin-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
