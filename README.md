@@ -24,6 +24,7 @@ This is a comprehensive wedding planning web application built with React, TypeS
 - 📄 **Upload and management of PDF documents**
 - 🌙 **Light/dark theme** for better user experience
 - 📱 **Responsive design** adapted for mobile devices
+- 👥 **User management** with admin panel for viewing, creating, and managing user permissions
 
 ## 🔧 Technologies Used
 
@@ -264,44 +265,6 @@ The application uses the following collections in Firestore:
      export const storage = getStorage(app);
      ```
 
-5. Create admin user functionality:
-   - Create a `createadmin.ts` file in the `src/firebase` directory:
-     ```typescript
-     // Code to add admin role to an existing user
-     import { doc, setDoc } from "firebase/firestore";
-     import { db } from "./config";
-     
-     export const makeUserAdmin = async (userId: string, email: string) => {
-         try {
-             // Add document to users collection with admin role
-             await setDoc(doc(db, "users", userId), {
-                 email: email,
-                 role: "admin",
-                 updatedAt: new Date()
-             }, { merge: true }); // merge: true preserves existing data
-             
-             return { success: true };
-         } catch (error) {
-             console.error("Error setting user as admin:", error);
-             return { success: false, error };
-         }
-     };
-     ```
-   
-6. Making a user an admin (safely):
-   - First, create a regular user through the login interface
-   - Use Firebase Console to get the user ID from Authentication section
-   - Create a temporary script file (not committed to git) that imports and calls the makeUserAdmin function:
-     ```typescript
-     import { makeUserAdmin } from './src/firebase/createadmin';
-     
-     // Replace with actual user ID and email
-     makeUserAdmin("user-id-from-firebase-console", "user-email@example.com")
-       .then(result => console.log(result));
-     ```
-   - Execute this script using Node.js
-   - Delete the script after use to avoid exposing user IDs
-
 ### Execution
 
 To run the project in development mode:
@@ -342,14 +305,26 @@ yarn build
    firebase deploy
    ```
 
-## 📦 Cloud Functions Setup
+## 📦 Cloud Functions Setup  
+
+## 🔌 Admin Microservices  
+
+The application leverages secure microservices for admin operations:
+
+1. **User Listing Service**: Fetches all registered users with their authentication details
+2. **User Creation Service**: Securely creates new users with email and password
+3. **User Deletion Service**: Removes users from the authentication system
+4. **Admin Management**: Handles granting and revoking admin privileges
+
+These services require admin authentication and use token-based security to ensure only authorized users can perform administrative functions.  
+
 1. **Type on bash**
   ```bash
     firebase init functions
   ```
 
 2. **This will create a functions folder with:**
-  ```
+  ```markdown
   /
   functions/
   ├── lib/ 
@@ -395,6 +370,48 @@ yarn build
         * Accepts a JSON body `{ accessToken }`
         * Builds a URL with `timeMin=now` and `timeMax=now+30 days`
         * Fetches events via `GET` and returns the raw JSON (same error handling)
+
+      3. **`listUsers`**: Retrieves all registered users  
+          * **HTTP Method**: GET  
+          * **Security**: Requires admin authentication token  
+          * **Response**: JSON array of user objects with `uid` and `email`  
+          * **Error Handling**: Returns 401 for invalid tokens, 403 for non-admin users  
+
+      4. **`createAuthUser`**: Creates a new Firebase Authentication user
+          * **HTTP Method**: POST
+          * **Parameters**: `{ email, password }`
+          * **Security**: Requires admin authentication token
+          * **Response**: JSON with the created user's `uid` and `email`
+          * **Error Handling**: Returns appropriate status codes for validation errors
+
+      5. **`deleteAuthUser`**: Removes a user from Firebase Authentication
+          * **HTTP Method**: DELETE
+          * **Parameters**: `{ uid }` (user ID to delete)
+          * **Security**: Requires admin authentication token
+          * **Response**: Success message on completion
+          * **Error Handling**: Returns 400 for missing parameters, 403 for unauthorized access
+
+      6. **Security Implementation**:
+        ```typescript
+        // Token verification helper
+         async function verifyFirebaseToken(req: Request): Promise<admin.auth.DecodedIdToken> {
+           const authHeader = req.headers.authorization || "";
+            const match = authHeader.match(/^Bearer (.+)$/);
+           if (!match) {
+            throw { code: 401, message: "Não autenticado: cabeçalho Authorization inválido" };
+           }
+          const idToken = match[1];
+          return admin.auth().verifyIdToken(idToken);
+        }
+
+        // Admin role verification
+        async function assertAdmin(uid: string) {
+           const snap = await db.collection("users").doc(uid).get();
+          if (!snap.exists || snap.data()?.role !== "admin") {
+             throw { code: 403, message: "Proibido: você não é administrador" };
+          }
+        }
+        ```
    * **Dynamic fetch import**:
 
      ```ts
@@ -410,20 +427,47 @@ yarn build
 
 ---
 
-#### 📝 Example “prompt” to generate this file via an AI assistant
+#### 📝 Example "prompt" to generate this file via an AI assistant
 
-> “I need a `functions/src/index.ts` for Firebase Cloud Functions in TypeScript. It should:
+> "I need a `functions/src/index.ts` for Firebase Cloud Functions in TypeScript. It should:
 >
-> 1. Import `firebase-functions`, Express types, and the `cors` package
-> 2. Apply CORS middleware for all origins
-> 3. Define two HTTPS functions:
->
->    * `exportEventToGoogle`: accepts `{ accessToken, event }`, posts to the Google Calendar API, and returns JSON
->    * `importEventsFromGoogle`: accepts `{ accessToken }`, queries events for the next 30 days, and returns JSON
-> 4. Handle non-POST requests with 405 and internal errors with 500
-> 5. Use dynamic `node-fetch` import for HTTP calls
->    Please generate the complete `index.ts` file.”
+> 1. Import `firebase-functions`, `firebase-admin`, Express types, and the `cors` package
+> 2. Initialize Firebase Admin SDK and apply CORS middleware for all origins
+> 3. Create helper functions for Firebase token verification and admin role checking with:
+>    * Token verification to validate Firebase Auth ID tokens
+>    * Admin role verification that checks Firestore's 'users' collection for a document with:
+>      - Document ID matching the authenticated user's UID
+>      - A field 'role' with value 'admin'
+> 4. Define two Calendar integration functions:
+>    * `exportEventToGoogle`: accepts `{ accessToken, event }`, posts to Google Calendar API
+>    * `importEventsFromGoogle`: accepts `{ accessToken }`, retrieves events for the next 30 days
+> 5. Define three Admin functions with proper authentication:
+>    * `listUsers`: GET request that returns all users (admin only)
+>    * `createAuthUser`: POST request that creates a new user with email/password (admin only)
+>    * `deleteAuthUser`: DELETE request that removes a user by uid (admin only)
+> 6. Add security implementation:
+>    * All users are stored in Firebase Authentication
+>    * Only users with corresponding documents in Firestore 'users' collection with role='admin' can access admin functions
+>    * Proper error handling for all authentication and authorization failures
+> 7. Handle method validation (GET/POST/DELETE) and proper error responses
+> 8. Use dynamic `node-fetch` import for HTTP calls
+>    
+>    Please generate the complete `index.ts` file with all these functions properly secured."
 
+### Admin User Management
+
+The application includes a built-in admin panel for user management:
+
+1. Log in with an existing admin account
+2. Click the "Gerenciar Usuários" button in the navigation menu
+3. In the admin panel, you can:
+   - View all registered users
+   - Create new users directly from the interface
+   - Grant admin privileges to existing users
+   - Revoke admin privileges
+   - Delete users from the system
+
+This eliminates the need for manual scripts for user administration.
 
 ## 📱 Using the Application
 
