@@ -68,6 +68,7 @@
 
 .nav-link:hover:not(.disabled) {
     background-color: var(--primary-color);
+    color: white;
     transform: translateY(-2px);
 }
 
@@ -105,7 +106,8 @@
 }
 
 .theme-toggle,
-.logout-button {
+.logout-button,
+.admin-button {
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -122,7 +124,8 @@
 }
 
 .theme-toggle:hover,
-.logout-button:hover {
+.logout-button:hover,
+.admin-button:hover {
     background-color: var(--border-color);
 }
 

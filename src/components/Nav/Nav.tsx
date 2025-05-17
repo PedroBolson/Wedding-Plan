@@ -130,7 +130,7 @@ const Nav: React.FC<NavProps> = ({
 
                         {isAdmin && (
                             <button className="admin-button" onClick={openAdminModal}>
-                                <span>Gerenciar Admins</span>
+                                <span>Gerenciar Usuários</span>
                             </button>
                         )}
 

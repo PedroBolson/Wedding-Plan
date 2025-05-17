@@ -54,8 +54,7 @@
 }
 
 .admin-close-btn:hover {
-    background-color: var(--bg-tertiary);
-    filter: brightness(0.8);
+    transform: scale(1.3);
 }
 
 .admin-actions {
@@ -213,9 +212,7 @@
 }
 
 .admin-action-btn.grant:hover {
-    background-color: #333;
-    color: white;
-    filter: none;
+    filter: brightness(0.85);
     transform: translateY(-1px);
 }
 
