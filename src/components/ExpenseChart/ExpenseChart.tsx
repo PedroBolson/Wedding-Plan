@@ -16,6 +16,7 @@ interface ChartData {
         backgroundColor: string[];
         borderColor: string[];
         borderWidth: number;
+        hoverOffset?: number;
     }[];
 }
 
@@ -213,9 +214,18 @@ const ExpenseChart = () => {
                         favorite.professionalsCost || 0,
                         favorite.budgetExtrasCost || 0
                     ],
-                    backgroundColor: ['rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)'],
-                    borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)'],
-                    borderWidth: 1,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 206, 86, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 2,
+                    hoverOffset: 20,
                 },
             ],
         };
@@ -248,6 +258,7 @@ const ExpenseChart = () => {
                     backgroundColor,
                     borderColor,
                     borderWidth: 1,
+                    hoverOffset: 20,
                 },
             ],
         };
@@ -280,6 +291,7 @@ const ExpenseChart = () => {
                     backgroundColor,
                     borderColor,
                     borderWidth: 1,
+                    hoverOffset: 20,
                 },
             ],
         };
@@ -341,26 +353,29 @@ const ExpenseChart = () => {
                 </div>
             </div>
 
-            <div className="exp-chart__summary">
-                <h3 className="exp-chart__venue-name">{currentFavorite.venueName} - {currentFavorite.cityName}</h3>
-                <p className="exp-chart__total">Custo Total: R$ {currentFavorite.totalCost?.toLocaleString('pt-BR')}</p>
+            <h3 className="exp-chart__venue-name">{currentFavorite.venueName} - {currentFavorite.cityName}</h3>
+            <p className="exp-chart__total">Custo Total: R$ {currentFavorite.totalCost?.toLocaleString('pt-BR')}</p>
 
-                <div className="exp-chart__percentages">
-                    <div className="exp-chart__percentage-item">
-                        <span className="exp-chart__category">Local:</span>
-                        <span className="exp-chart__value">{percentages.venue.toFixed(1)}%</span>
-                        <span className="exp-chart__amount">R$ {currentFavorite.venueCost?.toLocaleString('pt-BR')}</span>
-                    </div>
-                    <div className="exp-chart__percentage-item">
-                        <span className="exp-chart__category">Profissionais:</span>
-                        <span className="exp-chart__value">{percentages.professionals.toFixed(1)}%</span>
-                        <span className="exp-chart__amount">R$ {currentFavorite.professionalsCost?.toLocaleString('pt-BR')}</span>
-                    </div>
-                    <div className="exp-chart__percentage-item">
-                        <span className="exp-chart__category">Extras:</span>
-                        <span className="exp-chart__value">{percentages.extras.toFixed(1)}%</span>
-                        <span className="exp-chart__amount">R$ {currentFavorite.budgetExtrasCost?.toLocaleString('pt-BR')}</span>
-                    </div>
+            <div className="exp-chart__cards">
+                <div className="exp-chart__card">
+                    <div className="exp-chart__card-title">Local</div>
+                    <div className="exp-chart__card-value">R$ {currentFavorite.venueCost?.toLocaleString('pt-BR')}</div>
+                    <div className="exp-chart__card-percentage">{percentages.venue.toFixed(1)}%</div>
+                    <div className="exp-chart__card-indicator" style={{ backgroundColor: 'rgba(255, 99, 132, 0.8)' }}></div>
+                </div>
+
+                <div className="exp-chart__card">
+                    <div className="exp-chart__card-title">Profissionais</div>
+                    <div className="exp-chart__card-value">R$ {currentFavorite.professionalsCost?.toLocaleString('pt-BR')}</div>
+                    <div className="exp-chart__card-percentage">{percentages.professionals.toFixed(1)}%</div>
+                    <div className="exp-chart__card-indicator" style={{ backgroundColor: 'rgba(54, 162, 235, 0.8)' }}></div>
+                </div>
+
+                <div className="exp-chart__card">
+                    <div className="exp-chart__card-title">Extras</div>
+                    <div className="exp-chart__card-value">R$ {currentFavorite.budgetExtrasCost?.toLocaleString('pt-BR')}</div>
+                    <div className="exp-chart__card-percentage">{percentages.extras.toFixed(1)}%</div>
+                    <div className="exp-chart__card-indicator" style={{ backgroundColor: 'rgba(255, 206, 86, 0.8)' }}></div>
                 </div>
             </div>
 
@@ -391,21 +406,16 @@ const ExpenseChart = () => {
                 {chartType === 'macro' && (
                     <>
                         <h3 className="exp-chart__section-title">Distribuição Geral de Custos</h3>
-                        <div className="exp-chart__charts-container">
+                        <div className="exp-chart__flex-container">
                             <div className="exp-chart__pie-container">
                                 <div className="exp-chart__pie">
                                     <Pie data={getMacroChartData(currentFavorite)} options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
                                         plugins: {
-                                            legend: {
-                                                labels: {
-                                                    color: darkTheme ? 'rgba(255,255,255,0.8)' : 'var(--text-primary, #333)',
-                                                    font: {
-                                                        size: 13,
-                                                        weight: 500
-                                                    }
-                                                }
-                                            },
                                             tooltip: {
+                                                enabled: true,
+                                                position: 'nearest',
                                                 callbacks: {
                                                     label: function (context) {
                                                         const label = context.label || '';
@@ -415,92 +425,279 @@ const ExpenseChart = () => {
                                                         const percentage = ((value * 100) / total).toFixed(1);
                                                         return `${label}: R$ ${value.toLocaleString('pt-BR')} (${percentage}%)`;
                                                     }
+                                                },
+                                                padding: 12,
+                                                boxPadding: 6,
+                                                caretSize: 8,
+                                                caretPadding: 10,
+                                                displayColors: true,
+                                                backgroundColor: darkTheme ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)',
+                                                bodyColor: darkTheme ? '#fff' : '#333',
+                                                titleColor: darkTheme ? '#fff' : '#111',
+                                                borderColor: darkTheme ? '#333' : '#ddd',
+                                                borderWidth: 1,
+                                                titleFont: {
+                                                    weight: 'bold'
+                                                },
+                                                bodyFont: {
+                                                    size: 14
                                                 }
-                                            }
+                                            },
+                                            legend: {
+                                                position: 'right',
+                                                labels: {
+                                                    color: darkTheme ? 'rgba(255,255,255,0.8)' : 'var(--text-primary, #333)',
+                                                    font: {
+                                                        size: 14,
+                                                        weight: 500
+                                                    },
+                                                    padding: 20,
+                                                    usePointStyle: true,
+                                                    pointStyle: 'circle'
+                                                }
+                                            },
+                                        },
+                                        animation: {
+                                            animateRotate: true,
+                                            animateScale: true,
+                                            duration: 1500
                                         }
                                     }} />
+                                </div>
+                            </div>
+
+                            <div className="exp-chart__bars-container">
+                                <h4>Detalhamento de Custos</h4>
+                                <div className="exp-chart__bars">
+                                    {['Local', 'Profissionais', 'Extras'].map((category, index) => {
+                                        const values = [
+                                            currentFavorite.venueCost || 0,
+                                            currentFavorite.professionalsCost || 0,
+                                            currentFavorite.budgetExtrasCost || 0
+                                        ];
+                                        const colors = [
+                                            'rgba(255, 99, 132, 0.8)',
+                                            'rgba(54, 162, 235, 0.8)',
+                                            'rgba(255, 206, 86, 0.8)'
+                                        ];
+                                        const percentage = ((values[index] / currentFavorite.totalCost!) * 100).toFixed(1);
+
+                                        return (
+                                            <div key={category} className="exp-chart__bar-item">
+                                                <div className="exp-chart__bar-header">
+                                                    <span className="exp-chart__bar-label">{category}</span>
+                                                    <span className="exp-chart__bar-percentage">{percentage}%</span>
+                                                </div>
+                                                <div className="exp-chart__bar-container">
+                                                    <div
+                                                        className="exp-chart__bar-fill"
+                                                        style={{
+                                                            width: `${percentage}%`,
+                                                            backgroundColor: colors[index]
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
                     </>
                 )}
 
-                {chartType === 'professionals' && currentFavorite.selectedProfessionalNames?.length ? (
-                    <>
-                        <h3 className="exp-chart__section-title">Custos por Profissionais</h3>
-                        <div className="exp-chart__charts-container">
-                            <div className="exp-chart__pie-container">
-                                <div className="exp-chart__pie">
-                                    <Pie data={getProfessionalsChartData(currentFavorite)} options={{
-                                        plugins: {
-                                            legend: {
-                                                labels: {
-                                                    color: darkTheme ? 'rgba(255,255,255,0.8)' : 'var(--text-primary, #333)',
-                                                    font: {
-                                                        size: 13,
-                                                        weight: 500
+                {chartType === 'professionals' ? (
+                    (currentFavorite.selectedProfessionalNames && currentFavorite.selectedProfessionalNames.length > 0) ? (
+                        <>
+                            <h3 className="exp-chart__section-title">Distribuição de Custos por Profissionais</h3>
+                            <div className="exp-chart__flex-container">
+                                <div className="exp-chart__pie-container">
+                                    <div className="exp-chart__pie">
+                                        <Pie data={getProfessionalsChartData(currentFavorite)} options={{
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                legend: {
+                                                    position: 'right',
+                                                    labels: {
+                                                        color: darkTheme ? 'rgba(255,255,255,0.8)' : 'var(--text-primary)',
+                                                        font: {
+                                                            size: 14,
+                                                            weight: 500
+                                                        },
+                                                        padding: 20,
+                                                        usePointStyle: true,
+                                                        pointStyle: 'circle'
+                                                    }
+                                                },
+                                                tooltip: {
+                                                    enabled: true,
+                                                    position: 'nearest',
+                                                    callbacks: {
+                                                        label: function (context) {
+                                                            const label = context.label || '';
+                                                            const value = context.parsed || 0;
+                                                            const dataset = context.dataset;
+                                                            const total = dataset.data.reduce((acc: number, data: number) => acc + data, 0);
+                                                            const percentage = ((value * 100) / total).toFixed(1);
+                                                            return `${label}: R$ ${value.toLocaleString('pt-BR')} (${percentage}%)`;
+                                                        }
+                                                    },
+                                                    padding: 12,
+                                                    boxPadding: 6,
+                                                    caretSize: 8,
+                                                    caretPadding: 10,
+                                                    displayColors: true,
+                                                    backgroundColor: darkTheme ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)',
+                                                    bodyColor: darkTheme ? '#fff' : '#333',
+                                                    titleColor: darkTheme ? '#fff' : '#111',
+                                                    borderColor: darkTheme ? '#333' : '#ddd',
+                                                    borderWidth: 1,
+                                                    titleFont: {
+                                                        weight: 'bold'
+                                                    },
+                                                    bodyFont: {
+                                                        size: 14
                                                     }
                                                 }
                                             },
-                                            tooltip: {
-                                                callbacks: {
-                                                    label: function (context) {
-                                                        const label = context.label || '';
-                                                        const value = context.parsed || 0;
-                                                        const dataset = context.dataset;
-                                                        const total = dataset.data.reduce((acc: number, data: number) => acc + data, 0);
-                                                        const percentage = ((value * 100) / total).toFixed(1);
-                                                        return `${label}: R$ ${value.toLocaleString('pt-BR')} (${percentage}%)`;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }} />
+                                        }} />
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </>
-                ) : chartType === 'professionals' ? (
-                    <p className="exp-chart__no-data">Não há profissionais selecionados para este local.</p>
-                ) : null}
 
-                {chartType === 'extras' && currentFavorite.budgetExtrasItems?.length ? (
-                    <>
-                        <h3 className="exp-chart__section-title">Custos Extras</h3>
-                        <div className="exp-chart__charts-container">
-                            <div className="exp-chart__pie-container">
-                                <div className="exp-chart__pie">
-                                    <Pie data={getExtrasChartData(currentFavorite)} options={{
-                                        plugins: {
-                                            legend: {
-                                                labels: {
-                                                    color: darkTheme ? 'rgba(255,255,255,0.8)' : 'var(--text-primary, #333)',
-                                                    font: {
-                                                        size: 13,
-                                                        weight: 500
+                                <div className="exp-chart__bars-container">
+                                    <h4>Detalhamento por Profissional</h4>
+                                    <div className="exp-chart__bars">
+                                        {(currentFavorite.selectedProfessionalNames || []).map((prof, index) => {
+                                            const cost = prof.price || 0;
+                                            const totalProf = (currentFavorite.selectedProfessionalNames || []).reduce((sum, p) => sum + (p.price || 0), 0);
+                                            const percentage = totalProf > 0 ? ((cost / totalProf) * 100).toFixed(1) : '0.0';
+
+                                            // Gerar cor consistente
+                                            const hue = (index * 137.5) % 360;
+                                            const color = `hsla(${hue}, 70%, 60%, 0.8)`;
+
+                                            return (
+                                                <div key={prof.name} className="exp-chart__bar-item">
+                                                    <div className="exp-chart__bar-header">
+                                                        <span className="exp-chart__bar-label">{prof.name}</span>
+                                                        <span className="exp-chart__bar-percentage">{percentage}%</span>
+                                                    </div>
+                                                    <div className="exp-chart__bar-container">
+                                                        <div
+                                                            className="exp-chart__bar-fill"
+                                                            style={{
+                                                                width: `${percentage}%`,
+                                                                backgroundColor: color
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <p className="exp-chart__no-data">Não há profissionais selecionados para este local.</p>
+                    )
+                ) : null}
+                {chartType === 'extras' ? (
+                    (currentFavorite.budgetExtrasItems && currentFavorite.budgetExtrasItems.length > 0) ? (
+                        <>
+                            <h3 className="exp-chart__section-title">Distribuição de Custos Extras</h3>
+                            <div className="exp-chart__flex-container">
+                                <div className="exp-chart__pie-container">
+                                    <div className="exp-chart__pie">
+                                        <Pie data={getExtrasChartData(currentFavorite)} options={{
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                legend: {
+                                                    position: 'right',
+                                                    labels: {
+                                                        color: darkTheme ? 'rgba(255,255,255,0.8)' : 'var(--text-primary)',
+                                                        font: {
+                                                            size: 14,
+                                                            weight: 500
+                                                        },
+                                                        padding: 20,
+                                                        usePointStyle: true,
+                                                        pointStyle: 'circle'
+                                                    }
+                                                },
+                                                tooltip: {
+                                                    enabled: true,
+                                                    position: 'nearest',
+                                                    callbacks: {
+                                                        label: function (context) {
+                                                            const label = context.label || '';
+                                                            const value = context.parsed || 0;
+                                                            const dataset = context.dataset;
+                                                            const total = dataset.data.reduce((acc: number, data: number) => acc + data, 0);
+                                                            const percentage = ((value * 100) / total).toFixed(1);
+                                                            return `${label}: R$ ${value.toLocaleString('pt-BR')} (${percentage}%)`;
+                                                        }
+                                                    },
+                                                    padding: 12,
+                                                    boxPadding: 6,
+                                                    caretSize: 8,
+                                                    caretPadding: 10,
+                                                    displayColors: true,
+                                                    backgroundColor: darkTheme ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)',
+                                                    bodyColor: darkTheme ? '#fff' : '#333',
+                                                    titleColor: darkTheme ? '#fff' : '#111',
+                                                    borderColor: darkTheme ? '#333' : '#ddd',
+                                                    borderWidth: 1,
+                                                    titleFont: {
+                                                        weight: 'bold'
+                                                    },
+                                                    bodyFont: {
+                                                        size: 14
                                                     }
                                                 }
                                             },
-                                            tooltip: {
-                                                callbacks: {
-                                                    label: function (context) {
-                                                        const label = context.label || '';
-                                                        const value = context.parsed || 0;
-                                                        const dataset = context.dataset;
-                                                        const total = dataset.data.reduce((acc: number, data: number) => acc + data, 0);
-                                                        const percentage = ((value * 100) / total).toFixed(1);
-                                                        return `${label}: R$ ${value.toLocaleString('pt-BR')} (${percentage}%)`;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }} />
+                                        }} />
+                                    </div>
+                                </div>
+
+                                <div className="exp-chart__bars-container">
+                                    <h4>Detalhamento de Itens Extras</h4>
+                                    <div className="exp-chart__bars">
+                                        {currentFavorite.budgetExtrasItems?.map((item, index) => {
+                                            const totalExtras = currentFavorite.budgetExtrasItems?.reduce((sum, item) => sum + item.cost, 0) || 0;
+                                            const percentage = totalExtras > 0 ? ((item.cost / totalExtras) * 100).toFixed(1) : '0.0';
+
+                                            // Gerar cor consistente
+                                            const hue = (index * 137.5 + 60) % 360;
+                                            const color = `hsla(${hue}, 70%, 60%, 0.8)`;
+
+                                            return (
+                                                <div key={index} className="exp-chart__bar-item">
+                                                    <div className="exp-chart__bar-header">
+                                                        <span className="exp-chart__bar-label">{item.description}</span>
+                                                        <span className="exp-chart__bar-percentage">{percentage}%</span>
+                                                    </div>
+                                                    <div className="exp-chart__bar-container">
+                                                        <div
+                                                            className="exp-chart__bar-fill"
+                                                            style={{
+                                                                width: `${percentage}%`,
+                                                                backgroundColor: color
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </>
-                ) : chartType === 'extras' ? (
-                    <p className="exp-chart__no-data">Não há itens extras para este local.</p>
+                        </>
+                    ) : (
+                        <p className="exp-chart__no-data">Não há itens extras para este local.</p>
+                    )
                 ) : null}
             </div>
         </div>
