@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import './Favorites.css';
+import { useLoading } from '../../contexts/LoadingContext';
 
 interface FavoriteVenue {
     id: string;
@@ -39,13 +40,16 @@ interface BudgetExtra {
 
 const Favorites = () => {
     const [favorites, setFavorites] = useState<FavoriteVenue[]>([]);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const { isLoading, setIsLoading, setLoadingMessage } = useLoading();
 
     useEffect(() => {
         const fetchFavorites = async () => {
             try {
-                setLoading(true);
+                setLoadingMessage("Carregando locais favoritos...");
+                setIsLoading(true);
+
                 // Buscar apenas locais marcados como favoritos
                 const venuesRef = collection(db, 'venues');
                 const q = query(venuesRef, where('isFavorite', '==', true));
@@ -53,11 +57,13 @@ const Favorites = () => {
 
                 if (favoritesSnapshot.empty) {
                     setFavorites([]);
-                    setLoading(false);
                     return;
                 }
 
-                // Buscar todos os profissionais favoritos para incluir nos custos
+                // Atualizar mensagem para cada etapa do carregamento
+                setLoadingMessage("Carregando profissionais...");
+
+                // Buscar todos os profissionais favoritos
                 const professionalsRef = collection(db, 'professionals');
                 const profQuery = query(professionalsRef, where('isFavorite', '==', true));
                 const professionalsSnapshot = await getDocs(profQuery);
@@ -66,6 +72,9 @@ const Favorites = () => {
                     id: doc.id,
                     ...doc.data()
                 } as Professional));
+
+                // Atualizar mensagem novamente
+                setLoadingMessage("Carregando extras de orçamento...");
 
                 // Buscar todos os itens de orçamento extras favoritos
                 const budgetExtrasRef = collection(db, 'budgetExtras');
@@ -76,6 +85,9 @@ const Favorites = () => {
                     id: doc.id,
                     ...doc.data()
                 } as BudgetExtra));
+
+                // Atualizar mensagem para a etapa final
+                setLoadingMessage("Processando dados...");
 
                 // Para cada local favorito, buscar os detalhes da cidade
                 const favoritesWithDetails = await Promise.all(
@@ -146,19 +158,21 @@ const Favorites = () => {
                 console.error('Erro ao buscar favoritos:', err);
                 setError('Não foi possível carregar os favoritos. Por favor, tente novamente.');
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         };
 
         fetchFavorites();
     }, []);
 
-    if (loading) {
-        return <div className="loading">Carregando favoritos...</div>;
-    }
-
     if (error) {
         return <div className="error">{error}</div>;
+    }
+
+    // Se não houver favoritos e ainda estiver carregando, não renderize nada
+    // para evitar um flash de "sem favoritos" durante o carregamento
+    if (favorites.length === 0 && isLoading) {
+        return null;
     }
 
     return (
@@ -201,7 +215,6 @@ const Favorites = () => {
                                         </>
                                     )}
 
-                                    {/* Exibir custos e itens extras */}
                                     {(favorite.budgetExtrasCost ?? 0) > 0 && (
                                         <>
                                             <p className="budget-extras-cost">

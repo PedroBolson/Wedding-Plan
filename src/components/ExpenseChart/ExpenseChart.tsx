@@ -5,6 +5,7 @@ import { db } from '../../firebase/config';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import './ExpenseChart.css';
+import { useLoading } from '../../contexts/LoadingContext';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -57,24 +58,38 @@ interface BudgetExtra {
 const ExpenseChart = () => {
     const { darkTheme } = useContext(ThemeContext);
     const [favorites, setFavorites] = useState<FavoriteVenue[]>([]);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedFavorite, setSelectedFavorite] = useState<string | null>(null);
     const [chartType, setChartType] = useState<'macro' | 'professionals' | 'extras'>('macro');
 
+    const { isLoading, setIsLoading, setLoadingMessage } = useLoading();
+
     useEffect(() => {
+        let isMounted = true; // Variável para controlar se o componente ainda está montado
+
         const fetchFavorites = async () => {
             try {
-                setLoading(true);
+                if (isMounted) {
+                    setLoadingMessage("Carregando gráficos de despesas...");
+                    setIsLoading(true);
+                }
+
                 // Buscar locais favoritos
                 const venuesRef = collection(db, 'venues');
                 const q = query(venuesRef, where('isFavorite', '==', true));
                 const favoritesSnapshot = await getDocs(q);
 
                 if (favoritesSnapshot.empty) {
-                    setFavorites([]);
-                    setLoading(false);
+                    if (isMounted) {
+                        setFavorites([]);
+                        setIsLoading(false);
+                    }
                     return;
+                }
+
+                // Atualizar mensagem durante o processo
+                if (isMounted) {
+                    setLoadingMessage("Processando dados dos profissionais...");
                 }
 
                 // Buscar profissionais favoritos
@@ -87,6 +102,11 @@ const ExpenseChart = () => {
                     ...doc.data()
                 } as Professional));
 
+                // Atualizar mensagem novamente
+                if (isMounted) {
+                    setLoadingMessage("Processando itens extras...");
+                }
+
                 // Buscar itens extras favoritos
                 const budgetExtrasRef = collection(db, 'budgetExtras');
                 const budgetExtrasQuery = query(budgetExtrasRef, where('isFavorite', '==', true));
@@ -96,6 +116,11 @@ const ExpenseChart = () => {
                     id: doc.id,
                     ...doc.data()
                 } as BudgetExtra));
+
+                // Última etapa de processamento
+                if (isMounted) {
+                    setLoadingMessage("Finalizando cálculos...");
+                }
 
                 // Para cada local favorito, processar os dados
                 const favoritesWithDetails = await Promise.all(
@@ -159,49 +184,32 @@ const ExpenseChart = () => {
                     })
                 );
 
-                setFavorites(favoritesWithDetails);
-                if (favoritesWithDetails.length > 0) {
-                    setSelectedFavorite(favoritesWithDetails[0].id);
+                // Verificar se o componente ainda está montado antes de atualizar o estado
+                if (isMounted) {
+                    setFavorites(favoritesWithDetails);
+                    if (favoritesWithDetails.length > 0) {
+                        setSelectedFavorite(favoritesWithDetails[0].id);
+                    }
                 }
             } catch (err) {
                 console.error('Erro ao buscar dados para gráficos:', err);
-                setError('Não foi possível carregar os dados para os gráficos. Por favor, tente novamente.');
+                if (isMounted) {
+                    setError('Não foi possível carregar os dados para os gráficos. Por favor, tente novamente.');
+                }
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setIsLoading(false);
+                }
             }
         };
 
         fetchFavorites();
-    }, []);
 
-    useEffect(() => {
-        const handleThemeChange = () => {
-            setChartType(prevType => prevType);
-        };
-
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (
-                    mutation.attributeName === 'class' &&
-                    (mutation.target === document.documentElement || mutation.target === document.body)
-                ) {
-                    handleThemeChange();
-                }
-            });
-        });
-
-        observer.observe(document.documentElement, { attributes: true });
-        observer.observe(document.body, { attributes: true });
-
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        mediaQuery.addEventListener('change', handleThemeChange);
-
+        // Função de limpeza para quando o componente for desmontado
         return () => {
-            observer.disconnect();
-            mediaQuery.removeEventListener('change', handleThemeChange);
+            isMounted = false;
         };
     }, []);
-
     // Preparar dados para o gráfico macro
     const getMacroChartData = (favorite: FavoriteVenue): ChartData => {
         return {
@@ -309,10 +317,6 @@ const ExpenseChart = () => {
         };
     };
 
-    if (loading) {
-        return <div className="exp-chart__loading">Carregando dados dos gráficos...</div>;
-    }
-
     if (error) {
         return <div className="exp-chart__error">{error}</div>;
     }
@@ -383,20 +387,21 @@ const ExpenseChart = () => {
                 <button
                     className={chartType === 'macro' ? 'exp-chart__btn exp-chart__btn--active' : 'exp-chart__btn'}
                     onClick={() => setChartType('macro')}
+                    disabled={isLoading}
                 >
                     Visão Geral
                 </button>
                 <button
                     className={chartType === 'professionals' ? 'exp-chart__btn exp-chart__btn--active' : 'exp-chart__btn'}
                     onClick={() => setChartType('professionals')}
-                    disabled={!currentFavorite.selectedProfessionalNames?.length}
+                    disabled={isLoading || !currentFavorite.selectedProfessionalNames?.length}
                 >
                     Profissionais
                 </button>
                 <button
                     className={chartType === 'extras' ? 'exp-chart__btn exp-chart__btn--active' : 'exp-chart__btn'}
                     onClick={() => setChartType('extras')}
-                    disabled={!currentFavorite.budgetExtrasItems?.length}
+                    disabled={isLoading || !currentFavorite.budgetExtrasItems?.length}
                 >
                     Extras
                 </button>

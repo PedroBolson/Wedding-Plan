@@ -1,0 +1,48 @@
+.svg-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.svg-loader--small {
+    --svg-size: 170px;
+}
+
+.svg-loader--medium {
+    --svg-size: 200px;
+}
+
+.svg-loader--large {
+    --svg-size: 280px;
+}
+
+.svg-loader__image {
+    width: var(--svg-size);
+    height: var(--svg-size);
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+.svg-loader__message {
+    color: var(--text-secondary, #666);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.dark-theme .svg-loader__message {
+    color: var(--text-secondary, #aaa);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

@@ -3,6 +3,7 @@ import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "firebase
 import { db, auth } from "../../firebase/config";
 import CountUp from "../common/CountUp";
 import "./Budget.css";
+import { useLoading } from "../../contexts/LoadingContext";
 
 interface BudgetItem {
     id?: string;
@@ -44,9 +45,10 @@ const Budget = () => {
     const [filterCategory, setFilterCategory] = useState<string>("todas");
     const [filterCity, setFilterCity] = useState<string>("todas");
     const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
     const [isFormExpanded, setIsFormExpanded] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+    const { isLoading, setIsLoading, setLoadingMessage } = useLoading();
 
     const categories = [
         "decoração",
@@ -82,7 +84,9 @@ const Budget = () => {
 
     const fetchCities = async () => {
         try {
-            setLoading(true);
+            setLoadingMessage("Carregando cidades...");
+            setIsLoading(true);
+
             const citiesCollection = collection(db, "cities");
             const citiesSnapshot = await getDocs(citiesCollection);
             const citiesList = citiesSnapshot.docs.map((doc) => ({
@@ -95,13 +99,15 @@ const Budget = () => {
             console.error("Erro ao buscar cidades:", error);
             setError("Não foi possível carregar as cidades.");
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
     const fetchBudgetItems = async () => {
         try {
-            setLoading(true);
+            setLoadingMessage("Carregando orçamento...");
+            setIsLoading(true);
+
             const budgetCollection = collection(db, "budgetExtras");
             const budgetSnapshot = await getDocs(budgetCollection);
             const items = budgetSnapshot.docs.map((doc) => ({
@@ -115,7 +121,7 @@ const Budget = () => {
             console.error("Erro ao buscar dados de orçamento:", error);
             setError("Erro ao buscar itens de orçamento. Tente novamente mais tarde.");
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -153,7 +159,9 @@ const Budget = () => {
         }
 
         try {
-            setLoading(true);
+            setLoadingMessage("Adicionando novo item...");
+            setIsLoading(true);
+
             const budgetCollection = collection(db, "budgetExtras");
             const itemToAdd = {
                 ...newItem,
@@ -180,7 +188,7 @@ const Budget = () => {
             console.error("Erro ao adicionar item:", error);
             setError("Erro ao adicionar item. Tente novamente.");
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -196,11 +204,12 @@ const Budget = () => {
 
     const saveEdit = async (id: string) => {
         try {
-            setLoading(true);
+            setLoadingMessage("Salvando alterações...");
+            setIsLoading(true);
+
             const itemToUpdate = budgetItems.find(item => item.id === id);
             if (itemToUpdate && id) {
                 const itemRef = doc(db, "budgetExtras", id);
-                // Remove o ID antes de salvar no Firestore
                 const { id: _, createdAt, ...itemData } = itemToUpdate;
                 await updateDoc(itemRef, itemData);
                 setIsEditing(null);
@@ -211,7 +220,7 @@ const Budget = () => {
             console.error("Erro ao atualizar item:", error);
             setError("Erro ao atualizar item. Tente novamente.");
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -221,7 +230,9 @@ const Budget = () => {
 
     const deleteBudgetItem = async (id: string) => {
         try {
-            setLoading(true);
+            setLoadingMessage("Excluindo item...");
+            setIsLoading(true);
+
             const itemRef = doc(db, "budgetExtras", id);
             await deleteDoc(itemRef);
             await fetchBudgetItems();
@@ -231,7 +242,7 @@ const Budget = () => {
             console.error("Erro ao excluir item:", error);
             setError("Erro ao excluir item. Tente novamente.");
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -239,7 +250,9 @@ const Budget = () => {
         if (!item.id) return;
 
         try {
-            setLoading(true);
+            setLoadingMessage("Atualizando favorito...");
+            setIsLoading(true);
+
             const newFavoriteStatus = !item.isFavorite;
             const itemRef = doc(db, "budgetExtras", item.id);
 
@@ -260,7 +273,7 @@ const Budget = () => {
             console.error("Erro ao atualizar favorito:", error);
             setError("Erro ao marcar/desmarcar como favorito.");
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -282,11 +295,6 @@ const Budget = () => {
         const city = cities.find(city => city.id === cityId);
         return city ? city.name : "Cidade não encontrada";
     };
-
-    if (loading && budgetItems.length === 0) {
-        return <div className="budget-loading">Carregando...</div>;
-    }
-
     return (
         <div className="budget-container">
             <h1 className="budget-title">Orçamento de Itens Extras</h1>
@@ -448,9 +456,9 @@ const Budget = () => {
                         <button
                             type="submit"
                             className="budget-add-button"
-                            disabled={loading}
+                            disabled={isLoading}
                         >
-                            {loading ? "Adicionando..." : "Adicionar Item"}
+                            {isLoading ? "Adicionando..." : "Adicionar Item"}
                         </button>
                     </form>
                 )}
@@ -613,14 +621,14 @@ const Budget = () => {
                                             <button
                                                 className="budget-save-button"
                                                 onClick={() => saveEdit(item.id!)}
-                                                disabled={loading}
+                                                disabled={isLoading}
                                             >
-                                                {loading ? "Salvando..." : "Salvar"}
+                                                {isLoading ? "Salvando..." : "Salvar"}
                                             </button>
                                             <button
                                                 className="budget-cancel-button"
                                                 onClick={cancelEditing}
-                                                disabled={loading}
+                                                disabled={isLoading}
                                             >
                                                 Cancelar
                                             </button>
@@ -635,7 +643,7 @@ const Budget = () => {
                                                 className={`budget-favorite-toggle ${item.isFavorite ? 'is-favorite' : ''}`}
                                                 onClick={() => toggleFavorite(item)}
                                                 aria-label={item.isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                                                disabled={loading}
+                                                disabled={isLoading}
                                             >
                                                 {item.isFavorite ? '★' : '☆'}
                                             </button>
@@ -668,14 +676,14 @@ const Budget = () => {
                                             <button
                                                 className="budget-edit-button"
                                                 onClick={() => startEditing(item)}
-                                                disabled={loading}
+                                                disabled={isLoading}
                                             >
                                                 Editar
                                             </button>
                                             <button
                                                 className="budget-delete-button"
                                                 onClick={() => handleDeleteConfirmation(item.id!)}
-                                                disabled={loading}
+                                                disabled={isLoading}
                                             >
                                                 Excluir
                                             </button>
@@ -687,14 +695,14 @@ const Budget = () => {
                                                         <button
                                                             className="budget-confirm-yes"
                                                             onClick={() => deleteBudgetItem(item.id!)}
-                                                            disabled={loading}
+                                                            disabled={isLoading}
                                                         >
                                                             Sim
                                                         </button>
                                                         <button
                                                             className="budget-confirm-no"
                                                             onClick={() => setConfirmDelete(null)}
-                                                            disabled={loading}
+                                                            disabled={isLoading}
                                                         >
                                                             Não
                                                         </button>

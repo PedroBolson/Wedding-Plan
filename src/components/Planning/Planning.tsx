@@ -4,6 +4,8 @@ import { db } from '../../firebase/config';
 import './Planning.css';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '../../firebase/config';
+import { useLoading } from '../../contexts/LoadingContext';
+
 interface City {
     id?: string;
     name: string;
@@ -123,39 +125,60 @@ const Planning = () => {
 
     const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
 
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+    const { isLoading, setIsLoading, setLoadingMessage } = useLoading();
+
     useEffect(() => {
+        let isMounted = true;
+
         const fetchCities = async () => {
-            setLoading(true);
             try {
+                if (isMounted) {
+                    setLoadingMessage("Carregando cidades...");
+                    setIsLoading(true);
+                }
+
                 const citiesRef = collection(db, 'cities');
                 const citiesSnapshot = await getDocs(citiesRef);
                 const citiesList = citiesSnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 } as City));
-                setCities(citiesList);
+
+                if (isMounted) {
+                    setCities(citiesList);
+                }
             } catch (err) {
                 console.error('Erro ao buscar cidades:', err);
-                setError('Não foi possível carregar as cidades. Por favor, tente novamente.');
+                if (isMounted) {
+                    setError('Não foi possível carregar as cidades. Por favor, tente novamente.');
+                }
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setIsLoading(false);
+                }
             }
         };
 
         if (activeView === 'cities') {
             fetchCities();
         }
+
+        return () => {
+            isMounted = false;
+        };
     }, [activeView]);
 
     useEffect(() => {
         const fetchVenues = async () => {
             if (!selectedCityId) return;
 
-            setLoading(true);
             try {
+                setLoadingMessage(`Carregando locais de ${cities.find(c => c.id === selectedCityId)?.name || 'cidade selecionada'}...`);
+                setIsLoading(true);
+
                 const venuesRef = collection(db, 'venues');
                 const q = query(venuesRef, where('cityId', '==', selectedCityId));
                 const venuesSnapshot = await getDocs(q);
@@ -173,21 +196,23 @@ const Planning = () => {
                 console.error('Erro ao buscar locais:', err);
                 setError('Não foi possível carregar os locais. Por favor, tente novamente.');
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         };
 
         if (activeView === 'venues') {
             fetchVenues();
         }
-    }, [selectedCityId, activeView]);
+    }, [selectedCityId, activeView, cities]);
 
     useEffect(() => {
         const fetchProfessionals = async () => {
             if (!selectedCityId) return;
 
-            setLoading(true);
             try {
+                setLoadingMessage(`Carregando profissionais de ${cities.find(c => c.id === selectedCityId)?.name || 'cidade selecionada'}...`);
+                setIsLoading(true);
+
                 const professionalsRef = collection(db, 'professionals');
                 const q = query(professionalsRef, where('cityId', '==', selectedCityId));
                 const professionalsSnapshot = await getDocs(q);
@@ -209,19 +234,21 @@ const Planning = () => {
                 console.error('Erro ao buscar profissionais:', err);
                 setError('Não foi possível carregar os profissionais. Por favor, tente novamente.');
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         };
 
         if (activeView === 'cityProfessionals') {
             fetchProfessionals();
         }
-    }, [selectedCityId, activeView]);
+    }, [selectedCityId, activeView, cities]);
 
     useEffect(() => {
         const fetchProfessionalTypes = async () => {
-            setLoading(true);
             try {
+                setLoadingMessage("Carregando tipos de profissionais...");
+                setIsLoading(true);
+
                 const typesRef = collection(db, 'professionalTypes');
                 const typesSnapshot = await getDocs(typesRef);
                 const typesList = typesSnapshot.docs.map(doc => ({
@@ -233,7 +260,7 @@ const Planning = () => {
                 console.error('Erro ao buscar tipos de profissionais:', err);
                 setError('Não foi possível carregar os tipos de profissionais. Por favor, tente novamente.');
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         };
 
@@ -247,6 +274,9 @@ const Planning = () => {
         if (!venue.id) return;
 
         try {
+            setLoadingMessage(`Atualizando favorito: ${venue.name}...`);
+            setIsLoading(true);
+
             const newFavoriteStatus = !venue.isFavorite;
             const currentTime = new Date();
 
@@ -266,6 +296,8 @@ const Planning = () => {
         } catch (err) {
             console.error('Erro ao alterar status de favorito:', err);
             setError('Não foi possível atualizar o favorito. Por favor, tente novamente.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -274,6 +306,9 @@ const Planning = () => {
         if (!professional.id) return;
 
         try {
+            setLoadingMessage(`Atualizando favorito: ${professional.name}...`);
+            setIsLoading(true);
+
             const newFavoriteStatus = !professional.isFavorite;
 
             await updateDoc(doc(db, 'professionals', professional.id), {
@@ -289,6 +324,8 @@ const Planning = () => {
         } catch (err) {
             console.error('Erro ao alterar status de favorito do profissional:', err);
             setError('Não foi possível atualizar o favorito. Por favor, tente novamente.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -317,7 +354,6 @@ const Planning = () => {
         setActiveView('professionalTypes');
     };
 
-    // Funções de formulário para cidade
     const handleCityFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setCityFormData(prev => ({ ...prev, [name]: value }));
@@ -332,21 +368,24 @@ const Planning = () => {
         }
 
         try {
+            setLoadingMessage("Adicionando nova cidade...");
+            setIsLoading(true);
+
             const citiesRef = collection(db, 'cities');
             const newCityRef = await addDoc(citiesRef, cityFormData);
 
             setCities([...cities, { ...cityFormData, id: newCityRef.id }]);
 
-            // Limpar formulário e fechar modal
             setCityFormData({ name: '', state: '' });
             setShowCityForm(false);
         } catch (err) {
             console.error('Erro ao adicionar cidade:', err);
             setError('Não foi possível adicionar a cidade. Por favor, tente novamente.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Funções de formulário para local (venue)
     const handleVenueFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         const numericFields = ['venuePrice', 'foodPrice', 'drinkPrice'];
@@ -363,6 +402,8 @@ const Planning = () => {
 
     const handleVenueFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (isLoading) return;
 
         if (!selectedCityId || !venueFormData.name) {
             setError('Por favor, preencha pelo menos o nome do local.');
@@ -466,7 +507,6 @@ const Planning = () => {
 
     const handleDeletePDF = async (venueId: string, pdfDoc: PdfDocument) => {
         try {
-            // Deletar do Firebase Storage
             const fileRef = ref(storage, pdfDoc.url);
             await deleteObject(fileRef);
 
@@ -508,7 +548,6 @@ const Planning = () => {
         setCurrentUploads(prev => ({ ...prev, [fileId]: true }));
 
         try {
-            // Create a reference to the file in Firebase Storage
             const fileRef = ref(storage, `venues/${venueId}/pdfs/${fileId}`);
 
             // Upload the file
@@ -714,44 +753,56 @@ const Planning = () => {
     // Função para excluir cidade
     const handleDeleteCity = async (cityId: string) => {
         try {
+            setLoadingMessage("Excluindo cidade...");
+            setIsLoading(true);
+
             await deleteDoc(doc(db, 'cities', cityId));
             setCities(cities.filter(city => city.id !== cityId));
             setConfirmDelete(null);
         } catch (err) {
             console.error('Erro ao excluir cidade:', err);
             setError('Não foi possível excluir a cidade. Verifique se não há locais ou profissionais vinculados a ela.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     // Função para excluir local
     const handleDeleteVenue = async (venueId: string) => {
         try {
+            setLoadingMessage("Excluindo local...");
+            setIsLoading(true);
+
             await deleteDoc(doc(db, 'venues', venueId));
             setVenues(venues.filter(venue => venue.id !== venueId));
             setConfirmDelete(null);
         } catch (err) {
             console.error('Erro ao excluir local:', err);
             setError('Não foi possível excluir o local.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     // Função para excluir profissional
     const handleDeleteProfessional = async (professionalId: string) => {
         try {
+            setLoadingMessage("Excluindo profissional...");
+            setIsLoading(true);
+
             await deleteDoc(doc(db, 'professionals', professionalId));
             setProfessionals(professionals.filter(prof => prof.id !== professionalId));
             setConfirmDelete(null);
         } catch (err) {
             console.error('Erro ao excluir profissional:', err);
             setError('Não foi possível excluir o profissional.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     // Renderizações condicionais com base no activeView
     const renderContent = () => {
-        if (loading) {
-            return <div className="loading">Carregando...</div>;
-        }
 
         if (error) {
             return (
@@ -1151,7 +1202,7 @@ const Planning = () => {
                                             </div>
                                         )}
                                         <div className="form-buttons">
-                                            <button type="submit" className="submit-button">
+                                            <button type="submit" className="submit-button" disabled={isLoading}>
                                                 {editingVenueId ? 'Atualizar' : 'Salvar'}
                                             </button>
                                             <button
@@ -1365,7 +1416,9 @@ const Planning = () => {
                                             ></textarea>
                                         </div>
                                         <div className="form-buttons">
-                                            <button type="submit" className="submit-button">Salvar</button>
+                                            <button type="submit" className="submit-button" disabled={isLoading}>
+                                                Salvar
+                                            </button>
                                             <button
                                                 type="button"
                                                 className="cancel-button"
