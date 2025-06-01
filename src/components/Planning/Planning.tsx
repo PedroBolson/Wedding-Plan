@@ -13,7 +13,6 @@ import {
     Heart,
     Users,
     Briefcase,
-    Star,
     Trash2,
     Edit3,
     X,

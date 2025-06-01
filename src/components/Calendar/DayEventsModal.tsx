@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { MapPin } from 'lucide-react';
 import { ThemeContext } from '../../contexts/ThemeContext';
 
 interface Event {
@@ -177,7 +178,7 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({ date, events, onClose, 
                                         </span>
                                         {event.location && (
                                             <div className="flex items-center gap-1 mt-3" style={{ color: colors.textSecondary }}>
-                                                <span>📍</span>
+                                                <MapPin className="w-4 h-4" />
                                                 <span>{event.location}</span>
                                             </div>
                                         )}

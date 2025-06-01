@@ -4,6 +4,22 @@ import { db, auth } from "../../firebase/config";
 import CountUp from "../common/CountUp";
 import { useLoading } from "../../contexts/LoadingContext";
 import { ThemeContext } from "../../contexts/ThemeContext";
+import {
+    DollarSign,
+    Heart,
+    Tag,
+    MapPin,
+    TrendingDown,
+    TrendingUp,
+    CheckCircle,
+    Clock,
+    FileText,
+    Edit3,
+    Trash2,
+    X,
+    Star,
+    ChevronDown
+} from "lucide-react";
 
 interface BudgetItem {
     id?: string;
@@ -48,6 +64,7 @@ const Budget = () => {
     const [error, setError] = useState<string | null>(null);
     const [isFormExpanded, setIsFormExpanded] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+    const [inlineEditingField, setInlineEditingField] = useState<{ itemId: string; field: string } | null>(null);
 
     const { isLoading, setIsLoading, setLoadingMessage } = useLoading();
 
@@ -275,6 +292,79 @@ const Budget = () => {
         }
     };
 
+    const togglePaidStatus = async (item: BudgetItem) => {
+        if (!item.id) return;
+
+        try {
+            setLoadingMessage("Atualizando status de pagamento...");
+            setIsLoading(true);
+
+            const newPaidStatus = !item.paid;
+            const itemRef = doc(db, "budgetExtras", item.id);
+
+            await updateDoc(itemRef, {
+                paid: newPaidStatus
+            });
+
+            setBudgetItems(items =>
+                items.map(i =>
+                    i.id === item.id
+                        ? { ...i, paid: newPaidStatus }
+                        : i
+                )
+            );
+
+            setError(null);
+        } catch (error) {
+            console.error("Erro ao atualizar status de pagamento:", error);
+            setError("Erro ao atualizar status de pagamento.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const updateActualCost = async (item: BudgetItem, newCost: number) => {
+        if (!item.id) return;
+
+        try {
+            setLoadingMessage("Atualizando custo real...");
+            setIsLoading(true);
+
+            const itemRef = doc(db, "budgetExtras", item.id);
+
+            await updateDoc(itemRef, {
+                actualCost: newCost
+            });
+
+            setBudgetItems(items =>
+                items.map(i =>
+                    i.id === item.id
+                        ? { ...i, actualCost: newCost }
+                        : i
+                )
+            );
+
+            setInlineEditingField(null);
+            setError(null);
+        } catch (error) {
+            console.error("Erro ao atualizar custo real:", error);
+            setError("Erro ao atualizar custo real.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleInlineEdit = (itemId: string, field: string) => {
+        setInlineEditingField({ itemId, field });
+    };
+
+    const handleInlineSubmit = (e: React.FormEvent, item: BudgetItem) => {
+        e.preventDefault();
+        const formData = new FormData(e.target as HTMLFormElement);
+        const newCost = parseFloat(formData.get('actualCost') as string) || 0;
+        updateActualCost(item, newCost);
+    };
+
     const getFilteredItems = () => {
         return budgetItems.filter(item => {
             const matchesCategory = filterCategory === "todas" || item.category === filterCategory;
@@ -296,16 +386,17 @@ const Budget = () => {
 
     return (
         <div className="max-w-6xl mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-4" style={{
-                background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
-            }}>
-                💰 Orçamento de Itens Extras 💕
-            </h1>
+            <div className="flex items-center gap-3 mb-2">
+                <DollarSign className="w-7 h-7" style={{ color: colors.primary }} />
+                <h1 className="text-2xl font-bold bg-gradient-to-r bg-clip-text text-transparent" style={{
+                    backgroundImage: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`
+                }}>
+                    Orçamento de Itens Extras
+                </h1>
+            </div>
             <p className="mb-8 leading-relaxed" style={{ color: colors.textSecondary }}>
-                ✨ Gerencie custos extras não incluídos nos serviços de locais ou profissionais contratados.
-                Itens marcados como favoritos 💖 serão adicionados ao total na aba de Favoritos.
+                Gerencie custos extras não incluídos nos serviços de locais ou profissionais contratados.
+                Itens marcados como favoritos serão adicionados ao total na aba de Favoritos.
             </p>
 
             {error && (
@@ -314,7 +405,8 @@ const Budget = () => {
                     borderColor: colors.error + '40',
                     color: colors.error
                 }}>
-                    ❌ {error}
+                    <X className="inline-block w-4 h-4 mr-2" />
+                    {error}
                 </div>
             )}
 
@@ -325,14 +417,26 @@ const Budget = () => {
             }}>
                 <div className="grid md:grid-cols-2 gap-6">
                     <div className="text-center p-4 rounded-lg" style={{ backgroundColor: colors.background }}>
-                        <h3 className="text-lg font-semibold mb-2" style={{ color: colors.text }}>💰 Total Estimado</h3>
+                        <h3 className="text-lg font-semibold mb-2 flex items-center justify-center gap-2" style={{ color: colors.text }}>
+                            <DollarSign className="w-5 h-5" />
+                            Total Estimado
+                        </h3>
                         <p className="text-3xl font-bold" style={{ color: colors.primary }}>
                             R$ <CountUp end={totalEstimated} className="inline" />
                         </p>
                     </div>
                     <div className="text-center p-4 rounded-lg" style={{ backgroundColor: colors.background }}>
-                        <h3 className="text-lg font-semibold mb-2" style={{ color: colors.text }}>💸 Total Gasto (Real)</h3>
-                        <p className="text-3xl font-bold" style={{ color: colors.success }}>
+                        <h3 className="text-lg font-semibold mb-2 flex items-center justify-center gap-2" style={{ color: colors.text }}>
+                            {totalActual <= totalEstimated ? (
+                                <TrendingDown className="w-5 h-5" style={{ color: colors.success }} />
+                            ) : (
+                                <TrendingUp className="w-5 h-5" style={{ color: colors.error }} />
+                            )}
+                            Total Gasto (Real)
+                        </h3>
+                        <p className="text-3xl font-bold" style={{
+                            color: totalActual <= totalEstimated ? colors.success : colors.error
+                        }}>
                             R$ <CountUp end={totalActual} className="inline" />
                         </p>
                     </div>
@@ -351,14 +455,14 @@ const Budget = () => {
                     onClick={toggleFormExpansion}
                 >
                     <h2 className="text-xl font-semibold" style={{ color: colors.text }}>
-                        ✨ Adicionar Novo Item Extra 💕
+                        Adicionar Novo Item Extra
                     </h2>
                     <button
-                        className={`text-2xl font-bold transition-all duration-300 hover:scale-110 ${isFormExpanded ? 'rotate-180' : ''}`}
+                        className={`text-2xl font-bold transition-all duration-300 hover:scale-110 ${isFormExpanded ? 'rotate-180' : 'rotate-0'}`}
                         style={{ color: colors.primary }}
                         aria-label={isFormExpanded ? "Recolher formulário" : "Expandir formulário"}
                     >
-                        {isFormExpanded ? '💖' : '✨'}
+                        <ChevronDown />
                     </button>
                 </div>
 
@@ -369,7 +473,7 @@ const Budget = () => {
                         <div className="grid md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="description">
-                                    💬 Descrição
+                                    Descrição
                                 </label>
                                 <input
                                     className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
@@ -389,7 +493,7 @@ const Budget = () => {
 
                             <div>
                                 <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="category">
-                                    🏷️ Categoria
+                                    Categoria
                                 </label>
                                 <select
                                     className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
@@ -412,7 +516,7 @@ const Budget = () => {
 
                         <div className="mb-4">
                             <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="cityId">
-                                🏙️ Cidade
+                                Cidade
                             </label>
                             <select
                                 className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
@@ -437,7 +541,7 @@ const Budget = () => {
                         <div className="grid md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="estimatedCost">
-                                    💰 Custo Estimado (R$)
+                                    Custo Estimado (R$)
                                 </label>
                                 <input
                                     className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
@@ -459,7 +563,7 @@ const Budget = () => {
 
                             <div>
                                 <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="actualCost">
-                                    💸 Custo Real (R$)
+                                    Custo Real (R$)
                                 </label>
                                 <input
                                     className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
@@ -493,7 +597,7 @@ const Budget = () => {
                                         onChange={handleInputChange}
                                     />
                                     <span className="ml-2 text-sm font-medium" style={{ color: colors.text }}>
-                                        ✅ Pago
+                                        Pago
                                     </span>
                                 </label>
                             </div>
@@ -511,7 +615,7 @@ const Budget = () => {
                                         onChange={handleInputChange}
                                     />
                                     <span className="ml-2 text-sm font-medium" style={{ color: colors.text }}>
-                                        💖 Adicionar aos Favoritos
+                                        Adicionar aos Favoritos
                                     </span>
                                 </label>
                             </div>
@@ -519,7 +623,7 @@ const Budget = () => {
 
                         <div className="mb-4">
                             <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="notes">
-                                📝 Observações
+                                Observações
                             </label>
                             <textarea
                                 className="w-full px-4 py-2 border rounded-lg resize-none transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
@@ -533,7 +637,7 @@ const Budget = () => {
                                 rows={3}
                                 value={newItem.notes}
                                 onChange={handleInputChange}
-                                placeholder="Detalhes adicionais sobre este item ✨"
+                                placeholder="Detalhes adicionais sobre este item"
                             />
                         </div>
 
@@ -547,7 +651,7 @@ const Budget = () => {
                             }}
                             disabled={isLoading}
                         >
-                            {isLoading ? "✨ Adicionando..." : "💕 Adicionar Item"}
+                            {isLoading ? "Adicionando..." : "Adicionar Item"}
                         </button>
                     </form>
                 )}
@@ -561,14 +665,14 @@ const Budget = () => {
                     color: colors.text,
                     borderColor: colors.border
                 }}>
-                    📋 Lista de Itens Extras 💕
+                    Lista de Itens Extras
                 </h2>
 
                 <div className="p-6 border-b" style={{ borderColor: colors.border }}>
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="filterCategory">
-                                🏷️ Filtrar por categoria:
+                                Filtrar por categoria:
                             </label>
                             <select
                                 className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
@@ -590,7 +694,7 @@ const Budget = () => {
 
                         <div>
                             <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="filterCity">
-                                🏙️ Filtrar por cidade:
+                                Filtrar por cidade:
                             </label>
                             <select
                                 className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
@@ -615,14 +719,14 @@ const Budget = () => {
                 {filteredItems.length === 0 ? (
                     <div className="p-6">
                         <p className="text-center py-8" style={{ color: colors.textSecondary }}>
-                            ✨ Nenhum item encontrado com os filtros atuais 💫
+                            Nenhum item encontrado com os filtros atuais
                         </p>
                     </div>
                 ) : (
-                    <div className="p-6 space-y-4">
+                    <div className="p-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {filteredItems.map(item => (
                             <div key={item.id}
-                                className={`border rounded-lg p-6 transition-all duration-200 hover:scale-[1.02] ${item.isFavorite ? 'ring-2' : ''}`}
+                                className={`border rounded-xl p-4 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${item.isFavorite ? 'ring-2' : ''}`}
                                 style={{
                                     backgroundColor: item.paid ? colors.success + '10' : colors.surface,
                                     borderColor: item.paid ? colors.success : colors.border,
@@ -630,51 +734,49 @@ const Budget = () => {
                                     outlineOffset: item.isFavorite ? '2px' : '0'
                                 }}>
                                 {isEditing === item.id ? (
-                                    <div className="space-y-4">
-                                        <div className="grid md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
-                                                    💬 Descrição
-                                                </label>
-                                                <input
-                                                    className="w-full px-4 py-2 border rounded-lg cursor-pointer"
-                                                    style={{
-                                                        backgroundColor: colors.background,
-                                                        borderColor: colors.border,
-                                                        color: colors.text,
-                                                    }}
-                                                    type="text"
-                                                    name="description"
-                                                    value={item.description}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
-                                                    🏷️ Categoria
-                                                </label>
-                                                <select
-                                                    className="w-full px-4 py-2 border rounded-lg cursor-pointer"
-                                                    style={{
-                                                        backgroundColor: colors.background,
-                                                        borderColor: colors.border,
-                                                        color: colors.text,
-                                                    }}
-                                                    name="category"
-                                                    value={item.category}
-                                                    onChange={handleInputChange}
-                                                >
-                                                    {categories.map(cat => (
-                                                        <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1" style={{ color: colors.text }}>
+                                                Descrição
+                                            </label>
+                                            <input
+                                                className="w-full px-3 py-2 border rounded-md text-sm"
+                                                style={{
+                                                    backgroundColor: colors.background,
+                                                    borderColor: colors.border,
+                                                    color: colors.text,
+                                                }}
+                                                type="text"
+                                                name="description"
+                                                value={item.description}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1" style={{ color: colors.text }}>
+                                                Categoria
+                                            </label>
+                                            <select
+                                                className="w-full px-3 py-2 border rounded-md text-sm"
+                                                style={{
+                                                    backgroundColor: colors.background,
+                                                    borderColor: colors.border,
+                                                    color: colors.text,
+                                                }}
+                                                name="category"
+                                                value={item.category}
+                                                onChange={handleInputChange}
+                                            >
+                                                {categories.map(cat => (
+                                                    <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                                                ))}
+                                            </select>
                                         </div>
 
-                                        <div className="flex gap-2 pt-4 border-t" style={{ borderColor: colors.border }}>
+                                        <div className="flex gap-2 pt-3 border-t" style={{ borderColor: colors.border }}>
                                             <button
-                                                className="font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer disabled:opacity-50"
+                                                className="flex-1 text-sm font-semibold py-2 px-3 rounded-md transition-all duration-200 hover:scale-105"
                                                 style={{
                                                     background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
                                                     color: 'white'
@@ -682,74 +784,144 @@ const Budget = () => {
                                                 onClick={() => saveEdit(item.id!)}
                                                 disabled={isLoading}
                                             >
-                                                {isLoading ? "✨ Salvando..." : "💕 Salvar"}
+                                                {isLoading ? "Salvando..." : "Salvar"}
                                             </button>
                                             <button
-                                                className="font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+                                                className="flex-1 text-sm font-semibold py-2 px-3 rounded-md transition-all duration-200 hover:scale-105"
                                                 style={{
                                                     backgroundColor: colors.textSecondary + '20',
                                                     color: colors.text
                                                 }}
                                                 onClick={cancelEditing}
                                             >
-                                                ✖️ Cancelar
+                                                Cancelar
                                             </button>
                                         </div>
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div className="flex-1">
-                                                <h3 className="text-lg font-semibold mb-2" style={{ color: colors.text }}>
-                                                    {item.description}
-                                                </h3>
-                                                <div className="grid md:grid-cols-2 gap-4 text-sm" style={{ color: colors.textSecondary }}>
-                                                    <p><span className="font-medium">🏷️ Categoria:</span> {item.category.charAt(0).toUpperCase() + item.category.slice(1)}</p>
-                                                    <p><span className="font-medium">🏙️ Cidade:</span> {getCityName(item.cityId)}</p>
-                                                    <p><span className="font-medium">💰 Estimado:</span> R$ {item.estimatedCost.toFixed(2)}</p>
-                                                    <p><span className="font-medium">💸 Real:</span> R$ {item.actualCost.toFixed(2)}</p>
-                                                </div>
-                                                <div className="flex items-center gap-4 mt-2">
-                                                    <span className={`px-2 py-1 rounded text-xs font-medium ${item.paid ? 'text-white' : ''}`}
-                                                        style={{
-                                                            backgroundColor: item.paid ? colors.success : colors.textSecondary + '20',
-                                                            color: item.paid ? 'white' : colors.textSecondary
-                                                        }}>
-                                                        {item.paid ? '✅ Pago' : '⏳ Pendente'}
-                                                    </span>
-                                                    {item.isFavorite && (
-                                                        <span className="px-2 py-1 rounded text-xs font-medium text-white"
-                                                            style={{ backgroundColor: colors.warning }}>
-                                                            💖 Favorito
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-
+                                        {/* Header do Card */}
+                                        <div className="flex justify-between items-start mb-3">
+                                            <h3 className="text-lg font-semibold flex-1" style={{ color: colors.text }}>
+                                                {item.description}
+                                            </h3>
                                             <button
-                                                className="ml-4 p-2 rounded-lg transition-all duration-200 hover:scale-110 cursor-pointer"
+                                                className="ml-2 p-1 rounded-full transition-all duration-200 hover:scale-110"
                                                 style={{
-                                                    color: item.isFavorite ? colors.warning : colors.textSecondary,
+                                                    color: item.isFavorite ? '#ef4444' : colors.textSecondary,
                                                     backgroundColor: colors.background
                                                 }}
                                                 onClick={() => toggleFavorite(item)}
                                                 aria-label={item.isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                                             >
-                                                {item.isFavorite ? '💖' : '🤍'}
+                                                <Heart className={`w-5 h-5 ${item.isFavorite ? 'fill-current' : ''}`} />
                                             </button>
                                         </div>
 
+                                        {/* Informações principais */}
+                                        <div className="space-y-2 mb-3 text-sm" style={{ color: colors.textSecondary }}>
+                                            <div className="flex items-center justify-between">
+                                                <span className="flex items-center gap-1">
+                                                    <Tag className="w-3 h-3" />
+                                                    {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <MapPin className="w-3 h-3" />
+                                                    {getCityName(item.cityId)}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                                <span className="flex items-center gap-1">
+                                                    <DollarSign className="w-3 h-3" />
+                                                    Est: R$ {item.estimatedCost.toFixed(2)}
+                                                </span>
+                                                <div className="flex items-center gap-1">
+                                                    {item.actualCost <= item.estimatedCost ? (
+                                                        <TrendingDown className="w-3 h-3" style={{ color: colors.success }} />
+                                                    ) : (
+                                                        <TrendingUp className="w-3 h-3" style={{ color: colors.error }} />
+                                                    )}
+                                                    {inlineEditingField?.itemId === item.id && inlineEditingField?.field === 'actualCost' ? (
+                                                        <form onSubmit={(e) => handleInlineSubmit(e, item)} className="flex items-center gap-1">
+                                                            <input
+                                                                name="actualCost"
+                                                                type="number"
+                                                                step="0.01"
+                                                                min="0"
+                                                                defaultValue={item.actualCost}
+                                                                className="w-16 px-1 py-0 text-xs border rounded"
+                                                                style={{
+                                                                    backgroundColor: colors.background,
+                                                                    borderColor: colors.border,
+                                                                    color: colors.text,
+                                                                }}
+                                                                autoFocus
+                                                                onBlur={() => setInlineEditingField(null)}
+                                                            />
+                                                        </form>
+                                                    ) : (
+                                                        <span
+                                                            className="cursor-pointer hover:underline"
+                                                            style={{
+                                                                color: item.actualCost <= item.estimatedCost ? colors.success : colors.error
+                                                            }}
+                                                            onClick={() => handleInlineEdit(item.id!, 'actualCost')}
+                                                        >
+                                                            Real: R$ {item.actualCost.toFixed(2)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Status e badges */}
+                                        <div className="flex items-center justify-between mb-3">
+                                            <button
+                                                className={`px-2 py-1 rounded text-xs font-medium transition-all duration-200 hover:scale-105`}
+                                                style={{
+                                                    backgroundColor: item.paid ? colors.success : 'transparent',
+                                                    color: item.paid ? 'white' : colors.warning,
+                                                    border: `1px solid ${item.paid ? colors.success : colors.warning}`
+                                                }}
+                                                onClick={() => togglePaidStatus(item)}
+                                            >
+                                                {item.paid ? (
+                                                    <>
+                                                        <CheckCircle className="inline-block w-3 h-3 mr-1" />
+                                                        Pago
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Clock className="inline-block w-3 h-3 mr-1" />
+                                                        Pendente
+                                                    </>
+                                                )}
+                                            </button>
+
+                                            {item.isFavorite && (
+                                                <span className="px-2 py-1 rounded text-xs font-medium text-white flex items-center gap-1"
+                                                    style={{ backgroundColor: colors.warning }}>
+                                                    <Star className="w-3 h-3" />
+                                                    Favorito
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Observações */}
                                         {item.notes && (
-                                            <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: colors.background }}>
-                                                <p className="text-sm" style={{ color: colors.text }}>
-                                                    <span className="font-medium">📝 Observações:</span> {item.notes}
+                                            <div className="mb-3 p-2 rounded" style={{ backgroundColor: colors.background }}>
+                                                <p className="text-xs flex items-start gap-1" style={{ color: colors.text }}>
+                                                    <FileText className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                                    <span>{item.notes}</span>
                                                 </p>
                                             </div>
                                         )}
 
-                                        <div className="flex gap-2 pt-4 border-t" style={{ borderColor: colors.border }}>
+                                        {/* Botões de ação */}
+                                        <div className="flex gap-2 pt-3 border-t" style={{ borderColor: colors.border }}>
                                             <button
-                                                className="font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer disabled:opacity-50"
+                                                className="flex-1 text-sm font-semibold py-2 px-3 rounded-md transition-all duration-200 hover:scale-105"
                                                 style={{
                                                     background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
                                                     color: 'white'
@@ -757,10 +929,11 @@ const Budget = () => {
                                                 onClick={() => startEditing(item)}
                                                 disabled={isLoading}
                                             >
-                                                ✏️ Editar
+                                                <Edit3 className="inline-block w-3 h-3 mr-1" />
+                                                Editar
                                             </button>
                                             <button
-                                                className="font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer disabled:opacity-50"
+                                                className="text-sm font-semibold py-2 px-3 rounded-md transition-all duration-200 hover:scale-105"
                                                 style={{
                                                     backgroundColor: colors.error,
                                                     color: 'white'
@@ -768,42 +941,45 @@ const Budget = () => {
                                                 onClick={() => handleDeleteConfirmation(item.id!)}
                                                 disabled={isLoading}
                                             >
-                                                🗑️ Excluir
+                                                <Trash2 className="inline-block w-3 h-3" />
                                             </button>
+                                        </div>
 
-                                            {confirmDelete === item.id && (
-                                                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                                                    <div className="p-6 rounded-lg shadow-xl max-w-sm w-full mx-4" style={{ backgroundColor: colors.surface }}>
-                                                        <p className="mb-4" style={{ color: colors.text }}>
-                                                            💔 Tem certeza que deseja excluir este item?
-                                                        </p>
-                                                        <div className="flex gap-2">
-                                                            <button
-                                                                className="flex-1 font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer disabled:opacity-50"
-                                                                style={{
-                                                                    backgroundColor: colors.error,
-                                                                    color: 'white'
-                                                                }}
-                                                                onClick={() => deleteBudgetItem(item.id!)}
-                                                                disabled={isLoading}
-                                                            >
-                                                                🗑️ Sim, Excluir
-                                                            </button>
-                                                            <button
-                                                                className="flex-1 font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
-                                                                style={{
-                                                                    backgroundColor: colors.textSecondary + '20',
-                                                                    color: colors.text
-                                                                }}
-                                                                onClick={() => setConfirmDelete(null)}
-                                                            >
-                                                                ❌ Cancelar
-                                                            </button>
-                                                        </div>
+                                        {/* Modal de confirmação de exclusão */}
+                                        {confirmDelete === item.id && (
+                                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                                <div className="p-6 rounded-lg shadow-xl max-w-sm w-full mx-4" style={{ backgroundColor: colors.surface }}>
+                                                    <p className="mb-4" style={{ color: colors.text }}>
+                                                        Tem certeza que deseja excluir este item?
+                                                    </p>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            className="flex-1 font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105"
+                                                            style={{
+                                                                backgroundColor: colors.error,
+                                                                color: 'white'
+                                                            }}
+                                                            onClick={() => deleteBudgetItem(item.id!)}
+                                                            disabled={isLoading}
+                                                        >
+                                                            <Trash2 className="inline-block w-4 h-4 mr-1" />
+                                                            Sim, Excluir
+                                                        </button>
+                                                        <button
+                                                            className="flex-1 font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105"
+                                                            style={{
+                                                                backgroundColor: colors.textSecondary + '20',
+                                                                color: colors.text
+                                                            }}
+                                                            onClick={() => setConfirmDelete(null)}
+                                                        >
+                                                            <X className="inline-block w-4 h-4 mr-1" />
+                                                            Cancelar
+                                                        </button>
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
                                     </>
                                 )}
                             </div>

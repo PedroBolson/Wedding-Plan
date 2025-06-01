@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
+import { CheckCircle, X, Info, MapPin } from 'lucide-react';
 import { ThemeContext } from '../../contexts/ThemeContext';
 
 interface Event {
@@ -31,7 +32,7 @@ const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({ e
 
     const googleLogin = useGoogleLogin({
         onSuccess: tokenResponse => {
-            sessionStorage.setItem('google_access_token', tokenResponse.access_token); // 🔒 mais seguro
+            sessionStorage.setItem('google_access_token', tokenResponse.access_token); // more secure
             setIsAuthenticated(true);
             setStatusMessage("Autenticado com sucesso!");
             setStatusType('success');
@@ -249,9 +250,9 @@ const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({ e
                             colors.primary}`
                 }}>
                     <div style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}>
-                        {statusType === 'success' && '✅'}
-                        {statusType === 'error' && '❌'}
-                        {statusType === 'info' && 'ℹ️'}
+                        {statusType === 'success' && <CheckCircle className="w-4 h-4" />}
+                        {statusType === 'error' && <X className="w-4 h-4" />}
+                        {statusType === 'info' && <Info className="w-4 h-4" />}
                     </div>
                     {statusMessage}
                 </div>
@@ -269,7 +270,7 @@ const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({ e
                 alignItems: 'center',
                 gap: '0.5rem'
             }}>
-                <span style={{ fontSize: '1.125rem' }}>ℹ️</span>
+                <Info className="w-4 h-4" />
                 <div>
                     Esta integração permite sincronizar eventos com o Google Calendar.
                     {!isAuthenticated && " Clique para conectar."}
@@ -446,9 +447,12 @@ const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({ e
                                     {event.location && (
                                         <div style={{
                                             fontSize: '0.875rem',
-                                            color: colors.textSecondary
+                                            color: colors.textSecondary,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.25rem'
                                         }}>
-                                            📍 {event.location}
+                                            <MapPin className="w-4 h-4" /> {event.location}
                                         </div>
                                     )}
                                 </div>

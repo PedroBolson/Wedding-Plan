@@ -9,7 +9,8 @@ import {
     Moon,
     Menu,
     Cloud,
-    Star
+    Star,
+    Sparkles
 } from 'lucide-react';
 
 interface NavOption {
@@ -189,10 +190,10 @@ const Nav: React.FC<NavProps> = ({
                                         >
                                             {option.label}
                                             <span
-                                                className="absolute -top-2 -right-2 text-xs px-2 py-0.5 rounded-full font-bold text-white"
+                                                className="absolute -top-2 -right-2 text-xs px-2 py-0.5 rounded-full font-bold text-white flex items-center gap-1"
                                                 style={{ backgroundColor: colors.warning }}
                                             >
-                                                ✨ Em breve
+                                                <Sparkles className="w-3 h-3" /> Em breve
                                             </span>
                                         </span>
                                     )}
