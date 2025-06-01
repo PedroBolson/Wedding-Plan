@@ -5,6 +5,27 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 import { storage } from '../../firebase/config';
 import { useLoading } from '../../contexts/LoadingContext';
 import { ThemeContext } from '../../contexts/ThemeContext';
+import {
+    Building2,
+    MapPin,
+    Phone,
+    Sparkles,
+    Heart,
+    Users,
+    Briefcase,
+    Star,
+    Trash2,
+    Edit3,
+    X,
+    Plus,
+    ArrowLeft,
+    Save,
+    DollarSign,
+    Utensils,
+    Wine,
+    Gem,
+    CreditCard
+} from 'lucide-react';
 
 interface City {
     id?: string;
@@ -811,14 +832,15 @@ const Planning = () => {
                     backgroundColor: colors.surface,
                     borderColor: colors.error + '40',
                 }}>
-                    <div className="p-4 rounded-lg my-4" style={{
+                    <div className="p-4 rounded-lg my-4 flex items-center" style={{
                         backgroundColor: colors.error + '20',
                         color: colors.error
                     }}>
-                        💔 {error}
+                        <X className="mr-2" size={16} />
+                        {error}
                     </div>
                     <button
-                        className="px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
                         style={{
                             backgroundColor: colors.surface,
                             color: colors.text,
@@ -826,7 +848,8 @@ const Planning = () => {
                         }}
                         onClick={() => setError(null)}
                     >
-                        ✨ Fechar
+                        <X size={16} />
+                        Fechar
                     </button>
                 </div>
             );
@@ -840,13 +863,16 @@ const Planning = () => {
                         borderColor: colors.border
                     }}>
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                            <h2 className="text-2xl font-bold bg-gradient-to-r bg-clip-text text-transparent" style={{
-                                backgroundImage: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`
-                            }}>
-                                🏙️ Cidades dos Sonhos 💕
-                            </h2>
+                            <div className="flex items-center gap-2">
+                                <Building2 size={28} className="text-gradient" style={{ color: colors.primary }} />
+                                <h2 className="text-2xl font-bold bg-gradient-to-r bg-clip-text text-transparent" style={{
+                                    backgroundImage: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`
+                                }}>
+                                    Cidades
+                                </h2>
+                            </div>
                             <button
-                                className="px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 transform cursor-pointer font-semibold"
+                                className="flex items-center gap-2 px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 transform cursor-pointer font-semibold"
                                 style={{
                                     background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
                                     color: 'white',
@@ -854,13 +880,14 @@ const Planning = () => {
                                 }}
                                 onClick={() => setShowCityForm(true)}
                             >
-                                ✨ Nova Cidade 💕
+                                <Plus size={20} />
+                                <span>Nova Cidade</span>
                             </button>
                         </div>
 
                         <div className="mb-6">
                             <button
-                                className="px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 transform cursor-pointer font-medium border"
+                                className="flex items-center gap-2 px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 transform cursor-pointer font-medium border"
                                 style={{
                                     backgroundColor: colors.accent,
                                     color: colors.text,
@@ -868,16 +895,18 @@ const Planning = () => {
                                 }}
                                 onClick={handleViewProfessionalTypes}
                             >
-                                👨‍💼 Gerenciar Tipos de Profissionais 💼
+                                <Briefcase size={18} />
+                                <span>Gerenciar Tipos de Profissionais</span>
                             </button>
                         </div>
 
                         {cities.length === 0 ? (
-                            <div className="p-12 rounded-lg text-center" style={{
+                            <div className="p-12 rounded-lg text-center flex flex-col items-center gap-4" style={{
                                 backgroundColor: colors.background,
                                 color: colors.textSecondary
                             }}>
-                                <p className="text-lg">💔 Nenhuma cidade encontrada. Adicione uma nova cidade para começar!</p>
+                                <Building2 size={48} className="opacity-60" />
+                                <p className="text-lg">Nenhuma cidade encontrada. Adicione uma nova cidade para começar!</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -891,14 +920,19 @@ const Planning = () => {
                                         }}
                                         onClick={() => handleSelectCity(city.id!)}
                                     >
-                                        <h3 className="text-lg font-semibold mb-2" style={{ color: colors.primary }}>
-                                            🌟 {city.name}
-                                        </h3>
-                                        <p className="text-sm mb-4" style={{ color: colors.textSecondary }}>
-                                            📍 {city.state}
-                                        </p>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <h3 className="text-lg font-semibold" style={{ color: colors.primary }}>
+                                                {city.name}
+                                            </h3>
+                                        </div>
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <MapPin size={16} style={{ color: colors.textSecondary }} />
+                                            <p className="text-sm" style={{ color: colors.textSecondary }}>
+                                                {city.state}
+                                            </p>
+                                        </div>
                                         <button
-                                            className="absolute top-3 right-3 p-2 rounded-full transition-all duration-200 hover:scale-110 cursor-pointer"
+                                            className="absolute bottom-3 right-3 p-2 rounded-full transition-all duration-200 hover:scale-110 cursor-pointer"
                                             style={{
                                                 backgroundColor: colors.error + '20',
                                                 color: colors.error
@@ -908,21 +942,24 @@ const Planning = () => {
                                                 setConfirmDelete(`city-${city.id}`);
                                             }}
                                         >
-                                            🗑️
+                                            <Trash2 size={16} />
                                         </button>
 
                                         {confirmDelete === `city-${city.id}` && (
-                                            <div className="absolute inset-0 rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2" style={{
-                                                backgroundColor: colors.surface + 'F0',
+                                            <div className="absolute top-0 left-0 right-0 bottom-0 rounded-lg p-3 flex flex-col justify-center items-center text-center z-10 border-2" style={{
+                                                backgroundColor: colors.surface + 'F5',
                                                 backdropFilter: 'blur(8px)',
                                                 borderColor: colors.error
                                             }}>
-                                                <p className="font-medium mb-4" style={{ color: colors.text }}>
-                                                    💔 Tem certeza que deseja excluir esta cidade?
-                                                </p>
-                                                <div className="flex gap-3">
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <Trash2 size={18} style={{ color: colors.error }} />
+                                                    <p className="font-medium text-sm" style={{ color: colors.text }}>
+                                                        Excluir esta cidade?
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-2 w-full">
                                                     <button
-                                                        className="px-4 py-2 rounded font-medium min-w-[100px] transition-all duration-200 hover:scale-105 cursor-pointer"
+                                                        className="flex items-center justify-center gap-1 px-3 py-2 rounded font-medium text-xs transition-all duration-200 hover:scale-105 cursor-pointer flex-1"
                                                         style={{
                                                             backgroundColor: colors.error,
                                                             color: 'white'
@@ -932,10 +969,11 @@ const Planning = () => {
                                                             handleDeleteCity(city.id!);
                                                         }}
                                                     >
-                                                        💔 Sim, excluir
+                                                        <Trash2 size={14} />
+                                                        <span>Sim</span>
                                                     </button>
                                                     <button
-                                                        className="px-4 py-2 rounded transition-all duration-200 hover:scale-105 cursor-pointer text-sm border"
+                                                        className="flex items-center justify-center gap-1 px-3 py-2 rounded transition-all duration-200 hover:scale-105 cursor-pointer text-xs border flex-1"
                                                         style={{
                                                             backgroundColor: colors.background,
                                                             color: colors.text,
@@ -946,7 +984,8 @@ const Planning = () => {
                                                             setConfirmDelete(null);
                                                         }}
                                                     >
-                                                        ❌ Cancelar
+                                                        <X size={14} />
+                                                        <span>Não</span>
                                                     </button>
                                                 </div>
                                             </div>
@@ -1071,7 +1110,11 @@ const Planning = () => {
                                                     border: 'none',
                                                     fontWeight: '500',
                                                     cursor: 'pointer',
-                                                    transition: 'background-color 0.2s'
+                                                    transition: 'background-color 0.2s',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '0.5rem'
                                                 }}
                                                 onMouseEnter={(e) => {
                                                     (e.target as HTMLButtonElement).style.backgroundColor = colors.primaryHover;
@@ -1080,7 +1123,8 @@ const Planning = () => {
                                                     (e.target as HTMLButtonElement).style.backgroundColor = colors.primary;
                                                 }}
                                             >
-                                                Salvar
+                                                <Save size={16} />
+                                                <span>Salvar</span>
                                             </button>
                                             <button
                                                 type="button"
@@ -1094,16 +1138,25 @@ const Planning = () => {
                                                     borderRadius: '8px',
                                                     fontWeight: '500',
                                                     cursor: 'pointer',
-                                                    transition: 'background-color 0.2s'
+                                                    transition: 'background-color 0.2s, border-color 0.2s',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '0.5rem'
                                                 }}
                                                 onMouseEnter={(e) => {
-                                                    (e.target as HTMLButtonElement).style.backgroundColor = colors.surfaceHover;
+                                                    const target = e.target as HTMLButtonElement;
+                                                    target.style.backgroundColor = colors.surfaceHover;
+                                                    target.style.borderColor = colors.error;
                                                 }}
                                                 onMouseLeave={(e) => {
-                                                    (e.target as HTMLButtonElement).style.backgroundColor = colors.surface;
+                                                    const target = e.target as HTMLButtonElement;
+                                                    target.style.backgroundColor = colors.surface;
+                                                    target.style.borderColor = colors.border;
                                                 }}
                                             >
-                                                Cancelar
+                                                <X size={16} />
+                                                <span>Cancelar</span>
                                             </button>
                                         </div>
                                     </form>
@@ -1125,43 +1178,56 @@ const Planning = () => {
                                 }}
                                 onClick={handleBackButton}
                             >
-                                💕 ← Voltar para Cidades
+                                <ArrowLeft size={18} />
+                                <span>Voltar para Cidades</span>
                             </button>
-                            <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
-                                🏰 Locais dos Sonhos em {cities.find(c => c.id === selectedCityId)?.name} 💒
-                            </h2>
+                            <div className="flex items-center gap-2">
+                                <Building2 size={28} style={{ color: colors.primary }} />
+                                <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                    {cities.find(c => c.id === selectedCityId)?.name}
+                                </h2>
+                            </div>
                             <div className="flex flex-wrap gap-2">
                                 <button
-                                    className="px-4 py-2 rounded-lg font-medium cursor-pointer transform hover:scale-105 transition-all duration-300 shadow-md text-white"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium cursor-pointer transform hover:scale-105 transition-all duration-300 shadow-md text-white"
                                     style={{
                                         background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
                                         boxShadow: `0 4px 15px ${colors.primary}40`
                                     }}
                                     onClick={handleViewVenues}
                                 >
-                                    🏰 Locais
+                                    <Building2 size={18} />
+                                    Locais
                                 </button>
                                 <button
-                                    className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
+                                    className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
                                     onClick={handleViewProfessionals}
                                 >
-                                    👨‍💼 Profissionais
+                                    <Users size={18} />
+                                    Profissionais
                                 </button>
                                 <button
-                                    className="px-4 py-2 rounded-lg transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
                                     style={{
                                         background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
                                         boxShadow: `0 4px 15px ${colors.accent}40`
                                     }}
                                     onClick={() => setShowVenueForm(true)}
                                 >
-                                    ✨ + Novo Local 💕
+                                    <Plus size={18} />
+                                    <span>Novo Local</span>
                                 </button>
                             </div>
                         </div>
 
                         {venues.length === 0 ? (
-                            <p style={{ color: colors.textSecondary, textAlign: 'center', padding: '2rem 0' }}>💒 Nenhum local encontrado. Adicione um novo local dos sonhos! ✨</p>
+                            <div className="p-12 rounded-lg text-center flex flex-col items-center gap-4" style={{
+                                backgroundColor: colors.background,
+                                color: colors.textSecondary
+                            }}>
+                                <Building2 size={48} className="opacity-60" />
+                                <p className="text-lg">Nenhum local encontrado. Adicione um novo local!</p>
+                            </div>
                         ) : (
                             <div
                                 className="grid gap-6"
@@ -1192,12 +1258,14 @@ const Planning = () => {
                                         }}
                                     >
                                         <div className="flex justify-between items-start mb-4">
-                                            <h3 className="text-lg font-semibold flex-1" style={{ color: colors.primary }}>
-                                                🏰 {venue.name}
-                                            </h3>
+                                            <div className="flex items-center gap-2">
+                                                <Building2 size={20} style={{ color: colors.primary }} />
+                                                <h3 className="text-lg font-semibold flex-1" style={{ color: colors.primary }}>
+                                                    {venue.name}
+                                                </h3>
+                                            </div>
                                             <button
                                                 style={{
-                                                    fontSize: '1.5rem',
                                                     transition: 'all 0.3s',
                                                     cursor: 'pointer',
                                                     padding: '0.25rem',
@@ -1211,18 +1279,42 @@ const Planning = () => {
                                                 }}
                                                 aria-label={venue.isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                                             >
-                                                {venue.isFavorite ? '💕' : '🤍'}
+                                                <Heart size={20} fill={venue.isFavorite ? 'currentColor' : 'none'} />
                                             </button>
                                         </div>
                                         <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                                            <p><strong className="text-gray-900 dark:text-gray-100">📍 Endereço:</strong> {venue.address}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">📞 Telefone:</strong> {venue.phone}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">💰 Preço do Local:</strong> R$ {venue.venuePrice.toLocaleString('pt-BR')}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">🍽️ Preço da Comida:</strong> R$ {venue.foodPrice.toLocaleString('pt-BR')}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">🥂 Preço da Bebida:</strong> R$ {venue.drinkPrice.toLocaleString('pt-BR')}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100" style={{ color: colors.success }}>💎 Total Estimado:</strong> R$ {(venue.venuePrice + venue.foodPrice + venue.drinkPrice).toLocaleString('pt-BR')}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">✨ Formatos:</strong> {venue.formats}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">💳 Parcelamento:</strong> {venue.installmentPlan}</p>
+                                            <p className="flex items-center gap-2">
+                                                <MapPin size={16} />
+                                                <strong className="text-gray-900 dark:text-gray-100">Endereço:</strong> {venue.address}
+                                            </p>
+                                            <p className="flex items-center gap-2">
+                                                <Phone size={16} />
+                                                <strong className="text-gray-900 dark:text-gray-100">Telefone:</strong> {venue.phone}
+                                            </p>
+                                            <p className="flex items-center gap-2">
+                                                <DollarSign size={16} />
+                                                <strong className="text-gray-900 dark:text-gray-100">Preço do Local:</strong> R$ {venue.venuePrice.toLocaleString('pt-BR')}
+                                            </p>
+                                            <p className="flex items-center gap-2">
+                                                <Utensils size={16} />
+                                                <strong className="text-gray-900 dark:text-gray-100">Preço da Comida:</strong> R$ {venue.foodPrice.toLocaleString('pt-BR')}
+                                            </p>
+                                            <p className="flex items-center gap-2">
+                                                <Wine size={16} />
+                                                <strong className="text-gray-900 dark:text-gray-100">Preço da Bebida:</strong> R$ {venue.drinkPrice.toLocaleString('pt-BR')}
+                                            </p>
+                                            <p className="flex items-center gap-2">
+                                                <Gem size={16} />
+                                                <strong className="text-gray-900 dark:text-gray-100" style={{ color: colors.success }}>Total Estimado:</strong> R$ {(venue.venuePrice + venue.foodPrice + venue.drinkPrice).toLocaleString('pt-BR')}
+                                            </p>
+                                            <p className="flex items-center gap-2">
+                                                <Sparkles size={16} />
+                                                <strong className="text-gray-900 dark:text-gray-100">Formatos:</strong> {venue.formats}
+                                            </p>
+                                            <p className="flex items-center gap-2">
+                                                <CreditCard size={16} />
+                                                <strong className="text-gray-900 dark:text-gray-100">Parcelamento:</strong> {venue.installmentPlan}
+                                            </p>
                                             {venue.pdfDocuments && venue.pdfDocuments.length > 0 && (
                                                 <div className="mt-3">
                                                     <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Documentos:</p>
@@ -1248,45 +1340,54 @@ const Planning = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col gap-2 mt-4">
+                                        <div className="flex text-center flex-col gap-2 mt-4">
                                             <button
-                                                className="px-4 py-2 rounded transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                                className="flex items-center justify-center gap-2 px-4 py-2 rounded transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
                                                 style={{
                                                     background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
                                                     boxShadow: `0 4px 15px ${colors.primary}40`
                                                 }}
                                                 onClick={() => handleEditVenue(venue)}
                                             >
-                                                ✏️ Editar
+                                                <Edit3 size={16} />
+                                                Editar
                                             </button>
                                             <button
-                                                className="bg-gray-100 dark:bg-gray-700 border px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
+                                                className="flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-700 border px-4 py-2 rounded hover:bg-red-600/40 hover:text-white dark:hover:bg-red-600/40 transition-all duration-300 cursor-pointer transform hover:scale-105"
                                                 style={{
                                                     color: colors.error,
                                                     borderColor: colors.error
                                                 }}
                                                 onClick={() => setConfirmDelete(`venue-${venue.id}`)}
                                             >
-                                                🗑️ Excluir
+                                                <Trash2 size={16} />
+                                                Excluir
                                             </button>
                                         </div>
 
                                         {confirmDelete === `venue-${venue.id}` && (
                                             <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2" style={{ borderColor: colors.error }}>
-                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4">💔 Tem certeza que deseja excluir este local dos sonhos?</p>
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <Trash2 size={20} style={{ color: colors.error }} />
+                                                    <p className="text-gray-900 dark:text-gray-100 font-medium">
+                                                        Tem certeza que deseja excluir este local dos sonhos?
+                                                    </p>
+                                                </div>
                                                 <div className="flex gap-3">
                                                     <button
-                                                        className="hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px] cursor-pointer transition-all duration-300 transform hover:scale-105"
+                                                        className="flex items-center gap-2 hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px] cursor-pointer transition-all duration-300 transform hover:scale-105"
                                                         style={{ backgroundColor: colors.error }}
                                                         onClick={() => handleDeleteVenue(venue.id!)}
                                                     >
-                                                        💔 Sim
+                                                        <Trash2 size={16} />
+                                                        Sim, excluir
                                                     </button>
                                                     <button
-                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 min-w-[100px] cursor-pointer transform hover:scale-105"
+                                                        className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 min-w-[100px] cursor-pointer transform hover:scale-105"
                                                         onClick={() => setConfirmDelete(null)}
                                                     >
-                                                        💕 Não
+                                                        <X size={16} />
+                                                        Cancelar
                                                     </button>
                                                 </div>
                                             </div>
@@ -1299,12 +1400,18 @@ const Planning = () => {
                         {showVenueForm && (
                             <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
                                 <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-xl border-2" style={{ borderColor: colors.primary }}>
-                                    <h3 className="text-xl font-semibold mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
-                                        {editingVenueId ? '✏️ Editar Local dos Sonhos 💒' : '✨ Adicionar Novo Local dos Sonhos 💕'}
-                                    </h3>
+                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
+                                        {editingVenueId ? <Edit3 size={24} /> : <Plus size={24} />}
+                                        <h3 className="text-xl font-semibold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                            {editingVenueId ? 'Editar Local' : 'Adicionar Novo Local'}
+                                        </h3>
+                                    </div>
                                     <form onSubmit={handleVenueFormSubmit}>
                                         <div className="mb-4">
-                                            <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">🏰 Nome do Local:</label>
+                                            <label htmlFor="name" className="flex items-center gap-2 mb-2 font-medium text-gray-900 dark:text-gray-100">
+                                                <Building2 size={16} />
+                                                Nome:
+                                            </label>
                                             <input
                                                 type="text"
                                                 id="name"
@@ -1320,7 +1427,10 @@ const Planning = () => {
                                             />
                                         </div>
                                         <div className="mb-4">
-                                            <label htmlFor="address" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">📍 Endereço:</label>
+                                            <label htmlFor="address" className="flex items-center gap-2 mb-2 font-medium text-gray-900 dark:text-gray-100">
+                                                <MapPin size={16} />
+                                                Endereço:
+                                            </label>
                                             <input
                                                 type="text"
                                                 id="address"
@@ -1335,7 +1445,10 @@ const Planning = () => {
                                             />
                                         </div>
                                         <div className="mb-4">
-                                            <label htmlFor="phone" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">📞 Telefone:</label>
+                                            <label htmlFor="phone" className="flex items-center gap-2 mb-2 font-medium text-gray-900 dark:text-gray-100">
+                                                <Phone size={16} />
+                                                Telefone:
+                                            </label>
                                             <input
                                                 type="text"
                                                 id="phone"
@@ -1449,7 +1562,7 @@ const Planning = () => {
                                                                 <a href={doc.url} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">{doc.name}</a>
                                                                 <button
                                                                     type="button"
-                                                                    className="text-red-600 dark:text-red-400 hover:underline text-sm"
+                                                                    className="text-red-600 cursor-pointer dark:text-red-400 hover:underline text-sm"
                                                                     onClick={() => handleDeletePDF(editingVenueId!, doc)}
                                                                 >
                                                                     Remover
@@ -1468,12 +1581,12 @@ const Planning = () => {
                                             </div>
                                         )}
                                         <div className="flex gap-3">
-                                            <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50" disabled={isLoading}>
+                                            <button type="submit" className="flex-1 cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50" disabled={isLoading}>
                                                 {editingVenueId ? 'Atualizar' : 'Salvar'}
                                             </button>
                                             <button
                                                 type="button"
-                                                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                className="flex-1 cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                                 onClick={() => {
                                                     setShowVenueForm(false);
                                                     setEditingVenueId(null);
@@ -1514,43 +1627,57 @@ const Planning = () => {
                                 }}
                                 onClick={handleBackButton}
                             >
-                                💕 ← Voltar para Cidades
+                                <ArrowLeft size={18} />
+                                <span>Voltar para Cidades</span>
                             </button>
-                            <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
-                                👨‍💼 Profissionais dos Sonhos em {cities.find(c => c.id === selectedCityId)?.name} ✨
-                            </h2>
+                            <div className="flex items-center gap-2">
+                                <Users size={28} style={{ color: colors.primary }} />
+                                <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                    Profissionais em {cities.find(c => c.id === selectedCityId)?.name}
+                                </h2>
+                            </div>
                             <div className="flex flex-wrap gap-2">
                                 <button
-                                    className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
+                                    className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
                                     onClick={handleViewVenues}
                                 >
-                                    🏰 Locais
+                                    <Building2 size={18} />
+                                    Locais
                                 </button>
                                 <button
-                                    className="px-4 py-2 rounded-lg font-medium cursor-pointer transform hover:scale-105 transition-all duration-300 shadow-md text-white"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium cursor-pointer transform hover:scale-105 transition-all duration-300 shadow-md text-white"
                                     style={{
                                         background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
                                         boxShadow: `0 4px 15px ${colors.primary}40`
                                     }}
                                     onClick={handleViewProfessionals}
                                 >
-                                    👨‍💼 Profissionais
+                                    <Users size={18} />
+                                    Profissionais
                                 </button>
                                 <button
-                                    className="px-4 py-2 rounded-lg transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
                                     style={{
                                         background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
                                         boxShadow: `0 4px 15px ${colors.accent}40`
                                     }}
                                     onClick={() => setShowProfessionalForm(true)}
                                 >
-                                    ✨ + Novo Profissional 💼
+                                    <Plus size={18} />
+                                    <span>Novo Profissional</span>
+                                    <Briefcase size={16} />
                                 </button>
                             </div>
                         </div>
 
                         {professionals.length === 0 ? (
-                            <p style={{ color: colors.textSecondary, textAlign: 'center', padding: '2rem 0' }}>👨‍💼 Nenhum profissional encontrado. Adicione um novo profissional dos sonhos! ✨</p>
+                            <div className="p-12 rounded-lg text-center flex flex-col items-center gap-4" style={{
+                                backgroundColor: colors.background,
+                                color: colors.textSecondary
+                            }}>
+                                <Users size={48} className="opacity-60" />
+                                <p className="text-lg">Nenhum profissional encontrado. Adicione um novo profissional!</p>
+                            </div>
                         ) : (
                             <div
                                 className="grid gap-6"
@@ -1581,9 +1708,12 @@ const Planning = () => {
                                         }}
                                     >
                                         <div className="flex justify-between items-start mb-4">
-                                            <h3 className="text-lg font-semibold flex-1" style={{ color: colors.primary }}>
-                                                👨‍💼 {professional.name}
-                                            </h3>
+                                            <div className="flex items-center gap-2 flex-1">
+                                                <Users size={20} style={{ color: colors.primary }} />
+                                                <h3 className="text-lg font-semibold" style={{ color: colors.primary }}>
+                                                    {professional.name}
+                                                </h3>
+                                            </div>
                                             <button
                                                 style={{
                                                     fontSize: '1.5rem',
@@ -1597,21 +1727,38 @@ const Planning = () => {
                                                 onClick={() => toggleProfessionalFavorite(professional)}
                                                 aria-label={professional.isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                                             >
-                                                {professional.isFavorite ? '💕' : '🤍'}
+                                                <Heart
+                                                    size={24}
+                                                    fill={professional.isFavorite ? colors.accent : 'none'}
+                                                    style={{ color: professional.isFavorite ? colors.accent : colors.textSecondary }}
+                                                />
                                             </button>
                                         </div>
                                         <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                                            <p>
-                                                <strong className="text-gray-900 dark:text-gray-100">💼 Tipo:</strong> {
+                                            <p className="flex items-center gap-2">
+                                                <Briefcase size={16} />
+                                                <strong className="text-gray-900 dark:text-gray-100">Tipo:</strong> {
                                                     professionalTypes.find(t => t.id === professional.typeId)?.name || 'Não especificado'
                                                 }
                                             </p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">💰 Preço:</strong> R$ {professional.price.toLocaleString('pt-BR')}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">💳 Opções de Pagamento:</strong> {professional.paymentOptions || 'Não especificado'}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">📅 Parcelamento:</strong> {professional.installmentPlan || 'Não especificado'}</p>
+                                            <p className="flex items-center gap-2">
+                                                <DollarSign size={16} />
+                                                <strong className="text-gray-900 dark:text-gray-100">Preço:</strong> R$ {professional.price.toLocaleString('pt-BR')}
+                                            </p>
+                                            <p className="flex items-center gap-2">
+                                                <CreditCard size={16} />
+                                                <strong className="text-gray-900 dark:text-gray-100">Opções de Pagamento:</strong> {professional.paymentOptions || 'Não especificado'}
+                                            </p>
+                                            <p className="flex items-center gap-2">
+                                                <CreditCard size={16} />
+                                                <strong className="text-gray-900 dark:text-gray-100">Parcelamento:</strong> {professional.installmentPlan || 'Não especificado'}
+                                            </p>
                                             {professional.notes && (
                                                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                                    <strong className="text-gray-900 dark:text-gray-100">📝 Observações:</strong>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <Edit3 size={16} />
+                                                        <strong className="text-gray-900 dark:text-gray-100">Observações:</strong>
+                                                    </div>
                                                     <p className="mt-1 whitespace-pre-wrap">{professional.notes}</p>
                                                 </div>
                                             )}
@@ -1619,43 +1766,52 @@ const Planning = () => {
 
                                         <div className="flex flex-col gap-2 mt-4">
                                             <button
-                                                className="px-4 py-2 rounded transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                                className="flex justify-center items-center gap-2 px-4 py-2 rounded transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
                                                 style={{
                                                     background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
                                                     boxShadow: `0 4px 15px ${colors.primary}40`
                                                 }}
                                                 onClick={() => handleEditProfessional(professional)}
                                             >
-                                                ✏️ Editar
+                                                <Edit3 size={16} />
+                                                Editar
                                             </button>
                                             <button
-                                                className="bg-gray-100 dark:bg-gray-700 border px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
+                                                className="flex justify-center items-center gap-2 bg-gray-100 dark:bg-gray-700 border px-4 py-2 rounded hover:bg-red-600/40 hover:text-white dark:hover:bg-red-600/40 transition-all duration-300 cursor-pointer transform hover:scale-105"
                                                 style={{
                                                     color: colors.error,
                                                     borderColor: colors.error
                                                 }}
                                                 onClick={() => setConfirmDelete(`professional-${professional.id}`)}
                                             >
-                                                🗑️ Excluir
+                                                <Trash2 size={16} />
+                                                Excluir
                                             </button>
                                         </div>
 
                                         {confirmDelete === `professional-${professional.id}` && (
                                             <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2" style={{ borderColor: colors.error }}>
-                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4">💔 Tem certeza que deseja excluir este profissional?</p>
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <Trash2 size={20} style={{ color: colors.error }} />
+                                                    <p className="text-gray-900 dark:text-gray-100 font-medium">
+                                                        Tem certeza que deseja excluir este profissional?
+                                                    </p>
+                                                </div>
                                                 <div className="flex gap-3">
                                                     <button
-                                                        className="hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px] cursor-pointer transition-all duration-300 transform hover:scale-105"
+                                                        className="flex items-center gap-2 hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px] cursor-pointer transition-all duration-300 transform hover:scale-105"
                                                         style={{ backgroundColor: colors.error }}
                                                         onClick={() => handleDeleteProfessional(professional.id!)}
                                                     >
-                                                        💔 Sim
+                                                        <Trash2 size={16} />
+                                                        Sim, excluir
                                                     </button>
                                                     <button
-                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 min-w-[100px] cursor-pointer transform hover:scale-105"
+                                                        className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 min-w-[100px] cursor-pointer transform hover:scale-105"
                                                         onClick={() => setConfirmDelete(null)}
                                                     >
-                                                        💕 Não
+                                                        <X size={16} />
+                                                        Cancelar
                                                     </button>
                                                 </div>
                                             </div>
@@ -1668,9 +1824,12 @@ const Planning = () => {
                         {showProfessionalForm && (
                             <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
                                 <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-xl border-2" style={{ borderColor: colors.primary }}>
-                                    <h3 className="text-xl font-semibold mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
-                                        {editingProfessionalId ? '✏️ Editar Profissional dos Sonhos 👨‍💼' : '✨ Adicionar Novo Profissional 💼'}
-                                    </h3>
+                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
+                                        {editingProfessionalId ? <Edit3 size={24} /> : <Plus size={24} />}
+                                        <h3 className="text-xl font-semibold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                            {editingProfessionalId ? 'Editar Profissional dos Sonhos' : 'Adicionar Novo Profissional'}
+                                        </h3>
+                                    </div>
                                     <form onSubmit={handleProfessionalFormSubmit}>
                                         <div className="mb-4">
                                             <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Nome:</label>
@@ -1751,12 +1910,12 @@ const Planning = () => {
                                             ></textarea>
                                         </div>
                                         <div className="flex gap-3">
-                                            <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50" disabled={isLoading}>
+                                            <button type="submit" className="flex-1 cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50" disabled={isLoading}>
                                                 Salvar
                                             </button>
                                             <button
                                                 type="button"
-                                                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                className="flex-1 bg-gray-100 cursor-pointer dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                                 onClick={() => {
                                                     setShowProfessionalForm(false);
                                                     setEditingProfessionalId(null);
@@ -1792,25 +1951,36 @@ const Planning = () => {
                                 }}
                                 onClick={handleBackButton}
                             >
-                                💕 ← Voltar para Cidades
+                                <ArrowLeft size={18} />
+                                <span>Voltar para Cidades</span>
                             </button>
-                            <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
-                                💼 Tipos de Profissionais dos Sonhos ✨
-                            </h2>
+                            <div className="flex items-center gap-2">
+                                <Briefcase size={28} style={{ color: colors.primary }} />
+                                <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                    Tipos de Profissionais
+                                </h2>
+                            </div>
                             <button
-                                className="px-4 py-2 rounded-lg transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
                                 style={{
                                     background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
                                     boxShadow: `0 4px 15px ${colors.primary}40`
                                 }}
                                 onClick={() => setShowTypeForm(true)}
                             >
-                                ✨ + Novo Tipo 💼
+                                <Plus size={18} />
+                                <span>Novo Tipo</span>
                             </button>
                         </div>
 
                         {professionalTypes.length === 0 ? (
-                            <p style={{ color: colors.textSecondary, textAlign: 'center', padding: '2rem 0' }}>💼 Nenhum tipo encontrado. Adicione um novo tipo de profissional! ✨</p>
+                            <div className="p-12 rounded-lg text-center flex flex-col items-center gap-4" style={{
+                                backgroundColor: colors.background,
+                                color: colors.textSecondary
+                            }}>
+                                <Briefcase size={48} className="opacity-60" />
+                                <p className="text-lg">Nenhum tipo encontrado. Adicione um novo tipo de profissional!</p>
+                            </div>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {professionalTypes.map(type => (
@@ -1825,13 +1995,16 @@ const Planning = () => {
                                         }}
                                     >
                                         <div className="flex-1 mb-4">
-                                            <h3 className="text-lg font-semibold mb-2" style={{ color: colors.primary }}>
-                                                💼 {type.name}
-                                            </h3>
+                                            <div className="flex items-center gap-2">
+                                                <Briefcase size={20} style={{ color: colors.primary }} />
+                                                <h3 className="text-lg font-semibold" style={{ color: colors.primary }}>
+                                                    {type.name}
+                                                </h3>
+                                            </div>
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <button
-                                                className="px-4 py-2 rounded transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                                className="flex justify-center items-center gap-2 px-4 py-2 rounded transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
                                                 style={{
                                                     background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
                                                     boxShadow: `0 4px 15px ${colors.primary}40`
@@ -1842,36 +2015,45 @@ const Planning = () => {
                                                     setShowTypeForm(true);
                                                 }}
                                             >
-                                                ✏️ Editar
+                                                <Edit3 size={16} />
+                                                Editar
                                             </button>
                                             <button
-                                                className="bg-gray-100 dark:bg-gray-700 border px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
+                                                className="flex justify-center items-center gap-2 bg-gray-100 dark:bg-gray-700 border px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
                                                 style={{
                                                     color: colors.error,
                                                     borderColor: colors.error
                                                 }}
                                                 onClick={() => setConfirmDelete(`type-${type.id}`)}
                                             >
-                                                🗑️ Excluir
+                                                <Trash2 size={16} />
+                                                Excluir
                                             </button>
                                         </div>
 
                                         {confirmDelete === `type-${type.id}` && (
                                             <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2" style={{ borderColor: colors.error }}>
-                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4">💔 Tem certeza que deseja excluir este tipo?</p>
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <Trash2 size={20} style={{ color: colors.error }} />
+                                                    <p className="text-gray-900 dark:text-gray-100 font-medium">
+                                                        Tem certeza que deseja excluir este tipo?
+                                                    </p>
+                                                </div>
                                                 <div className="flex gap-3">
                                                     <button
-                                                        className="hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px] cursor-pointer transition-all duration-300 transform hover:scale-105"
+                                                        className="flex items-center gap-2 hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px] cursor-pointer transition-all duration-300 transform hover:scale-105"
                                                         style={{ backgroundColor: colors.error }}
                                                         onClick={() => handleDeleteProfessionalType(type.id!)}
                                                     >
-                                                        💔 Sim
+                                                        <Trash2 size={16} />
+                                                        Sim, excluir
                                                     </button>
                                                     <button
-                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 min-w-[100px] cursor-pointer transform hover:scale-105"
+                                                        className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 min-w-[100px] cursor-pointer transform hover:scale-105"
                                                         onClick={() => setConfirmDelete(null)}
                                                     >
-                                                        💕 Não
+                                                        <X size={16} />
+                                                        Cancelar
                                                     </button>
                                                 </div>
                                             </div>
@@ -1885,12 +2067,18 @@ const Planning = () => {
                             showTypeForm && (
                                 <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
                                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto shadow-xl border-2" style={{ borderColor: colors.primary }}>
-                                        <h3 className="text-xl font-semibold mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
-                                            {editingTypeId ? '✏️ Editar Tipo de Profissional 💼' : '✨ Adicionar Novo Tipo 💼'}
-                                        </h3>
+                                        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
+                                            {editingTypeId ? <Edit3 size={24} /> : <Plus size={24} />}
+                                            <h3 className="text-xl font-semibold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                                {editingTypeId ? 'Editar Tipo de Profissional' : 'Adicionar Novo Tipo'}
+                                            </h3>
+                                        </div>
                                         <form onSubmit={handleTypeFormSubmit}>
                                             <div className="mb-6">
-                                                <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">💼 Nome do Tipo:</label>
+                                                <label htmlFor="name" className="flex items-center gap-2 mb-2 font-medium text-gray-900 dark:text-gray-100">
+                                                    <Briefcase size={16} />
+                                                    Nome do Tipo:
+                                                </label>
                                                 <input
                                                     type="text"
                                                     id="name"
@@ -1908,24 +2096,26 @@ const Planning = () => {
                                             <div className="flex gap-3">
                                                 <button
                                                     type="submit"
-                                                    className="flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                                    className="flex items-center gap-2 flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-md text-white"
                                                     style={{
                                                         background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
                                                         boxShadow: `0 4px 15px ${colors.primary}40`
                                                     }}
                                                 >
-                                                    💕 Salvar
+                                                    <Save size={16} />
+                                                    Salvar
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
+                                                    className="flex items-center gap-2 flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
                                                     onClick={() => {
                                                         setShowTypeForm(false);
                                                         setEditingTypeId(null);
                                                         setTypeFormData({ name: '' });
                                                     }}
                                                 >
-                                                    ❌ Cancelar
+                                                    <X size={16} />
+                                                    Cancelar
                                                 </button>
                                             </div>
                                         </form>

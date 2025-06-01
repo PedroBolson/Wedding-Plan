@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react';
 import AdminModal from '../AdminModal/AdminModal';
 import { ThemeContext } from '../../contexts/ThemeContext';
+import {
+    Heart,
+    LogOut,
+    Crown,
+    Sun,
+    Moon,
+    Menu,
+    Cloud,
+    Star
+} from 'lucide-react';
 
 interface NavOption {
     id: string;
@@ -84,18 +94,22 @@ const Nav: React.FC<NavProps> = ({
                     aria-label="Menu de navegação"
                 >
                     <div className="relative w-6 h-6 flex flex-col justify-center items-center">
-                        <span
-                            className={`block w-6 h-0.5 transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-0' : '-translate-y-1.5'}`}
-                            style={{ backgroundColor: colors.primary }}
-                        />
-                        <span
-                            className={`block w-6 h-0.5 transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : 'opacity-100'}`}
-                            style={{ backgroundColor: colors.primary }}
-                        />
-                        <span
-                            className={`block w-6 h-0.5 transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : 'translate-y-1.5'}`}
-                            style={{ backgroundColor: colors.primary }}
-                        />
+                        {mobileMenuOpen ? (
+                            // X icon when menu is open
+                            <>
+                                <span
+                                    className="block w-6 h-0.5 rotate-45 translate-y-0 transition-all duration-300"
+                                    style={{ backgroundColor: colors.primary }}
+                                />
+                                <span
+                                    className="block w-6 h-0.5 -rotate-45 -translate-y-0.5 transition-all duration-300"
+                                    style={{ backgroundColor: colors.primary }}
+                                />
+                            </>
+                        ) : (
+                            // Menu icon when closed
+                            <Menu size={20} color={colors.primary} />
+                        )}
                     </div>
                 </button>
             )}
@@ -112,14 +126,28 @@ const Nav: React.FC<NavProps> = ({
                         className="px-4 py-6 text-center border-b"
                         style={{ borderColor: colors.accent }}
                     >
-                        <h1
-                            className="text-2xl font-bold m-0 bg-gradient-to-r bg-clip-text text-transparent"
-                            style={{
-                                backgroundImage: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`
-                            }}
-                        >
-                            💕 {isAdmin ? 'Admin Casamento' : 'Nosso Casamento'} 💕
-                        </h1>
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                            <Heart
+                                size={24}
+                                fill={colors.primary}
+                                color={colors.primary}
+                                className="animate-pulse"
+                            />
+                            <h1
+                                className="text-2xl font-bold m-0 bg-gradient-to-r bg-clip-text text-transparent"
+                                style={{
+                                    backgroundImage: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`
+                                }}
+                            >
+                                {isAdmin ? 'Admin Casamento' : 'Nosso Casamento'}
+                            </h1>
+                            <Heart
+                                size={24}
+                                fill={colors.primary}
+                                color={colors.primary}
+                                className="animate-pulse"
+                            />
+                        </div>
                         <p
                             className="text-sm mt-2 italic"
                             style={{ color: colors.textSecondary }}
@@ -135,8 +163,8 @@ const Nav: React.FC<NavProps> = ({
                                     {option.isAvailable ? (
                                         <button
                                             className={`block w-full px-4 py-3 rounded-lg font-medium text-left transition-all duration-200 border-none cursor-pointer transform hover:scale-105 hover:shadow-lg ${activeSection === option.id
-                                                    ? 'shadow-md'
-                                                    : 'hover:shadow-md'
+                                                ? 'shadow-md'
+                                                : 'hover:shadow-md'
                                                 }`}
                                             style={{
                                                 backgroundColor: activeSection === option.id ? colors.primary : colors.accent,
@@ -182,10 +210,10 @@ const Nav: React.FC<NavProps> = ({
                                 className="font-medium"
                                 style={{ color: colors.text }}
                             >
-                                {darkTheme ? '🌙 Modo Romântico Noturno' : '☀️ Modo Romântico Diurno'}
+                                {darkTheme ? 'Modo escuro' : 'Modo claro'}
                             </span>
                             <div
-                                className="relative w-16 h-8 cursor-pointer"
+                                className="relative w-16 h-8 cursor-pointer overflow-hidden"
                                 onClick={toggleTheme}
                                 aria-label="Alternar tema"
                                 role="switch"
@@ -196,21 +224,85 @@ const Nav: React.FC<NavProps> = ({
                                     className="absolute inset-0 rounded-full transition-all duration-500 ease-in-out shadow-inner"
                                     style={{
                                         background: darkTheme
-                                            ? `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`
-                                            : `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                                            ? `linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)`
+                                            : `linear-gradient(135deg, #87CEEB, #98D8E8, #B6E5FC)`,
                                         boxShadow: `inset 0 2px 4px ${colors.primary}30`
                                     }}
                                 >
-                                    {/* Hearts decoration */}
+                                    {/* Animated background elements */}
                                     {darkTheme ? (
+                                        // Night mode: Twinkling stars
                                         <>
-                                            <div className="absolute top-1 left-2 text-xs">💕</div>
-                                            <div className="absolute bottom-1 right-2 text-xs">✨</div>
+                                            <Star
+                                                size={4}
+                                                className="absolute top-1 left-1 text-white animate-pulse"
+                                                fill="currentColor"
+                                                style={{ animationDelay: '0s', animationDuration: '2s' }}
+                                            />
+                                            <Star
+                                                size={3}
+                                                className="absolute top-2 right-3 text-yellow-200 animate-pulse"
+                                                fill="currentColor"
+                                                style={{ animationDelay: '0.5s', animationDuration: '1.5s' }}
+                                            />
+                                            <Star
+                                                size={3}
+                                                className="absolute bottom-1 left-3 text-blue-200 animate-pulse"
+                                                fill="currentColor"
+                                                style={{ animationDelay: '1s', animationDuration: '2.5s' }}
+                                            />
+                                            <Star
+                                                size={2}
+                                                className="absolute top-3 left-5 text-purple-200 animate-pulse"
+                                                fill="currentColor"
+                                                style={{ animationDelay: '1.5s', animationDuration: '1.8s' }}
+                                            />
+                                            <Star
+                                                size={3}
+                                                className="absolute bottom-2 right-1 text-pink-200 animate-pulse"
+                                                fill="currentColor"
+                                                style={{ animationDelay: '2s', animationDuration: '2.2s' }}
+                                            />
+                                            {/* Shooting star effect */}
+                                            <div
+                                                className="absolute top-1 left-0 w-1 h-px bg-white opacity-80 animate-ping"
+                                                style={{
+                                                    animationDelay: '3s',
+                                                    animationDuration: '4s',
+                                                    background: 'linear-gradient(90deg, transparent, white, transparent)'
+                                                }}
+                                            />
                                         </>
                                     ) : (
+                                        // Day mode: Moving clouds
                                         <>
-                                            <div className="absolute top-1 right-2 text-xs">💖</div>
-                                            <div className="absolute bottom-1 left-2 text-xs">🌸</div>
+                                            <Cloud
+                                                size={8}
+                                                className="absolute top-0.5 left-1 text-white opacity-60 animate-bounce"
+                                                fill="currentColor"
+                                                style={{ animationDelay: '0s', animationDuration: '3s' }}
+                                            />
+                                            <Cloud
+                                                size={6}
+                                                className="absolute top-1 right-2 text-white opacity-50 animate-bounce"
+                                                fill="currentColor"
+                                                style={{ animationDelay: '1s', animationDuration: '4s' }}
+                                            />
+                                            <Cloud
+                                                size={7}
+                                                className="absolute bottom-0.5 left-4 text-white opacity-40 animate-bounce"
+                                                fill="currentColor"
+                                                style={{ animationDelay: '2s', animationDuration: '3.5s' }}
+                                            />
+                                            {/* Floating particles for day mode */}
+                                            <div
+                                                className="absolute top-2 right-4 w-1 h-1 bg-yellow-200 rounded-full opacity-70 animate-ping"
+                                                style={{ animationDelay: '0.5s', animationDuration: '2s' }}
+                                            />
+                                            <div
+                                                className="absolute bottom-1 left-6 w-0.5 h-0.5 bg-yellow-300 rounded-full opacity-60 animate-ping"
+                                                style={{ animationDelay: '1.5s', animationDuration: '2.5s' }}
+                                            />
                                         </>
                                     )}
                                 </div>
@@ -218,16 +310,31 @@ const Nav: React.FC<NavProps> = ({
                                 {/* Switch Circle with Icon */}
                                 <div
                                     className={`absolute top-0.5 w-7 h-7 rounded-full transition-all duration-500 ease-in-out transform ${darkTheme ? 'translate-x-8' : 'translate-x-0.5'
-                                        } flex items-center justify-center shadow-lg`}
+                                        } flex items-center justify-center shadow-lg z-10`}
                                     style={{
                                         backgroundColor: colors.surface,
-                                        boxShadow: `0 2px 8px ${colors.primary}50`
+                                        boxShadow: darkTheme
+                                            ? `0 0 15px rgba(147, 197, 253, 0.5), 0 2px 8px ${colors.primary}50`
+                                            : `0 0 15px rgba(251, 191, 36, 0.6), 0 2px 8px ${colors.primary}50`
                                     }}
                                 >
                                     {darkTheme ? (
-                                        <span className="text-sm">🌙</span>
+                                        <Moon
+                                            size={16}
+                                            className="text-blue-200 drop-shadow-sm"
+                                            style={{
+                                                filter: 'drop-shadow(0 0 4px rgba(147, 197, 253, 0.7))'
+                                            }}
+                                        />
                                     ) : (
-                                        <span className="text-sm">☀️</span>
+                                        <Sun
+                                            size={16}
+                                            className="text-yellow-500 animate-spin drop-shadow-sm"
+                                            style={{
+                                                animationDuration: '8s',
+                                                filter: 'drop-shadow(0 0 4px rgba(251, 191, 36, 0.8))'
+                                            }}
+                                        />
                                     )}
                                 </div>
                             </div>
@@ -242,19 +349,21 @@ const Nav: React.FC<NavProps> = ({
                                 }}
                                 onClick={openAdminModal}
                             >
-                                <span>👑 Gerenciar Usuários</span>
+                                <Crown size={18} className="text-yellow-500" />
+                                <span>Gerenciar Usuários</span>
                             </button>
                         )}
 
                         <button
-                            className="flex items-center gap-3 px-3 py-3 rounded-lg border-none font-medium cursor-pointer transition-all duration-200 w-full justify-start hover:scale-105 hover:shadow-lg"
+                            className="flex items-center gap-3 px-3 py-3 rounded-lg border-2 border-transparent font-medium cursor-pointer transition-all duration-200 w-full justify-start hover:scale-105 hover:shadow-lg hover:border-red-500"
                             style={{
                                 backgroundColor: colors.accent,
-                                color: colors.error
+                                color: colors.text
                             }}
                             onClick={onLogout}
                         >
-                            <span>👋 Sair</span>
+                            <LogOut size={18} className="text-red-500" />
+                            <span>Sair</span>
                         </button>
                     </div>
                 </div>
