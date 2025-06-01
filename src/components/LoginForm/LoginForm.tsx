@@ -1,14 +1,11 @@
 // src/components/LoginForm.tsx
 import React, { useState, useContext } from "react";
-import {
-    signInWithEmailAndPassword,
-    sendPasswordResetEmail
-} from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/config";
 import { useNavigate } from "react-router-dom";
 import { useLoading } from "../../contexts/LoadingContext";
 import { ThemeContext } from "../../contexts/ThemeContext";
-import { Heart, Mail, Lock, Church, HelpCircle, Frown, Sparkles, Loader2 } from "lucide-react";
+import { Heart, Mail, Lock, Church, HelpCircle, Frown, Loader2 } from "lucide-react";
 
 const authErrorMessages: Record<string, string> = {
     "auth/invalid-email": "Por favor, informe um e-mail no formato correto.",
@@ -25,19 +22,15 @@ const authErrorMessages: Record<string, string> = {
     default: "Não foi possível autenticar. Tente novamente mais tarde."
 };
 
-const resetErrorMessages: Record<string, string> = {
-    "auth/invalid-email": "Por favor, informe um e-mail válido para recuperação.",
-    "auth/user-not-found": "Não há conta cadastrada com este e-mail.",
-    "auth/too-many-requests": "Muitas solicitações. Tente novamente mais tarde.",
-    default: "Não foi possível enviar o e-mail de recuperação. Tente depois."
-};
+interface LoginFormProps {
+    onForgotPassword: () => void;
+}
 
-const LoginForm: React.FC = () => {
+const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword }) => {
     const { colors } = useContext(ThemeContext);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    const [info, setInfo] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
     const [fadeOut, setFadeOut] = useState(false);
 
@@ -47,7 +40,6 @@ const LoginForm: React.FC = () => {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
-        setInfo("");
         setFadeOut(true);
 
         setTimeout(async () => {
@@ -58,36 +50,8 @@ const LoginForm: React.FC = () => {
                 await signInWithEmailAndPassword(auth, email, password);
                 setTimeout(() => navigate("/main"), 300);
             } catch (err: any) {
-                const msg =
-                    authErrorMessages[err.code] || authErrorMessages.default;
+                const msg = authErrorMessages[err.code] || authErrorMessages.default;
                 setError(msg);
-                setFadeOut(false);
-                setTimeout(() => setIsProcessing(false), 300);
-            }
-        }, 300);
-    };
-
-    const handleResetPassword = async () => {
-        setError("");
-        setInfo("");
-        if (!email) {
-            setError("Por favor, informe seu e-mail para redefinir a senha.");
-            return;
-        }
-
-        setFadeOut(true);
-        setTimeout(async () => {
-            setIsProcessing(true);
-            setLoadingMessage("Enviando e-mail de recuperação...");
-
-            try {
-                await sendPasswordResetEmail(auth, email);
-                setInfo("E-mail de recuperação enviado com sucesso!");
-            } catch (err: any) {
-                const msg =
-                    resetErrorMessages[err.code] || resetErrorMessages.default;
-                setError(msg);
-            } finally {
                 setFadeOut(false);
                 setTimeout(() => setIsProcessing(false), 300);
             }
@@ -142,6 +106,7 @@ const LoginForm: React.FC = () => {
                                 style={{ color: colors.primary }}
                             />
                         </div>
+
                         <div className="relative">
                             <input
                                 type="password"
@@ -182,7 +147,7 @@ const LoginForm: React.FC = () => {
                     <div className="text-center">
                         <button
                             type="button"
-                            onClick={handleResetPassword}
+                            onClick={onForgotPassword}
                             disabled={isProcessing}
                             className="font-medium transition-colors disabled:opacity-50 cursor-pointer hover:underline flex items-center justify-center gap-2 mx-auto"
                             style={{ color: colors.primary }}
@@ -203,19 +168,6 @@ const LoginForm: React.FC = () => {
                         >
                             <Frown className="w-5 h-5" />
                             <p className="font-medium">Ops! {error}</p>
-                        </div>
-                    )}
-                    {info && (
-                        <div
-                            className="text-center p-4 rounded-lg border-2 flex items-center justify-center gap-2"
-                            style={{
-                                backgroundColor: `${colors.success}20`,
-                                borderColor: colors.success,
-                                color: colors.success
-                            }}
-                        >
-                            <Sparkles className="w-5 h-5" />
-                            <p className="font-medium">{info}</p>
                         </div>
                     )}
                 </form>
