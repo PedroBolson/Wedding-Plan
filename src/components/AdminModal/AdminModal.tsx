@@ -1,6 +1,5 @@
 // src/components/AdminModal.tsx
 import React, { useState, useEffect } from 'react';
-import './AdminModal.css';
 import { db, auth } from '../../firebase/config';
 import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { makeUserAdmin } from '../../firebase/createadmin';
@@ -147,26 +146,39 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
     };
 
     return (
-        <div className="admin-backdrop" onClick={onClose}>
-            <div className="admin-modal" onClick={e => e.stopPropagation()}>
-                <header className="admin-header">
-                    <h2>Gerenciar Usuários</h2>
-                    <button className="admin-close-btn" onClick={onClose}>×</button>
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center z-[1100]" onClick={onClose}>
+            <div className="bg-white dark:bg-gray-800 rounded-lg w-[90%] max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+                <header className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 m-0">Gerenciar Usuários</h2>
+                    <button
+                        className="bg-none border-none text-2xl cursor-pointer text-gray-600 dark:text-gray-400 w-9 h-9 rounded-full flex justify-center items-center hover:scale-125 transition-transform"
+                        onClick={onClose}
+                    >
+                        ×
+                    </button>
                 </header>
 
-                <section className="admin-actions">
-                    <button className="admin-btn" onClick={() => setShowAdd(!showAdd)} disabled={loading}>
+                <section className="flex gap-4 mx-4 mt-4 flex-wrap">
+                    <button
+                        className="px-4 py-2 border-none rounded bg-indigo-600 text-white font-medium transition-all duration-200 hover:brightness-90 disabled:opacity-70"
+                        onClick={() => setShowAdd(!showAdd)}
+                        disabled={loading}
+                    >
                         {showAdd ? 'Cancelar criação' : 'Criar Novo Usuário'}
                     </button>
-                    <button className="admin-btn" onClick={loadUsers} disabled={loading}>
-                        {loading ? <div className="admin-spinner" /> : 'Atualizar Lista'}
+                    <button
+                        className="px-4 py-2 border-none rounded bg-indigo-600 text-white font-medium transition-all duration-200 hover:brightness-90 disabled:opacity-70 flex items-center gap-2"
+                        onClick={loadUsers}
+                        disabled={loading}
+                    >
+                        {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Atualizar Lista'}
                     </button>
                 </section>
 
                 {showAdd && (
-                    <form className="admin-add-form" onSubmit={handleCreateUser}>
+                    <form className="mx-4 my-4 space-y-4" onSubmit={handleCreateUser}>
                         <input
-                            className="admin-input"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             type="email"
                             placeholder="Email"
                             value={newUser.email}
@@ -174,7 +186,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                             required
                         />
                         <input
-                            className="admin-input"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             type="password"
                             placeholder="Senha"
                             minLength={6}
@@ -182,44 +194,76 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                             onChange={e => setNewUser({ ...newUser, password: e.target.value })}
                             required
                         />
-                        <button className="admin-submit-btn" type="submit" disabled={loading}>
-                            {loading ? <div className="admin-spinner" /> : 'Criar Usuário'}
+                        <button
+                            className="px-6 py-3 border-none rounded bg-green-600 text-white font-medium cursor-pointer text-base transition-colors hover:bg-green-700 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                            type="submit"
+                            disabled={loading}
+                        >
+                            {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Criar Usuário'}
                         </button>
                     </form>
                 )}
 
-                {error && <div className="admin-error">{error}</div>}
-                {success && <div className="admin-success">{success}</div>}
+                {error && (
+                    <div className="mx-4 my-4 px-3 py-3 rounded bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-center font-medium border border-red-200 dark:border-red-800">
+                        {error}
+                    </div>
+                )}
+                {success && (
+                    <div className="mx-4 my-4 px-3 py-3 rounded bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-center font-medium border border-green-200 dark:border-green-800">
+                        {success}
+                    </div>
+                )}
 
-                <table className="admin-table">
-                    <thead>
-                        <tr><th>Email</th><th>Função</th><th>Ações</th></tr>
-                    </thead>
-                    <tbody>
-                        {users.map(u => (
-                            <tr key={u.uid} className="admin-row">
-                                <td>{u.email}</td>
-                                <td>{u.isAdmin ? 'Admin' : 'User'}</td>
-                                <td>
-                                    {u.isAdmin ? (
-                                        <button className="admin-action-btn revoke" onClick={() => handleRevokeAdmin(u.uid)} disabled={loading}>
-                                            {loading ? <div className="admin-spinner" /> : 'Remover Admin'}
-                                        </button>
-                                    ) : (
-                                        <>
-                                            <button className="admin-action-btn grant" onClick={() => handleGrantAdmin(u.uid, u.email)} disabled={loading}>
-                                                {loading ? <div className="admin-spinner" /> : 'Conceder Admin'}
-                                            </button>
-                                            <button className="admin-action-btn remove-user" onClick={() => handleDeleteUser(u.uid, u.email)} disabled={deletingUid === u.uid}>
-                                                {deletingUid === u.uid ? <div className="admin-spinner" /> : 'Remover Usuário'}
-                                            </button>
-                                        </>
-                                    )}
-                                </td>
+                <div className="overflow-x-auto mx-4 mb-4">
+                    <table className="w-full border-collapse border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                        <thead>
+                            <tr className="bg-gray-50 dark:bg-gray-700">
+                                <th className="border border-gray-200 dark:border-gray-600 px-4 py-3 text-left text-gray-900 dark:text-gray-100 font-semibold">Email</th>
+                                <th className="border border-gray-200 dark:border-gray-600 px-4 py-3 text-left text-gray-900 dark:text-gray-100 font-semibold">Função</th>
+                                <th className="border border-gray-200 dark:border-gray-600 px-4 py-3 text-left text-gray-900 dark:text-gray-100 font-semibold">Ações</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {users.map(u => (
+                                <tr key={u.uid} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <td className="border border-gray-200 dark:border-gray-600 px-4 py-3 text-gray-900 dark:text-gray-100">{u.email}</td>
+                                    <td className="border border-gray-200 dark:border-gray-600 px-4 py-3 text-gray-900 dark:text-gray-100">{u.isAdmin ? 'Admin' : 'User'}</td>
+                                    <td className="border border-gray-200 dark:border-gray-600 px-4 py-3">
+                                        <div className="flex gap-2 flex-wrap">
+                                            {u.isAdmin ? (
+                                                <button
+                                                    className="px-3 py-1.5 border-none rounded bg-red-600 text-white font-medium transition-all duration-200 hover:bg-red-700 disabled:opacity-70 text-sm flex items-center gap-1"
+                                                    onClick={() => handleRevokeAdmin(u.uid)}
+                                                    disabled={loading}
+                                                >
+                                                    {loading ? <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" /> : 'Remover Admin'}
+                                                </button>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        className="px-3 py-1.5 border-none rounded bg-indigo-600 text-white font-medium transition-all duration-200 hover:brightness-90 hover:-translate-y-0.5 disabled:opacity-70 text-sm flex items-center gap-1"
+                                                        onClick={() => handleGrantAdmin(u.uid, u.email)}
+                                                        disabled={loading}
+                                                    >
+                                                        {loading ? <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" /> : 'Conceder Admin'}
+                                                    </button>
+                                                    <button
+                                                        className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-gray-100 disabled:opacity-70 text-sm flex items-center gap-1"
+                                                        onClick={() => handleDeleteUser(u.uid, u.email)}
+                                                        disabled={deletingUid === u.uid}
+                                                    >
+                                                        {deletingUid === u.uid ? <div className="w-3 h-3 border border-gray-600 border-t-transparent rounded-full animate-spin" /> : 'Remover Usuário'}
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

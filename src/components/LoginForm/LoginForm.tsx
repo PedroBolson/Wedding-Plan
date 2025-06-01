@@ -7,7 +7,6 @@ import {
 import { auth } from "../../firebase/config";
 import { useNavigate } from "react-router-dom";
 import { useLoading } from "../../contexts/LoadingContext";
-import "./LoginForm.css";
 
 const authErrorMessages: Record<string, string> = {
     "auth/invalid-email": "Por favor, informe um e-mail no formato correto.",
@@ -93,59 +92,77 @@ const LoginForm: React.FC = () => {
     };
 
     return (
-        <div className="login-form-container">
+        <div className="w-full">
             <div
-                className={`form-wrapper ${fadeOut ? "fade-out" : "fade-in"
+                className={`transition-all duration-300 ${fadeOut ? "opacity-0 transform scale-95" : "opacity-100 transform scale-100"
                     } ${isProcessing ? "hidden" : ""}`}
             >
-                <form onSubmit={handleLogin}>
-                    <h2>Login</h2>
-                    <div className="form-group">
-                        <input
-                            type="email"
-                            placeholder="Email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            disabled={isProcessing}
-                        />
+                <form onSubmit={handleLogin} className="space-y-6">
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">Login</h2>
+
+                    <div className="space-y-4">
+                        <div>
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                disabled={isProcessing}
+                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors disabled:opacity-50"
+                            />
+                        </div>
+                        <div>
+                            <input
+                                type="password"
+                                placeholder="Senha"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                disabled={isProcessing}
+                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors disabled:opacity-50"
+                            />
+                        </div>
                     </div>
-                    <div className="form-group">
-                        <input
-                            type="password"
-                            placeholder="Senha"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            disabled={isProcessing}
-                        />
-                    </div>
+
                     <button
-                        className="login-btn"
                         type="submit"
                         disabled={isProcessing}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 transform hover:scale-105 disabled:hover:scale-100"
                     >
                         Entrar
                     </button>
-                    <div className="forgot-password">
+
+                    <div className="text-center">
                         <button
                             type="button"
                             onClick={handleResetPassword}
                             disabled={isProcessing}
+                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium transition-colors disabled:opacity-50"
                         >
                             Esqueci minha senha
                         </button>
                     </div>
-                    {error && <p className="error-message">{error}</p>}
-                    {info && <p className="info-message">{info}</p>}
+
+                    {error && (
+                        <p className="text-red-600 dark:text-red-400 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
+                            {error}
+                        </p>
+                    )}
+                    {info && (
+                        <p className="text-green-600 dark:text-green-400 text-sm text-center bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                            {info}
+                        </p>
+                    )}
                 </form>
             </div>
+
             <div
-                className={`centered-loading ${isProcessing ? "visible" : ""
+                className={`flex flex-col items-center justify-center space-y-4 transition-all duration-300 ${isProcessing ? "opacity-100" : "opacity-0 pointer-events-none"
                     }`}
             >
-                <div className="loading-spinner"></div>
-                <p>Autenticando...</p>
+                <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                <p className="text-gray-600 dark:text-gray-400">Autenticando...</p>
             </div>
         </div>
     );

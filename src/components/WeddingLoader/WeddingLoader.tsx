@@ -1,5 +1,4 @@
 import React from 'react';
-import './WeddingLoader.css';
 
 type WeddingLoaderProps = {
     message?: string;
@@ -10,15 +9,31 @@ const WeddingLoader: React.FC<WeddingLoaderProps> = ({
     message = 'Para sempre...',
     size = 'medium',
 }) => {
+    const sizeClasses = {
+        small: 'w-8 h-8',
+        medium: 'w-12 h-12',
+        large: 'w-16 h-16'
+    };
+
+    const containerSizeClasses = {
+        small: 'gap-2',
+        medium: 'gap-3',
+        large: 'gap-4'
+    };
+
     return (
-        <div className={`svg-loader svg-loader--${size}`}>
+        <div className={`flex flex-col bg-white dark:bg-gray-900 items-center justify-center ${containerSizeClasses[size]}`}>
             <img
                 src="/loader.svg"
                 alt="Loading..."
-                className="svg-loader__image"
+                className={`${sizeClasses[size]}`}
                 draggable={false}
             />
-            {message && <p className="svg-loader__message">{message}</p>}
+            {message && (
+                <p className="text-gray-600 dark:text-gray-400 text-center font-medium">
+                    {message}
+                </p>
+            )}
         </div>
     );
 };

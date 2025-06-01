@@ -4,7 +4,6 @@ import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firesto
 import { db } from '../../firebase/config';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
-import './ExpenseChart.css';
 import { useLoading } from '../../contexts/LoadingContext';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -318,16 +317,16 @@ const ExpenseChart = () => {
     };
 
     if (error) {
-        return <div className="exp-chart__error">{error}</div>;
+        return <div className="text-center p-8 text-red-600 dark:text-red-400 text-lg">{error}</div>;
     }
 
     if (favorites.length === 0) {
         return (
-            <div className="exp-chart">
-                <h2 className="exp-chart__title">Gráfico de Gastos</h2>
-                <div className="exp-chart__empty-state">
-                    <p>Não há locais favoritos para exibir gráficos de gastos.</p>
-                    <p>Adicione locais aos favoritos para visualizar suas distribuições de custos.</p>
+            <div className="p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg mb-6">
+                <h2 className="text-2xl font-semibold text-center text-gray-900 dark:text-white mb-6">Gráfico de Gastos</h2>
+                <div className="text-center p-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">Não há locais favoritos para exibir gráficos de gastos.</p>
+                    <p className="text-gray-500 dark:text-gray-500">Adicione locais aos favoritos para visualizar suas distribuições de custos.</p>
                 </div>
             </div>
         );
@@ -337,16 +336,22 @@ const ExpenseChart = () => {
     const percentages = calculatePercentages(currentFavorite);
 
     return (
-        <div className="exp-chart">
-            <h2 className="exp-chart__title">Gráfico de Gastos</h2>
+        <div className="p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg mb-6">
+            <h2 className="text-2xl font-semibold text-center text-gray-900 dark:text-white mb-6">Gráfico de Gastos</h2>
 
-            <div className="exp-chart__controls">
-                <div className="exp-chart__favorite-selector">
-                    <label htmlFor="favorite-select">Escolha um Local Favorito:</label>
+            <div className="mb-8">
+                <div className="w-full mb-4">
+                    <label htmlFor="favorite-select" className="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Escolha um Local Favorito:</label>
                     <select
                         id="favorite-select"
                         value={selectedFavorite || ''}
                         onChange={(e) => setSelectedFavorite(e.target.value)}
+                        className="w-full p-3 pr-8 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base appearance-none cursor-pointer focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20"
+                        style={{
+                            backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'><path d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/></svg>")`,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'calc(100% - 12px) center'
+                        }}
                     >
                         {favorites.map(favorite => (
                             <option key={favorite.id} value={favorite.id}>
@@ -357,49 +362,58 @@ const ExpenseChart = () => {
                 </div>
             </div>
 
-            <h3 className="exp-chart__venue-name">{currentFavorite.venueName} - {currentFavorite.cityName}</h3>
-            <p className="exp-chart__total">Custo Total: R$ {currentFavorite.totalCost?.toLocaleString('pt-BR')}</p>
+            <h3 className="text-xl font-semibold text-center text-gray-900 dark:text-white mb-2">{currentFavorite.venueName} - {currentFavorite.cityName}</h3>
+            <p className="text-center font-semibold text-blue-600 dark:text-blue-400 text-lg mb-6">Custo Total: R$ {currentFavorite.totalCost?.toLocaleString('pt-BR')}</p>
 
-            <div className="exp-chart__cards">
-                <div className="exp-chart__card">
-                    <div className="exp-chart__card-title">Local</div>
-                    <div className="exp-chart__card-value">R$ {currentFavorite.venueCost?.toLocaleString('pt-BR')}</div>
-                    <div className="exp-chart__card-percentage">{percentages.venue.toFixed(1)}%</div>
-                    <div className="exp-chart__card-indicator" style={{ backgroundColor: 'rgba(255, 99, 132, 0.8)' }}></div>
+            <div className="flex flex-col md:flex-row justify-between gap-4 mb-8">
+                <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg p-5 relative shadow-md hover:-translate-y-1 transition-transform duration-200 overflow-hidden">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Local</div>
+                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">R$ {currentFavorite.venueCost?.toLocaleString('pt-BR')}</div>
+                    <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">{percentages.venue.toFixed(1)}%</div>
+                    <div className="absolute w-2 h-full top-0 left-0 bg-red-400" style={{ backgroundColor: 'rgba(255, 99, 132, 0.8)' }}></div>
                 </div>
 
-                <div className="exp-chart__card">
-                    <div className="exp-chart__card-title">Profissionais</div>
-                    <div className="exp-chart__card-value">R$ {currentFavorite.professionalsCost?.toLocaleString('pt-BR')}</div>
-                    <div className="exp-chart__card-percentage">{percentages.professionals.toFixed(1)}%</div>
-                    <div className="exp-chart__card-indicator" style={{ backgroundColor: 'rgba(54, 162, 235, 0.8)' }}></div>
+                <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg p-5 relative shadow-md hover:-translate-y-1 transition-transform duration-200 overflow-hidden">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Profissionais</div>
+                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">R$ {currentFavorite.professionalsCost?.toLocaleString('pt-BR')}</div>
+                    <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">{percentages.professionals.toFixed(1)}%</div>
+                    <div className="absolute w-2 h-full top-0 left-0 bg-blue-400" style={{ backgroundColor: 'rgba(54, 162, 235, 0.8)' }}></div>
                 </div>
 
-                <div className="exp-chart__card">
-                    <div className="exp-chart__card-title">Extras</div>
-                    <div className="exp-chart__card-value">R$ {currentFavorite.budgetExtrasCost?.toLocaleString('pt-BR')}</div>
-                    <div className="exp-chart__card-percentage">{percentages.extras.toFixed(1)}%</div>
-                    <div className="exp-chart__card-indicator" style={{ backgroundColor: 'rgba(255, 206, 86, 0.8)' }}></div>
+                <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg p-5 relative shadow-md hover:-translate-y-1 transition-transform duration-200 overflow-hidden">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Extras</div>
+                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">R$ {currentFavorite.budgetExtrasCost?.toLocaleString('pt-BR')}</div>
+                    <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">{percentages.extras.toFixed(1)}%</div>
+                    <div className="absolute w-2 h-full top-0 left-0 bg-yellow-400" style={{ backgroundColor: 'rgba(255, 206, 86, 0.8)' }}></div>
                 </div>
             </div>
 
-            <div className="exp-chart__mobile-type-selector">
+            <div className="flex justify-center gap-4 my-8 flex-wrap">
                 <button
-                    className={chartType === 'macro' ? 'exp-chart__btn exp-chart__btn--active' : 'exp-chart__btn'}
+                    className={`px-5 py-3 rounded-lg font-medium transition-all duration-200 min-w-[120px] ${chartType === 'macro'
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:-translate-y-1 hover:shadow-md'
+                        }`}
                     onClick={() => setChartType('macro')}
                     disabled={isLoading}
                 >
                     Visão Geral
                 </button>
                 <button
-                    className={chartType === 'professionals' ? 'exp-chart__btn exp-chart__btn--active' : 'exp-chart__btn'}
+                    className={`px-5 py-3 rounded-lg font-medium transition-all duration-200 min-w-[120px] ${chartType === 'professionals'
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:-translate-y-1 hover:shadow-md'
+                        } ${(!currentFavorite.selectedProfessionalNames?.length || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={() => setChartType('professionals')}
                     disabled={isLoading || !currentFavorite.selectedProfessionalNames?.length}
                 >
                     Profissionais
                 </button>
                 <button
-                    className={chartType === 'extras' ? 'exp-chart__btn exp-chart__btn--active' : 'exp-chart__btn'}
+                    className={`px-5 py-3 rounded-lg font-medium transition-all duration-200 min-w-[120px] ${chartType === 'extras'
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:-translate-y-1 hover:shadow-md'
+                        } ${(!currentFavorite.budgetExtrasItems?.length || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={() => setChartType('extras')}
                     disabled={isLoading || !currentFavorite.budgetExtrasItems?.length}
                 >
@@ -407,13 +421,13 @@ const ExpenseChart = () => {
                 </button>
             </div>
 
-            <div className="exp-chart__visualizations">
+            <div className="mt-8 bg-gray-50 dark:bg-gray-800 p-6 rounded-xl shadow-inner border border-gray-200 dark:border-gray-700 text-center relative overflow-hidden max-w-full">
                 {chartType === 'macro' && (
                     <>
-                        <h3 className="exp-chart__section-title">Distribuição Geral de Custos</h3>
-                        <div className="exp-chart__flex-container">
-                            <div className="exp-chart__pie-container">
-                                <div className="exp-chart__pie">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mb-6">Distribuição Geral de Custos</h3>
+                        <div className="flex flex-col lg:flex-row gap-8 mt-6 flex-wrap overflow-visible w-full">
+                            <div className="flex-1 min-w-[300px] relative rounded-lg overflow-visible bg-transparent">
+                                <div className="h-[350px] w-full max-w-[500px] mx-auto relative overflow-visible">
                                     <Pie data={getMacroChartData(currentFavorite)} options={{
                                         responsive: true,
                                         maintainAspectRatio: false,
@@ -451,7 +465,7 @@ const ExpenseChart = () => {
                                             legend: {
                                                 position: 'right',
                                                 labels: {
-                                                    color: darkTheme ? 'rgba(255,255,255,0.8)' : 'var(--text-primary, #333)',
+                                                    color: darkTheme ? 'rgba(255,255,255,0.8)' : '#333',
                                                     font: {
                                                         size: 14,
                                                         weight: 500
@@ -471,9 +485,9 @@ const ExpenseChart = () => {
                                 </div>
                             </div>
 
-                            <div className="exp-chart__bars-container">
-                                <h4>Detalhamento de Custos</h4>
-                                <div className="exp-chart__bars">
+                            <div className="flex-1 min-w-[300px] flex flex-col justify-center w-full px-2">
+                                <h4 className="text-lg text-gray-900 dark:text-white mb-6 mt-0">Detalhamento de Custos</h4>
+                                <div className="flex flex-col gap-5">
                                     {['Local', 'Profissionais', 'Extras'].map((category, index) => {
                                         const values = [
                                             currentFavorite.venueCost || 0,
@@ -488,14 +502,14 @@ const ExpenseChart = () => {
                                         const percentage = ((values[index] / currentFavorite.totalCost!) * 100).toFixed(1);
 
                                         return (
-                                            <div key={category} className="exp-chart__bar-item">
-                                                <div className="exp-chart__bar-header">
-                                                    <span className="exp-chart__bar-label">{category}</span>
-                                                    <span className="exp-chart__bar-percentage">{percentage}%</span>
+                                            <div key={category} className="w-full">
+                                                <div className="flex justify-between items-center mb-2 w-full">
+                                                    <span className="font-semibold text-gray-900 dark:text-white flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap mr-2 text-sm">{category}</span>
+                                                    <span className="font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap text-sm">{percentage}%</span>
                                                 </div>
-                                                <div className="exp-chart__bar-container">
+                                                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md overflow-hidden w-full">
                                                     <div
-                                                        className="exp-chart__bar-fill"
+                                                        className="h-full rounded-md transition-all duration-1000 ease-out"
                                                         style={{
                                                             width: `${percentage}%`,
                                                             backgroundColor: colors[index]
@@ -514,10 +528,10 @@ const ExpenseChart = () => {
                 {chartType === 'professionals' ? (
                     (currentFavorite.selectedProfessionalNames && currentFavorite.selectedProfessionalNames.length > 0) ? (
                         <>
-                            <h3 className="exp-chart__section-title">Distribuição de Custos por Profissionais</h3>
-                            <div className="exp-chart__flex-container">
-                                <div className="exp-chart__pie-container">
-                                    <div className="exp-chart__pie">
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mb-6">Distribuição de Custos por Profissionais</h3>
+                            <div className="flex flex-col lg:flex-row gap-8 mt-6 flex-wrap overflow-visible w-full">
+                                <div className="flex-1 min-w-[300px] relative rounded-lg overflow-visible bg-transparent">
+                                    <div className="h-[350px] w-full max-w-[500px] mx-auto relative overflow-visible">
                                         <Pie data={getProfessionalsChartData(currentFavorite)} options={{
                                             responsive: true,
                                             maintainAspectRatio: false,
@@ -525,7 +539,7 @@ const ExpenseChart = () => {
                                                 legend: {
                                                     position: 'right',
                                                     labels: {
-                                                        color: darkTheme ? 'rgba(255,255,255,0.8)' : 'var(--text-primary)',
+                                                        color: darkTheme ? 'rgba(255,255,255,0.8)' : '#333',
                                                         font: {
                                                             size: 14,
                                                             weight: 500
@@ -570,9 +584,9 @@ const ExpenseChart = () => {
                                     </div>
                                 </div>
 
-                                <div className="exp-chart__bars-container">
-                                    <h4>Detalhamento por Profissional</h4>
-                                    <div className="exp-chart__bars">
+                                <div className="flex-1 min-w-[300px] flex flex-col justify-center w-full px-2">
+                                    <h4 className="text-lg text-gray-900 dark:text-white mb-6 mt-0">Detalhamento por Profissional</h4>
+                                    <div className="flex flex-col gap-5">
                                         {(currentFavorite.selectedProfessionalNames || []).map((prof, index) => {
                                             const cost = prof.price || 0;
                                             const totalProf = (currentFavorite.selectedProfessionalNames || []).reduce((sum, p) => sum + (p.price || 0), 0);
@@ -583,14 +597,14 @@ const ExpenseChart = () => {
                                             const color = `hsla(${hue}, 70%, 60%, 0.8)`;
 
                                             return (
-                                                <div key={prof.name} className="exp-chart__bar-item">
-                                                    <div className="exp-chart__bar-header">
-                                                        <span className="exp-chart__bar-label">{prof.name}</span>
-                                                        <span className="exp-chart__bar-percentage">{percentage}%</span>
+                                                <div key={prof.name} className="w-full">
+                                                    <div className="flex justify-between items-center mb-2 w-full">
+                                                        <span className="font-semibold text-gray-900 dark:text-white flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap mr-2 text-sm">{prof.name}</span>
+                                                        <span className="font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap text-sm">{percentage}%</span>
                                                     </div>
-                                                    <div className="exp-chart__bar-container">
+                                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md overflow-hidden w-full">
                                                         <div
-                                                            className="exp-chart__bar-fill"
+                                                            className="h-full rounded-md transition-all duration-1000 ease-out"
                                                             style={{
                                                                 width: `${percentage}%`,
                                                                 backgroundColor: color
@@ -605,16 +619,16 @@ const ExpenseChart = () => {
                             </div>
                         </>
                     ) : (
-                        <p className="exp-chart__no-data">Não há profissionais selecionados para este local.</p>
+                        <p className="text-center p-12 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-400">Não há profissionais selecionados para este local.</p>
                     )
                 ) : null}
                 {chartType === 'extras' ? (
                     (currentFavorite.budgetExtrasItems && currentFavorite.budgetExtrasItems.length > 0) ? (
                         <>
-                            <h3 className="exp-chart__section-title">Distribuição de Custos Extras</h3>
-                            <div className="exp-chart__flex-container">
-                                <div className="exp-chart__pie-container">
-                                    <div className="exp-chart__pie">
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mb-6">Distribuição de Custos Extras</h3>
+                            <div className="flex flex-col lg:flex-row gap-8 mt-6 flex-wrap overflow-visible w-full">
+                                <div className="flex-1 min-w-[300px] relative rounded-lg overflow-visible bg-transparent">
+                                    <div className="h-[350px] w-full max-w-[500px] mx-auto relative overflow-visible">
                                         <Pie data={getExtrasChartData(currentFavorite)} options={{
                                             responsive: true,
                                             maintainAspectRatio: false,
@@ -622,7 +636,7 @@ const ExpenseChart = () => {
                                                 legend: {
                                                     position: 'right',
                                                     labels: {
-                                                        color: darkTheme ? 'rgba(255,255,255,0.8)' : 'var(--text-primary)',
+                                                        color: darkTheme ? 'rgba(255,255,255,0.8)' : '#333',
                                                         font: {
                                                             size: 14,
                                                             weight: 500
@@ -667,9 +681,9 @@ const ExpenseChart = () => {
                                     </div>
                                 </div>
 
-                                <div className="exp-chart__bars-container">
-                                    <h4>Detalhamento de Itens Extras</h4>
-                                    <div className="exp-chart__bars">
+                                <div className="flex-1 min-w-[300px] flex flex-col justify-center w-full px-2">
+                                    <h4 className="text-lg text-gray-900 dark:text-white mb-6 mt-0">Detalhamento de Itens Extras</h4>
+                                    <div className="flex flex-col gap-5">
                                         {currentFavorite.budgetExtrasItems?.map((item, index) => {
                                             const totalExtras = currentFavorite.budgetExtrasItems?.reduce((sum, item) => sum + item.cost, 0) || 0;
                                             const percentage = totalExtras > 0 ? ((item.cost / totalExtras) * 100).toFixed(1) : '0.0';
@@ -679,14 +693,14 @@ const ExpenseChart = () => {
                                             const color = `hsla(${hue}, 70%, 60%, 0.8)`;
 
                                             return (
-                                                <div key={index} className="exp-chart__bar-item">
-                                                    <div className="exp-chart__bar-header">
-                                                        <span className="exp-chart__bar-label">{item.description}</span>
-                                                        <span className="exp-chart__bar-percentage">{percentage}%</span>
+                                                <div key={index} className="w-full">
+                                                    <div className="flex justify-between items-center mb-2 w-full">
+                                                        <span className="font-semibold text-gray-900 dark:text-white flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap mr-2 text-sm">{item.description}</span>
+                                                        <span className="font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap text-sm">{percentage}%</span>
                                                     </div>
-                                                    <div className="exp-chart__bar-container">
+                                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md overflow-hidden w-full">
                                                         <div
-                                                            className="exp-chart__bar-fill"
+                                                            className="h-full rounded-md transition-all duration-1000 ease-out"
                                                             style={{
                                                                 width: `${percentage}%`,
                                                                 backgroundColor: color
@@ -701,7 +715,7 @@ const ExpenseChart = () => {
                             </div>
                         </>
                     ) : (
-                        <p className="exp-chart__no-data">Não há itens extras para este local.</p>
+                        <p className="text-center p-12 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-400">Não há itens extras para este local.</p>
                     )
                 ) : null}
             </div>

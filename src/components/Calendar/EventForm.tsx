@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './Calendar.css';
 
 interface Event {
     id?: string;
@@ -122,14 +121,18 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
     };
 
     return (
-        <div className="calendar-event-form-overlay">
-            <div className="calendar-event-form-container">
-                <h3>{event ? 'Editar Evento' : 'Novo Evento'}</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-5 pb-4 border-b border-gray-200 dark:border-gray-700">
+                    {event ? 'Editar Evento' : 'Novo Evento'}
+                </h3>
 
                 {!showDeleteConfirmation ? (
-                    <form onSubmit={handleSubmit}>
-                        <div className="calendar-form-group">
-                            <label htmlFor="title">Título</label>
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div>
+                            <label htmlFor="title" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Título
+                            </label>
                             <input
                                 type="text"
                                 id="title"
@@ -137,84 +140,102 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                                 onChange={(e) => setTitle(e.target.value)}
                                 required
                                 placeholder="Nome do evento"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                             />
                         </div>
 
-                        <div className="calendar-form-row">
-                            <div className="calendar-form-group">
-                                <label htmlFor="date">Data</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="date" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    Data
+                                </label>
                                 <input
                                     type="date"
                                     id="date"
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
                                     required
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                 />
                             </div>
 
-                            <div className="calendar-form-group">
-                                <label htmlFor="time">Hora de início</label>
+                            <div>
+                                <label htmlFor="time" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    Hora de início
+                                </label>
                                 <input
                                     type="time"
                                     id="time"
                                     value={time}
                                     onChange={(e) => setTime(e.target.value)}
                                     required
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                 />
                             </div>
                         </div>
 
-                        <div className="calendar-form-group calendar-end-date-toggle">
+                        <div className="flex items-center gap-3 cursor-pointer" onClick={toggleEndDate}>
                             <input
                                 type="checkbox"
                                 id="enableEndDate"
                                 checked={endDateEnabled}
                                 onChange={toggleEndDate}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
                             />
-                            <label htmlFor="enableEndDate">Definir hora de término</label>
+                            <label htmlFor="enableEndDate" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                                Definir hora de término
+                            </label>
                         </div>
 
                         {endDateEnabled && (
-                            <div className="calendar-form-row">
-                                <div className="calendar-form-group">
-                                    <label htmlFor="endDate">Data de término</label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="endDate" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        Data de término
+                                    </label>
                                     <input
                                         type="date"
                                         id="endDate"
                                         value={endDate}
                                         onChange={(e) => setEndDate(e.target.value)}
                                         required={endDateEnabled}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                     />
                                 </div>
 
-                                <div className="calendar-form-group">
-                                    <label htmlFor="endTime">Hora de término</label>
+                                <div>
+                                    <label htmlFor="endTime" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        Hora de término
+                                    </label>
                                     <input
                                         type="time"
                                         id="endTime"
                                         value={endTime}
                                         onChange={(e) => setEndTime(e.target.value)}
                                         required={endDateEnabled}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                     />
                                 </div>
                             </div>
                         )}
 
-                        <div className="calendar-form-group">
-                            <label htmlFor="type">Tipo de evento</label>
-                            <div className="calendar-custom-select">
+                        <div>
+                            <label htmlFor="type" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Tipo de evento
+                            </label>
+                            <div className="relative">
                                 <select
                                     id="type"
                                     value={type}
                                     onChange={(e) => setType(e.target.value as 'visita' | 'reuniao' | 'outro')}
                                     required
-                                    className="calendar-select-input"
+                                    className="w-full px-12 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none cursor-pointer"
                                 >
                                     <option value="visita">Visita a local</option>
                                     <option value="reuniao">Reunião</option>
                                     <option value="outro">Outro</option>
                                 </select>
-                                <div className="calendar-select-icon">
+                                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-blue-600 dark:text-blue-400">
                                     {type === 'visita' && (
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -237,49 +258,64 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                                         </svg>
                                     )}
                                 </div>
-                                <div className="calendar-select-arrow">
+                                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400 dark:text-gray-500">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <polyline points="6 9 12 15 18 9"></polyline>
                                     </svg>
                                 </div>
-                                <div className={`calendar-select-badge ${type}`}>
-                                    {type === 'visita' && 'Visita a local'}
-                                    {type === 'reuniao' && 'Reunião'}
-                                    {type === 'outro' && 'Outro'}
-                                </div>
                             </div>
                         </div>
 
-                        <div className="calendar-form-group">
-                            <label htmlFor="location">Local</label>
+                        <div>
+                            <label htmlFor="location" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Local
+                            </label>
                             <input
                                 type="text"
                                 id="location"
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
                                 placeholder="Endereço ou local do evento"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                             />
                         </div>
 
-                        <div className="calendar-form-group">
-                            <label htmlFor="description">Descrição</label>
+                        <div>
+                            <label htmlFor="description" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Descrição
+                            </label>
                             <textarea
                                 id="description"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 required
                                 placeholder="Detalhes sobre o evento, anotações, etc."
+                                rows={4}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical"
                             />
                         </div>
 
-                        <div className="calendar-form-actions">
-                            <button type="submit" className="calendar-save-btn">Salvar</button>
-                            <button type="button" className="calendar-cancel-btn" onClick={onCancel}>Cancelar</button>
+                        <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
+                            <div className="flex gap-3 flex-1">
+                                <button
+                                    type="submit"
+                                    className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
+                                >
+                                    Salvar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onCancel}
+                                    className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
                             {onDelete && (
                                 <button
                                     type="button"
-                                    className="calendar-delete-btn"
                                     onClick={handleShowDeleteConfirmation}
+                                    className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 px-6 py-3 rounded-lg font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                                 >
                                     Excluir
                                 </button>
@@ -287,25 +323,27 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                         </div>
                     </form>
                 ) : (
-                    <div className="calendar-inline-delete-confirmation">
-                        <h4>Confirmar exclusão</h4>
-                        <p>
-                            Tem certeza que deseja excluir <strong>{title}</strong>?
+                    <div className="text-center animate-in fade-in duration-300">
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                            Confirmar exclusão
+                        </h4>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+                            Tem certeza que deseja excluir <strong className="text-gray-900 dark:text-white">{title}</strong>?
                             <br />
                             Esta ação não pode ser desfeita.
                         </p>
-                        <div className="calendar-form-actions">
+                        <div className="flex flex-col sm:flex-row justify-center gap-3">
                             <button
                                 type="button"
-                                className="calendar-cancel-btn"
                                 onClick={handleCancelDelete}
+                                className="px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                             >
                                 Cancelar
                             </button>
                             <button
                                 type="button"
-                                className="calendar-delete-btn"
                                 onClick={handleConfirmDelete}
+                                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
                             >
                                 Excluir
                             </button>

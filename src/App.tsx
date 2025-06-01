@@ -5,7 +5,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import MainPage from "./pages/MainPage/MainPage";
 import PrivateRoute from "./routes/PrivateRoute";
 import { LoadingProvider } from "./contexts/LoadingContext";
-import "./App.css";
+
 
 function App() {
   return (

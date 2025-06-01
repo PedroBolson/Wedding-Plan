@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, doc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import './Planning.css';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '../../firebase/config';
 import { useLoading } from '../../contexts/LoadingContext';
@@ -807,8 +806,8 @@ const Planning = () => {
         if (error) {
             return (
                 <>
-                    <div className="error">{error}</div>
-                    <button className="standard-button" onClick={() => setError(null)}>Fechar</button>
+                    <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg my-4">{error}</div>
+                    <button className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" onClick={() => setError(null)}>Fechar</button>
                 </>
             );
         }
@@ -816,20 +815,20 @@ const Planning = () => {
         switch (activeView) {
             case 'cities':
                 return (
-                    <div className="cities-grid">
-                        <div className="section-header">
-                            <h2>Cidades</h2>
+                    <div className="p-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Cidades</h2>
                             <button
-                                className="add-button"
+                                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors font-medium"
                                 onClick={() => setShowCityForm(true)}
                             >
                                 + Nova Cidade
                             </button>
                         </div>
 
-                        <div className="planning-actions">
+                        <div className="mb-6">
                             <button
-                                className="secondary-button"
+                                className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium flex items-center gap-2"
                                 onClick={handleViewProfessionalTypes}
                             >
                                 <i className="icon-manage"></i> Gerenciar Tipos de Profissionais
@@ -837,17 +836,17 @@ const Planning = () => {
                         </div>
 
                         {cities.length === 0 ? (
-                            <p>Nenhuma cidade encontrada. Adicione uma nova cidade.</p>
+                            <p className="text-gray-600 dark:text-gray-400 text-center py-8">Nenhuma cidade encontrada. Adicione uma nova cidade.</p>
                         ) : (
-                            <div className="grid">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {cities.map(city => (
-                                    <div key={city.id} className="card city-card">
-                                        <div className="card-content" onClick={() => handleSelectCity(city.id!)}>
-                                            <h3>{city.name}</h3>
-                                            <p>{city.state}</p>
+                                    <div key={city.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 relative">
+                                        <div className="p-6 cursor-pointer" onClick={() => handleSelectCity(city.id!)}>
+                                            <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">{city.name}</h3>
+                                            <p className="text-gray-600 dark:text-gray-400">{city.state}</p>
                                         </div>
                                         <button
-                                            className="delete-button"
+                                            className="absolute bottom-4 right-4 bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400 border border-red-500 px-3 py-1 rounded text-sm hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-colors"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setConfirmDelete(`city-${city.id}`);
@@ -857,11 +856,11 @@ const Planning = () => {
                                         </button>
 
                                         {confirmDelete === `city-${city.id}` && (
-                                            <div className="confirm-delete">
-                                                <p>Tem certeza? Esta ação não pode ser desfeita.</p>
-                                                <div className="confirm-buttons">
+                                            <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2 border-red-500">
+                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4 text-sm">Tem certeza? Esta ação não pode ser desfeita.</p>
+                                                <div className="flex gap-3">
                                                     <button
-                                                        className="confirm-yes"
+                                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium text-sm"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleDeleteCity(city.id!);
@@ -870,7 +869,7 @@ const Planning = () => {
                                                         Sim, excluir
                                                     </button>
                                                     <button
-                                                        className="confirm-no"
+                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             setConfirmDelete(null);
@@ -887,12 +886,12 @@ const Planning = () => {
                         )}
 
                         {showCityForm && (
-                            <div className="modal-overlay">
-                                <div className="modal-content">
-                                    <h3>Adicionar Nova Cidade</h3>
+                            <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto shadow-xl">
+                                    <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Adicionar Nova Cidade</h3>
                                     <form onSubmit={handleCityFormSubmit}>
-                                        <div className="form-group">
-                                            <label htmlFor="name">Nome da Cidade:</label>
+                                        <div className="mb-4">
+                                            <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Nome da Cidade:</label>
                                             <input
                                                 type="text"
                                                 id="name"
@@ -900,10 +899,11 @@ const Planning = () => {
                                                 value={cityFormData.name}
                                                 onChange={handleCityFormChange}
                                                 required
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                             />
                                         </div>
-                                        <div className="form-group">
-                                            <label htmlFor="state">Estado:</label>
+                                        <div className="mb-6">
+                                            <label htmlFor="state" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Estado:</label>
                                             <input
                                                 type="text"
                                                 id="state"
@@ -913,13 +913,14 @@ const Planning = () => {
                                                 required
                                                 maxLength={2}
                                                 placeholder="UF"
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                             />
                                         </div>
-                                        <div className="form-buttons">
-                                            <button type="submit" className="submit-button">Salvar</button>
+                                        <div className="flex gap-3">
+                                            <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">Salvar</button>
                                             <button
                                                 type="button"
-                                                className="cancel-button"
+                                                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                                 onClick={() => setShowCityForm(false)}
                                             >
                                                 Cancelar
@@ -934,29 +935,29 @@ const Planning = () => {
 
             case 'venues':
                 return (
-                    <div className="venues-list">
-                        <div className="section-header with-tabs">
-                            <button className="back-button" onClick={handleBackButton}>
-                                Voltar para Cidades
+                    <div className="p-4">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                            <button className="flex items-center gap-2 bg-transparent border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium" onClick={handleBackButton}>
+                                ← Voltar para Cidades
                             </button>
-                            <h2>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                                 Locais em {cities.find(c => c.id === selectedCityId)?.name}
                             </h2>
-                            <div className="header-actions">
+                            <div className="flex flex-wrap gap-2">
                                 <button
-                                    className="view-tab active"
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium"
                                     onClick={handleViewVenues}
                                 >
                                     Locais
                                 </button>
                                 <button
-                                    className="view-tab"
+                                    className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                     onClick={handleViewProfessionals}
                                 >
                                     Profissionais
                                 </button>
                                 <button
-                                    className="add-button"
+                                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors font-medium"
                                     onClick={() => setShowVenueForm(true)}
                                 >
                                     + Novo Local
@@ -965,15 +966,15 @@ const Planning = () => {
                         </div>
 
                         {venues.length === 0 ? (
-                            <p>Nenhum local encontrado. Adicione um novo local.</p>
+                            <p className="text-gray-600 dark:text-gray-400 text-center py-8">Nenhum local encontrado. Adicione um novo local.</p>
                         ) : (
-                            <div className="venues-grid">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {venues.map(venue => (
-                                    <div key={venue.id} className="venue-card">
-                                        <div className="venue-card-header">
-                                            <h3>{venue.name}</h3>
+                                    <div key={venue.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 p-6 relative">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 flex-1">{venue.name}</h3>
                                             <button
-                                                className={`favorite-toggle ${venue.isFavorite ? 'is-favorite' : ''}`}
+                                                className={`text-2xl transition-all duration-300 hover:scale-110 p-1 ${venue.isFavorite ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500'}`}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     toggleFavorite(venue);
@@ -983,47 +984,49 @@ const Planning = () => {
                                                 {venue.isFavorite ? '★' : '☆'}
                                             </button>
                                         </div>
-                                        <p><strong>Endereço:</strong> {venue.address}</p>
-                                        <p><strong>Telefone:</strong> {venue.phone}</p>
-                                        <p><strong>Preço do Local:</strong> R$ {venue.venuePrice.toLocaleString('pt-BR')}</p>
-                                        <p><strong>Preço da Comida:</strong> R$ {venue.foodPrice.toLocaleString('pt-BR')}</p>
-                                        <p><strong>Preço da Bebida:</strong> R$ {venue.drinkPrice.toLocaleString('pt-BR')}</p>
-                                        <p><strong>Total Estimado:</strong> R$ {(venue.venuePrice + venue.foodPrice + venue.drinkPrice).toLocaleString('pt-BR')}</p>
-                                        <p><strong>Formatos:</strong> {venue.formats}</p>
-                                        <p><strong>Parcelamento:</strong> {venue.installmentPlan}</p>
-                                        {venue.pdfDocuments && venue.pdfDocuments.length > 0 && (
-                                            <div className="pdf-links">
-                                                <p><strong>Documentos:</strong></p>
-                                                <ul className="pdf-list">
-                                                    {venue.pdfDocuments.map(doc => (
-                                                        <li key={doc.id}>
-                                                            <a
-                                                                href={doc.url}
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                className="pdf-link"
-                                                            >
-                                                                {doc.name}
-                                                            </a>
-                                                        </li>
-                                                    ))}
-                                                </ul>
+                                        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                            <p><strong className="text-gray-900 dark:text-gray-100">Endereço:</strong> {venue.address}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">Telefone:</strong> {venue.phone}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">Preço do Local:</strong> R$ {venue.venuePrice.toLocaleString('pt-BR')}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">Preço da Comida:</strong> R$ {venue.foodPrice.toLocaleString('pt-BR')}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">Preço da Bebida:</strong> R$ {venue.drinkPrice.toLocaleString('pt-BR')}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">Total Estimado:</strong> R$ {(venue.venuePrice + venue.foodPrice + venue.drinkPrice).toLocaleString('pt-BR')}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">Formatos:</strong> {venue.formats}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">Parcelamento:</strong> {venue.installmentPlan}</p>
+                                            {venue.pdfDocuments && venue.pdfDocuments.length > 0 && (
+                                                <div className="mt-3">
+                                                    <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Documentos:</p>
+                                                    <ul className="space-y-1">
+                                                        {venue.pdfDocuments.map(doc => (
+                                                            <li key={doc.id}>
+                                                                <a
+                                                                    href={doc.url}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    className="text-blue-600 dark:text-blue-400 hover:underline"
+                                                                >
+                                                                    {doc.name}
+                                                                </a>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                                <strong className="text-gray-900 dark:text-gray-100">Observações:</strong>
+                                                <p className="mt-1 whitespace-pre-wrap">{venue.notes || "Nenhuma observação"}</p>
                                             </div>
-                                        )}
-                                        <div className="notes">
-                                            <strong>Observações:</strong>
-                                            <p>{venue.notes || "Nenhuma observação"}</p>
                                         </div>
 
-                                        <div className="card-actions">
+                                        <div className="flex flex-col gap-2 mt-4">
                                             <button
-                                                className="edit-button"
+                                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors font-medium"
                                                 onClick={() => handleEditVenue(venue)}
                                             >
                                                 Editar
                                             </button>
                                             <button
-                                                className="delete-button"
+                                                className="bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400 border border-red-500 px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-colors"
                                                 onClick={() => setConfirmDelete(`venue-${venue.id}`)}
                                             >
                                                 Excluir
@@ -1031,17 +1034,17 @@ const Planning = () => {
                                         </div>
 
                                         {confirmDelete === `venue-${venue.id}` && (
-                                            <div className="card-confirm-delete">
-                                                <p>Tem certeza que deseja excluir este local?</p>
-                                                <div className="card-confirm-buttons">
+                                            <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2 border-red-500">
+                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4">Tem certeza que deseja excluir este local?</p>
+                                                <div className="flex gap-3">
                                                     <button
-                                                        className="card-confirm-yes"
+                                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px]"
                                                         onClick={() => handleDeleteVenue(venue.id!)}
                                                     >
                                                         Sim
                                                     </button>
                                                     <button
-                                                        className="card-confirm-no"
+                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors min-w-[100px]"
                                                         onClick={() => setConfirmDelete(null)}
                                                     >
                                                         Não
@@ -1055,12 +1058,12 @@ const Planning = () => {
                         )}
 
                         {showVenueForm && (
-                            <div className="modal-overlay">
-                                <div className="modal-content">
-                                    <h3>{editingVenueId ? 'Editar Local' : 'Adicionar Novo Local'}</h3>
+                            <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-xl">
+                                    <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">{editingVenueId ? 'Editar Local' : 'Adicionar Novo Local'}</h3>
                                     <form onSubmit={handleVenueFormSubmit}>
-                                        <div className="form-group">
-                                            <label htmlFor="name">Nome:</label>
+                                        <div className="mb-4">
+                                            <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Nome:</label>
                                             <input
                                                 type="text"
                                                 id="name"
@@ -1068,31 +1071,34 @@ const Planning = () => {
                                                 value={venueFormData.name}
                                                 onChange={handleVenueFormChange}
                                                 required
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                             />
                                         </div>
-                                        <div className="form-group">
-                                            <label htmlFor="address">Endereço:</label>
+                                        <div className="mb-4">
+                                            <label htmlFor="address" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Endereço:</label>
                                             <input
                                                 type="text"
                                                 id="address"
                                                 name="address"
                                                 value={venueFormData.address}
                                                 onChange={handleVenueFormChange}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                             />
                                         </div>
-                                        <div className="form-group">
-                                            <label htmlFor="phone">Telefone:</label>
+                                        <div className="mb-4">
+                                            <label htmlFor="phone" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Telefone:</label>
                                             <input
                                                 type="text"
                                                 id="phone"
                                                 name="phone"
                                                 value={venueFormData.phone}
                                                 onChange={handleVenueFormChange}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                             />
                                         </div>
-                                        <div className="form-row">
-                                            <div className="form-group">
-                                                <label htmlFor="venuePrice">Preço do Local:</label>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                                            <div>
+                                                <label htmlFor="venuePrice" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Preço do Local:</label>
                                                 <input
                                                     type="number"
                                                     id="venuePrice"
@@ -1100,10 +1106,11 @@ const Planning = () => {
                                                     value={venueFormData.venuePrice}
                                                     onChange={handleVenueFormChange}
                                                     min="0"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                                 />
                                             </div>
-                                            <div className="form-group">
-                                                <label htmlFor="foodPrice">Preço da Comida:</label>
+                                            <div>
+                                                <label htmlFor="foodPrice" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Preço da Comida:</label>
                                                 <input
                                                     type="number"
                                                     id="foodPrice"
@@ -1111,10 +1118,11 @@ const Planning = () => {
                                                     value={venueFormData.foodPrice}
                                                     onChange={handleVenueFormChange}
                                                     min="0"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                                 />
                                             </div>
-                                            <div className="form-group">
-                                                <label htmlFor="drinkPrice">Preço da Bebida:</label>
+                                            <div>
+                                                <label htmlFor="drinkPrice" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Preço da Bebida:</label>
                                                 <input
                                                     type="number"
                                                     id="drinkPrice"
@@ -1122,42 +1130,46 @@ const Planning = () => {
                                                     value={venueFormData.drinkPrice}
                                                     onChange={handleVenueFormChange}
                                                     min="0"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="form-group">
-                                            <label htmlFor="formats">Formatos:</label>
+                                        <div className="mb-4">
+                                            <label htmlFor="formats" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Formatos:</label>
                                             <input
                                                 type="text"
                                                 id="formats"
                                                 name="formats"
                                                 value={venueFormData.formats}
                                                 onChange={handleVenueFormChange}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                             />
                                         </div>
-                                        <div className="form-group">
-                                            <label htmlFor="installmentPlan">Plano de Parcelamento:</label>
+                                        <div className="mb-4">
+                                            <label htmlFor="installmentPlan" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Plano de Parcelamento:</label>
                                             <input
                                                 type="text"
                                                 id="installmentPlan"
                                                 name="installmentPlan"
                                                 value={venueFormData.installmentPlan}
                                                 onChange={handleVenueFormChange}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                             />
                                         </div>
-                                        <div className="form-group">
-                                            <label htmlFor="notes">Observações:</label>
+                                        <div className="mb-4">
+                                            <label htmlFor="notes" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Observações:</label>
                                             <textarea
                                                 id="notes"
                                                 name="notes"
                                                 value={venueFormData.notes}
                                                 onChange={handleVenueFormChange}
                                                 rows={4}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 resize-none"
                                             ></textarea>
                                         </div>
-                                        <div className="form-group">
-                                            <label>Orçamentos/Detalhes (PDFs):</label>
-                                            <div className="file-upload-container">
+                                        <div className="mb-4">
+                                            <label className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Orçamentos/Detalhes (PDFs):</label>
+                                            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
                                                 <input
                                                     type="file"
                                                     accept="application/pdf"
@@ -1168,22 +1180,23 @@ const Planning = () => {
                                                             setSelectedFiles(Array.from(files));
                                                         }
                                                     }}
+                                                    className="w-full text-gray-900 dark:text-gray-100"
                                                 />
                                                 {selectedFiles.length > 0 && (
-                                                    <p className="file-selected">{selectedFiles.length} arquivo(s) selecionado(s)</p>
+                                                    <p className="mt-2 text-sm text-blue-600 dark:text-blue-400">{selectedFiles.length} arquivo(s) selecionado(s)</p>
                                                 )}
                                             </div>
 
                                             {venueFormData.pdfDocuments && venueFormData.pdfDocuments.length > 0 && (
-                                                <div className="current-pdfs">
-                                                    <p><strong>Documentos existentes:</strong></p>
-                                                    <ul className="pdf-list">
+                                                <div className="mt-4">
+                                                    <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Documentos existentes:</p>
+                                                    <ul className="space-y-2">
                                                         {venueFormData.pdfDocuments.map(doc => (
-                                                            <li key={doc.id} className="pdf-item">
-                                                                <a href={doc.url} target="_blank" rel="noreferrer">{doc.name}</a>
+                                                            <li key={doc.id} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                                                                <a href={doc.url} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">{doc.name}</a>
                                                                 <button
                                                                     type="button"
-                                                                    className="delete-pdf-button"
+                                                                    className="text-red-600 dark:text-red-400 hover:underline text-sm"
                                                                     onClick={() => handleDeletePDF(editingVenueId!, doc)}
                                                                 >
                                                                     Remover
@@ -1196,18 +1209,18 @@ const Planning = () => {
                                         </div>
 
                                         {Object.keys(currentUploads).length > 0 && (
-                                            <div className="upload-indicator">
-                                                <div className="upload-spinner"></div>
+                                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm mb-4 italic">
+                                                <div className="w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-blue-600 rounded-full animate-spin"></div>
                                                 Fazendo upload de {Object.keys(currentUploads).length} arquivo(s)...
                                             </div>
                                         )}
-                                        <div className="form-buttons">
-                                            <button type="submit" className="submit-button" disabled={isLoading}>
+                                        <div className="flex gap-3">
+                                            <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50" disabled={isLoading}>
                                                 {editingVenueId ? 'Atualizar' : 'Salvar'}
                                             </button>
                                             <button
                                                 type="button"
-                                                className="cancel-button"
+                                                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                                 onClick={() => {
                                                     setShowVenueForm(false);
                                                     setEditingVenueId(null);
@@ -1238,29 +1251,29 @@ const Planning = () => {
 
             case 'cityProfessionals':
                 return (
-                    <div className="professionals-list">
-                        <div className="section-header with-tabs">
-                            <button className="back-button" onClick={handleBackButton}>
-                                Voltar para Cidades
+                    <div className="p-4">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                            <button className="flex items-center gap-2 bg-transparent border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium" onClick={handleBackButton}>
+                                ← Voltar para Cidades
                             </button>
-                            <h2>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                                 Profissionais em {cities.find(c => c.id === selectedCityId)?.name}
                             </h2>
-                            <div className="header-actions">
+                            <div className="flex flex-wrap gap-2">
                                 <button
-                                    className="view-tab"
+                                    className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                     onClick={handleViewVenues}
                                 >
                                     Locais
                                 </button>
                                 <button
-                                    className="view-tab active"
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium"
                                     onClick={handleViewProfessionals}
                                 >
                                     Profissionais
                                 </button>
                                 <button
-                                    className="add-button"
+                                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors font-medium"
                                     onClick={() => setShowProfessionalForm(true)}
                                 >
                                     + Novo Profissional
@@ -1269,45 +1282,47 @@ const Planning = () => {
                         </div>
 
                         {professionals.length === 0 ? (
-                            <p>Nenhum profissional encontrado. Adicione um novo profissional.</p>
+                            <p className="text-gray-600 dark:text-gray-400 text-center py-8">Nenhum profissional encontrado. Adicione um novo profissional.</p>
                         ) : (
-                            <div className="professionals-grid">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {professionals.map(professional => (
-                                    <div key={professional.id} className="professional-card">
-                                        <div className="professional-card-header">
-                                            <h3>{professional.name}</h3>
+                                    <div key={professional.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 p-6 relative">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 flex-1">{professional.name}</h3>
                                             <button
-                                                className={`favorite-toggle ${professional.isFavorite ? 'is-favorite' : ''}`}
+                                                className={`text-2xl transition-all duration-300 hover:scale-110 p-1 ${professional.isFavorite ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500'}`}
                                                 onClick={() => toggleProfessionalFavorite(professional)}
                                                 aria-label={professional.isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                                             >
                                                 {professional.isFavorite ? '★' : '☆'}
                                             </button>
                                         </div>
-                                        <p>
-                                            <strong>Tipo:</strong> {
-                                                professionalTypes.find(t => t.id === professional.typeId)?.name || 'Não especificado'
-                                            }
-                                        </p>
-                                        <p><strong>Preço:</strong> R$ {professional.price.toLocaleString('pt-BR')}</p>
-                                        <p><strong>Opções de Pagamento:</strong> {professional.paymentOptions || 'Não especificado'}</p>
-                                        <p><strong>Parcelamento:</strong> {professional.installmentPlan || 'Não especificado'}</p>
-                                        {professional.notes && (
-                                            <div className="notes">
-                                                <strong>Observações:</strong>
-                                                <p>{professional.notes}</p>
-                                            </div>
-                                        )}
+                                        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                            <p>
+                                                <strong className="text-gray-900 dark:text-gray-100">Tipo:</strong> {
+                                                    professionalTypes.find(t => t.id === professional.typeId)?.name || 'Não especificado'
+                                                }
+                                            </p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">Preço:</strong> R$ {professional.price.toLocaleString('pt-BR')}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">Opções de Pagamento:</strong> {professional.paymentOptions || 'Não especificado'}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">Parcelamento:</strong> {professional.installmentPlan || 'Não especificado'}</p>
+                                            {professional.notes && (
+                                                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                                    <strong className="text-gray-900 dark:text-gray-100">Observações:</strong>
+                                                    <p className="mt-1 whitespace-pre-wrap">{professional.notes}</p>
+                                                </div>
+                                            )}
+                                        </div>
 
-                                        <div className="professional-actions">
+                                        <div className="flex flex-col gap-2 mt-4">
                                             <button
-                                                className="edit-button"
+                                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors font-medium"
                                                 onClick={() => handleEditProfessional(professional)}
                                             >
                                                 Editar
                                             </button>
                                             <button
-                                                className="delete-button"
+                                                className="bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400 border border-red-500 px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-colors"
                                                 onClick={() => setConfirmDelete(`professional-${professional.id}`)}
                                             >
                                                 Excluir
@@ -1315,17 +1330,17 @@ const Planning = () => {
                                         </div>
 
                                         {confirmDelete === `professional-${professional.id}` && (
-                                            <div className="card-confirm-delete">
-                                                <p>Tem certeza que deseja excluir este profissional?</p>
-                                                <div className="card-confirm-buttons">
+                                            <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2 border-red-500">
+                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4">Tem certeza que deseja excluir este profissional?</p>
+                                                <div className="flex gap-3">
                                                     <button
-                                                        className="card-confirm-yes"
+                                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px]"
                                                         onClick={() => handleDeleteProfessional(professional.id!)}
                                                     >
                                                         Sim
                                                     </button>
                                                     <button
-                                                        className="card-confirm-no"
+                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors min-w-[100px]"
                                                         onClick={() => setConfirmDelete(null)}
                                                     >
                                                         Não
@@ -1339,12 +1354,12 @@ const Planning = () => {
                         )}
 
                         {showProfessionalForm && (
-                            <div className="modal-overlay">
-                                <div className="modal-content">
-                                    <h3>{editingProfessionalId ? 'Editar Profissional' : 'Adicionar Novo Profissional'}</h3>
+                            <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-xl">
+                                    <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">{editingProfessionalId ? 'Editar Profissional' : 'Adicionar Novo Profissional'}</h3>
                                     <form onSubmit={handleProfessionalFormSubmit}>
-                                        <div className="form-group">
-                                            <label htmlFor="name">Nome:</label>
+                                        <div className="mb-4">
+                                            <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Nome:</label>
                                             <input
                                                 type="text"
                                                 id="name"
@@ -1352,16 +1367,18 @@ const Planning = () => {
                                                 value={professionalFormData.name}
                                                 onChange={handleProfessionalFormChange}
                                                 required
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                             />
                                         </div>
-                                        <div className="form-group">
-                                            <label htmlFor="typeId">Tipo de Profissional:</label>
+                                        <div className="mb-4">
+                                            <label htmlFor="typeId" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Tipo de Profissional:</label>
                                             <select
                                                 id="typeId"
                                                 name="typeId"
                                                 value={professionalFormData.typeId}
                                                 onChange={handleProfessionalFormChange}
                                                 required
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none"
                                             >
                                                 <option value="">Selecione um tipo</option>
                                                 {professionalTypes.map(type => (
@@ -1371,8 +1388,8 @@ const Planning = () => {
                                                 ))}
                                             </select>
                                         </div>
-                                        <div className="form-group">
-                                            <label htmlFor="price">Preço:</label>
+                                        <div className="mb-4">
+                                            <label htmlFor="price" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Preço:</label>
                                             <input
                                                 type="number"
                                                 id="price"
@@ -1380,10 +1397,11 @@ const Planning = () => {
                                                 value={professionalFormData.price}
                                                 onChange={handleProfessionalFormChange}
                                                 min="0"
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                             />
                                         </div>
-                                        <div className="form-group">
-                                            <label htmlFor="paymentOptions">Opções de Pagamento:</label>
+                                        <div className="mb-4">
+                                            <label htmlFor="paymentOptions" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Opções de Pagamento:</label>
                                             <input
                                                 type="text"
                                                 id="paymentOptions"
@@ -1391,10 +1409,11 @@ const Planning = () => {
                                                 value={professionalFormData.paymentOptions}
                                                 onChange={handleProfessionalFormChange}
                                                 placeholder="Ex: À vista com 10% de desconto, Parcelado sem juros, etc."
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                             />
                                         </div>
-                                        <div className="form-group">
-                                            <label htmlFor="installmentPlan">Plano de Parcelamento:</label>
+                                        <div className="mb-4">
+                                            <label htmlFor="installmentPlan" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Plano de Parcelamento:</label>
                                             <input
                                                 type="text"
                                                 id="installmentPlan"
@@ -1402,10 +1421,11 @@ const Planning = () => {
                                                 value={professionalFormData.installmentPlan}
                                                 onChange={handleProfessionalFormChange}
                                                 placeholder="Ex: Em até 12x no cartão"
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                             />
                                         </div>
-                                        <div className="form-group">
-                                            <label htmlFor="notes">Observações sobre os serviços:</label>
+                                        <div className="mb-6">
+                                            <label htmlFor="notes" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Observações sobre os serviços:</label>
                                             <textarea
                                                 id="notes"
                                                 name="notes"
@@ -1413,15 +1433,16 @@ const Planning = () => {
                                                 onChange={handleProfessionalFormChange}
                                                 rows={4}
                                                 placeholder="Inclui itens adicionais? Detalhes sobre o pacote? Outras informações relevantes?"
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 resize-none"
                                             ></textarea>
                                         </div>
-                                        <div className="form-buttons">
-                                            <button type="submit" className="submit-button" disabled={isLoading}>
+                                        <div className="flex gap-3">
+                                            <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50" disabled={isLoading}>
                                                 Salvar
                                             </button>
                                             <button
                                                 type="button"
-                                                className="cancel-button"
+                                                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                                 onClick={() => {
                                                     setShowProfessionalForm(false);
                                                     setEditingProfessionalId(null);
@@ -1447,14 +1468,14 @@ const Planning = () => {
 
             case 'professionalTypes':
                 return (
-                    <div className="types-list">
-                        <div className="section-header">
-                            <button className="back-button" onClick={handleBackButton}>
-                                Voltar para Cidades
+                    <div className="p-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                            <button className="flex items-center gap-2 bg-transparent border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium" onClick={handleBackButton}>
+                                ← Voltar para Cidades
                             </button>
-                            <h2>Tipos de Profissionais</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Tipos de Profissionais</h2>
                             <button
-                                className="add-button"
+                                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors font-medium"
                                 onClick={() => setShowTypeForm(true)}
                             >
                                 + Novo Tipo
@@ -1462,43 +1483,45 @@ const Planning = () => {
                         </div>
 
                         {professionalTypes.length === 0 ? (
-                            <p>Nhum tipo encontrado. Adicione um novo tipo.</p>
+                            <p className="text-gray-600 dark:text-gray-400 text-center py-8">Nhum tipo encontrado. Adicione um novo tipo.</p>
                         ) : (
-                            <div className="types-grid">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {professionalTypes.map(type => (
-                                    <div key={type.id} className="type-card">
-                                        <div className="type-card-content">
-                                            <h3>{type.name}</h3>
+                                    <div key={type.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 p-6 relative">
+                                        <div className="flex-1 mb-4">
+                                            <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">{type.name}</h3>
                                         </div>
-                                        <button
-                                            className="edit-button"
-                                            onClick={() => {
-                                                setTypeFormData({ name: type.name });
-                                                setEditingTypeId(type.id!);
-                                                setShowTypeForm(true);
-                                            }}
-                                        >
-                                            Editar
-                                        </button>
-                                        <button
-                                            className="delete-button"
-                                            onClick={() => setConfirmDelete(`type-${type.id}`)}
-                                        >
-                                            Excluir
-                                        </button>
+                                        <div className="flex flex-col gap-2">
+                                            <button
+                                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors font-medium"
+                                                onClick={() => {
+                                                    setTypeFormData({ name: type.name });
+                                                    setEditingTypeId(type.id!);
+                                                    setShowTypeForm(true);
+                                                }}
+                                            >
+                                                Editar
+                                            </button>
+                                            <button
+                                                className="bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400 border border-red-500 px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-colors"
+                                                onClick={() => setConfirmDelete(`type-${type.id}`)}
+                                            >
+                                                Excluir
+                                            </button>
+                                        </div>
 
                                         {confirmDelete === `type-${type.id}` && (
-                                            <div className="card-confirm-delete">
-                                                <p>Tem certeza que deseja excluir este tipo?</p>
-                                                <div className="card-confirm-buttons">
+                                            <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2 border-red-500">
+                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4">Tem certeza que deseja excluir este tipo?</p>
+                                                <div className="flex gap-3">
                                                     <button
-                                                        className="card-confirm-yes"
+                                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px]"
                                                         onClick={() => handleDeleteProfessionalType(type.id!)}
                                                     >
                                                         Sim
                                                     </button>
                                                     <button
-                                                        className="card-confirm-no"
+                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors min-w-[100px]"
                                                         onClick={() => setConfirmDelete(null)}
                                                     >
                                                         Não
@@ -1513,12 +1536,12 @@ const Planning = () => {
 
                         {
                             showTypeForm && (
-                                <div className="modal-overlay">
-                                    <div className="modal-content">
-                                        <h3>{editingTypeId ? 'Editar Tipo de Profissional' : 'Adicionar Novo Tipo'}</h3>
+                                <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto shadow-xl">
+                                        <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">{editingTypeId ? 'Editar Tipo de Profissional' : 'Adicionar Novo Tipo'}</h3>
                                         <form onSubmit={handleTypeFormSubmit}>
-                                            <div className="form-group">
-                                                <label htmlFor="name">Nome:</label>
+                                            <div className="mb-6">
+                                                <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Nome:</label>
                                                 <input
                                                     type="text"
                                                     id="name"
@@ -1526,13 +1549,14 @@ const Planning = () => {
                                                     value={typeFormData.name}
                                                     onChange={(e) => setTypeFormData({ name: e.target.value })}
                                                     required
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                                 />
                                             </div>
-                                            <div className="form-buttons">
-                                                <button type="submit" className="submit-button">Salvar</button>
+                                            <div className="flex gap-3">
+                                                <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">Salvar</button>
                                                 <button
                                                     type="button"
-                                                    className="cancel-button"
+                                                    className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                                     onClick={() => {
                                                         setShowTypeForm(false);
                                                         setEditingTypeId(null);

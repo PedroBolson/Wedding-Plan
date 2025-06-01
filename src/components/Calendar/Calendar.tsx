@@ -6,7 +6,6 @@ import CalendarEvent from './CalendarEvent';
 import DayEventsModal from './DayEventsModal';
 import GoogleCalendarIntegration from './GoogleCalendarIntegration';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import './Calendar.css';
 
 interface Event {
     id?: string;
@@ -207,7 +206,12 @@ const Calendar: React.FC = () => {
 
         // Dias vazios do início do mês
         for (let i = 0; i < firstDay; i++) {
-            days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
+            days.push(
+                <div
+                    key={`empty-${i}`}
+                    className="aspect-square min-h-[60px] sm:min-h-[100px] bg-gray-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg"
+                />
+            );
         }
 
         for (let day = 1; day <= daysInMonth; day++) {
@@ -231,21 +235,28 @@ const Calendar: React.FC = () => {
             days.push(
                 <div
                     key={day}
-                    className={`calendar-day ${dayEvents.length > 0 ? 'has-events' : ''} ${isToday ? 'today' : ''}`}
+                    className={`aspect-square min-h-[60px] sm:min-h-[100px] border border-gray-200 dark:border-gray-700 rounded-lg p-2 relative cursor-pointer transition-all duration-200 bg-white dark:bg-gray-800 flex flex-col overflow-hidden ${dayEvents.length > 0 ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                        } ${isToday ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''
+                        } hover:bg-gray-50 dark:hover:bg-gray-700 hover:transform hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-gray-900/30`}
                     onClick={() => openDayEvents(date)}
                 >
-                    <div className="calendar-day-number">{day}</div>
+                    <div className={`text-sm font-medium mb-2 ${isToday
+                            ? 'bg-blue-600 dark:bg-blue-500 text-white rounded-full w-7 h-7 flex items-center justify-center -m-1 mb-1'
+                            : 'text-gray-900 dark:text-gray-100'
+                        }`}>
+                        {day}
+                    </div>
 
-                    {/* Indicador de eventos centralizado */}
+                    {/* Indicador de eventos centralizado para mobile */}
                     {sortedDayEvents.length > 0 && isMobile && (
-                        <div className="calendar-mobile-events-count">
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-600 dark:bg-blue-500 text-white min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-xs font-medium shadow-sm">
                             {sortedDayEvents.length}
                         </div>
                     )}
 
                     {/* Apenas no desktop, mostrar eventos detalhados */}
                     {!isMobile && (
-                        <div className="calendar-day-events">
+                        <div className="flex flex-col w-full overflow-hidden flex-1">
                             {visibleEvents.map((event: Event) => (
                                 <CalendarEvent
                                     key={event.id}
@@ -258,8 +269,8 @@ const Calendar: React.FC = () => {
                                 />
                             ))}
                             {hasMoreEvents && (
-                                <div className="calendar-more-events">
-                                    +{sortedDayEvents.length - 2} evento(s) {/* Alterado de 3 para 2 */}
+                                <div className="text-xs text-gray-600 dark:text-gray-400 text-center mt-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded font-medium">
+                                    +{sortedDayEvents.length - 2} evento(s)
                                 </div>
                             )}
                         </div>
@@ -289,19 +300,33 @@ const Calendar: React.FC = () => {
     };
 
     return (
-        <div className="calendar-container">
-            <div className="calendar-header">
-                <h2>Calendário de Eventos</h2>
-                <div className="calendar-controls">
-                    <button onClick={prevMonth}>&lt;</button>
-                    <h3 style={{ paddingTop: '4%' }}>{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h3>
-                    <button onClick={nextMonth}>&gt;</button>
+        <div className="w-full max-w-7xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-gray-900/30 p-5">
+            <div className="flex flex-col lg:flex-row justify-between items-center pb-5 border-b border-gray-200 dark:border-gray-700 gap-4">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Calendário de Eventos</h2>
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={prevMonth}
+                            className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 transition-all duration-200"
+                        >
+                            &lt;
+                        </button>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 min-w-[140px] text-center pt-1">
+                            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+                        </h3>
+                        <button
+                            onClick={nextMonth}
+                            className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 transition-all duration-200"
+                        >
+                            &gt;
+                        </button>
+                    </div>
                     <button
-                        className="calendar-add-event-btn"
                         onClick={() => {
                             setSelectedEvent(null);
                             setShowEventForm(true);
                         }}
+                        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
                     >
                         Adicionar Evento
                     </button>
@@ -315,7 +340,7 @@ const Calendar: React.FC = () => {
                 />
             </GoogleOAuthProvider>
 
-            <div className="calendar-weekdays">
+            <div className="grid grid-cols-7 gap-2 py-4 font-semibold border-b border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-center">
                 <div>Dom</div>
                 <div>Seg</div>
                 <div>Ter</div>
@@ -325,7 +350,7 @@ const Calendar: React.FC = () => {
                 <div>Sáb</div>
             </div>
 
-            <div className="calendar-days">
+            <div className="grid grid-cols-7 gap-2 pt-4">
                 {renderCalendar()}
             </div>
 

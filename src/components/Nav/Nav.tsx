@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './Nav.css';
 import AdminModal from '../AdminModal/AdminModal';
 
 interface NavOption {
@@ -74,35 +73,42 @@ const Nav: React.FC<NavProps> = ({
         <>
             {windowWidth < 1051 && (
                 <button
-                    className={`nav-mobile-toggle ${mobileMenuOpen ? 'mobile-open' : ''}`}
+                    className={`fixed top-4 right-4 z-[1100] w-12 h-12 border-none bg-transparent rounded-lg cursor-pointer flex justify-center items-center p-0 transition-all duration-300 ${mobileMenuOpen ? 'mobile-open' : ''}`}
                     onClick={toggleMobileMenu}
                     aria-label="Menu de navegação"
                 >
-                    <span className="hamburger-icon" />
+                    <span className={`relative w-6 h-0.5 bg-gray-900 dark:bg-gray-100 transition-all duration-300 ${mobileMenuOpen ? 'bg-transparent rotate-180' : ''} before:content-[''] before:absolute before:w-6 before:h-0.5 before:bg-gray-900 before:dark:bg-gray-100 before:transition-all before:duration-300 before:left-0 ${mobileMenuOpen ? 'before:rotate-45 before:translate-y-0 before:top-0' : 'before:-top-1.5'} after:content-[''] after:absolute after:w-6 after:h-0.5 after:bg-gray-900 after:dark:bg-gray-100 after:transition-all after:duration-300 after:left-0 ${mobileMenuOpen ? 'after:-rotate-45 after:translate-y-0 after:top-0' : 'after:top-1.5'}`} />
                 </button>
             )}
 
-            <nav className={`nav-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
-                <div className="nav-container">
-                    <div className="nav-logo">
-                        <h1>{isAdmin ? 'Admin Casamento' : 'Casamento'}</h1>
+            <nav className={`fixed top-0 left-0 bottom-0 w-64 bg-gray-50 dark:bg-gray-800 shadow-lg overflow-y-auto transition-transform duration-300 z-[1000] ${mobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0 lg:shadow-lg'}`}>
+                <div className="flex flex-col h-full p-0 m-0">
+                    <div className="px-4 py-6 text-center border-b border-gray-200 dark:border-gray-700">
+                        <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 m-0">
+                            {isAdmin ? 'Admin Casamento' : 'Casamento'}
+                        </h1>
                     </div>
 
-                    <div className="nav-content">
-                        <ul className="nav-list">
+                    <div className="flex-1 overflow-y-auto">
+                        <ul className="list-none p-3 m-0 flex flex-col gap-3">
                             {navOptions.map(option => (
-                                <li key={option.id} className="nav-item">
+                                <li key={option.id} className="w-full">
                                     {option.isAvailable ? (
                                         <button
-                                            className={`nav-link ${activeSection === option.id ? 'active' : ''}`}
+                                            className={`block w-full px-4 py-3 rounded-lg font-medium text-left transition-all duration-200 border-none cursor-pointer ${activeSection === option.id
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-indigo-600 hover:text-white hover:-translate-y-0.5'
+                                                }`}
                                             onClick={() => handleNavClick(option.id)}
                                         >
                                             {option.label}
                                         </button>
                                     ) : (
-                                        <span className="nav-link disabled" title="Em breve">
+                                        <span className="relative block w-full px-4 py-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 font-medium text-left opacity-60 cursor-not-allowed" title="Em breve">
                                             {option.label}
-                                            <span className="coming-soon-badge">Em breve</span>
+                                            <span className="absolute -top-2 -right-2 bg-yellow-500 text-gray-900 text-xs px-2 py-0.5 rounded-full font-bold">
+                                                Em breve
+                                            </span>
                                         </span>
                                     )}
                                 </li>
@@ -110,31 +116,76 @@ const Nav: React.FC<NavProps> = ({
                         </ul>
                     </div>
 
-                    <div className="nav-footer">
-                        <button className="theme-toggle" onClick={toggleTheme} aria-label="Alternar tema">
-                            {darkTheme ?
-                                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="32" height="32" viewBox="0 0 64 64">
-                                    <radialGradient id="RbJnniKIjDo23wwJ9NBMca_119011_gr1" cx="32" cy="32" r="31.016" gradientUnits="userSpaceOnUse" spreadMethod="reflect">
-                                        <stop offset="0" stopColor="#afeeff"></stop>
-                                        <stop offset=".193" stopColor="#bbf1ff"></stop>
-                                        <stop offset=".703" stopColor="#d7f8ff"></stop>
-                                        <stop offset="1" stopColor="#e1faff"></stop>
-                                    </radialGradient>
-                                    <path fill="url(#RbJnniKIjDo23wwJ9NBMca_119011_gr1)" d="M59,20h1.5c2.168,0,3.892-1.998,3.422-4.243C63.58,14.122,62.056,13,60.385,13L56,13 c-1.105,0-2-0.895-2-2c0-1.105,0.895-2,2-2h0.385c1.67,0,3.195-1.122,3.537-2.757C60.392,3.998,58.668,2,56.5,2H34.006H32.5h-26 C4.575,2,3,3.575,3,5.5S4.575,9,6.5,9H8c1.105,0,2,0.895,2,2c0,1.105-0.895,2-2,2l-3.385,0c-1.67,0-3.195,1.122-3.537,2.757 C0.608,18.002,2.332,20,4.5,20H18v13L3.615,33c-1.67,0-3.195,1.122-3.537,2.757C-0.392,38.002,1.332,40,3.5,40H5 c1.105,0,2,0.895,2,2c0,1.105-0.895,2-2,2H4.5c-2.168,0-3.892,1.998-3.422,4.243C1.42,49.878,2.945,51,4.615,51H8 c1.105,0,2,0.895,2,2c0,1.105-0.895,2-2,2l-1.385,0c-1.67,0-3.195,1.122-3.537,2.757C2.608,60.002,4.332,62,6.5,62h24.494H32.5h24 c1.925,0,3.5-1.575,3.5-3.5S58.425,55,56.5,55H56c-1.105,0-2-0.895-2-2c0-1.105,0.895-2,2-2h4.385c1.67,0,3.195-1.122,3.537-2.757 C64.392,45.998,62.668,44,60.5,44H47V31h12.385c1.67,0,3.195-1.122,3.537-2.757C63.392,25.998,61.668,24,59.5,24H59 c-1.105,0-2-0.895-2-2C57,20.895,57.895,20,59,20z"></path><linearGradient id="RbJnniKIjDo23wwJ9NBMcb_119011_gr2" x1="32" x2="32" y1="52" y2="12" gradientUnits="userSpaceOnUse" spreadMethod="reflect"><stop offset="0" stop-color="#ff9757"></stop><stop offset="1" stop-color="#ffb65b"></stop><stop offset="1" stop-color="#ffb65b"></stop></linearGradient><path fill="url(#RbJnniKIjDo23wwJ9NBMcb_119011_gr2)" d="M12,12h40v40H12V12z"></path><linearGradient id="RbJnniKIjDo23wwJ9NBMcc_119011_gr3" x1="32" x2="32" y1="60" y2="4" gradientUnits="userSpaceOnUse" spreadMethod="reflect"><stop offset="0" stop-color="#ff9757"></stop><stop offset="1" stop-color="#ffb65b"></stop><stop offset="1" stop-color="#ffb65b"></stop></linearGradient><path fill="url(#RbJnniKIjDo23wwJ9NBMcc_119011_gr3)" d="M4,32L32,4l28,28L32,60L4,32z"></path><linearGradient id="RbJnniKIjDo23wwJ9NBMcd_119011_gr4" x1="32" x2="32" y1="56.713" y2="22.713" gradientUnits="userSpaceOnUse" spreadMethod="reflect"><stop offset="0" stop-color="#feaa53"></stop><stop offset=".612" stop-color="#ffcd49"></stop><stop offset="1" stop-color="#ffde44"></stop></linearGradient><path fill="url(#RbJnniKIjDo23wwJ9NBMcd_119011_gr4)" d="M15,32c0,9.393,7.607,17,17,17c9.387,0,17-7.607,17-17s-7.613-17-17-17 C22.607,15,15,22.607,15,32"></path>
-                                </svg>
-                                :
-                                <img width="32" height="32" src="https://img.icons8.com/color/48/moon.png" alt="moon" />
-                            }
-                            <span>{darkTheme ? 'Modo Claro' : 'Modo Escuro'}</span>
-                        </button>
+                    <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex flex-col gap-2">
+                        <div className="flex items-center gap-3 px-3 py-3">
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">
+                                {darkTheme ? 'Modo Escuro' : 'Modo Claro'}
+                            </span>
+                            <div
+                                className="relative w-16 h-8 cursor-pointer"
+                                onClick={toggleTheme}
+                                aria-label="Alternar tema"
+                                role="switch"
+                                aria-checked={darkTheme}
+                            >
+                                {/* Switch Background */}
+                                <div className={`absolute inset-0 rounded-full transition-all duration-500 ease-in-out ${darkTheme
+                                    ? 'bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-800 shadow-lg'
+                                    : 'bg-gradient-to-r from-blue-400 via-blue-300 to-blue-200 shadow-md'
+                                    }`}>
+                                    {/* Stars for dark mode */}
+                                    {darkTheme && (
+                                        <>
+                                            <div className="absolute top-1 left-2 w-1 h-1 bg-white rounded-full animate-pulse" style={{ animationDelay: '0s' }}></div>
+                                            <div className="absolute top-2 right-3 w-0.5 h-0.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                                            <div className="absolute bottom-1.5 left-4 w-0.5 h-0.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                                            <div className="absolute top-1.5 right-5 w-1 h-1 bg-yellow-200 rounded-full animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+                                        </>
+                                    )}
+
+                                    {/* Clouds for light mode */}
+                                    {!darkTheme && (
+                                        <>
+                                            <div className="absolute top-1 right-2 w-2 h-1 bg-white rounded-full opacity-80 animate-bounce" style={{ animationDelay: '0s', animationDuration: '2s' }}></div>
+                                            <div className="absolute bottom-1 right-4 w-1.5 h-0.5 bg-white rounded-full opacity-70 animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '2.5s' }}></div>
+                                            <div className="absolute top-2 right-6 w-1 h-0.5 bg-white rounded-full opacity-60 animate-bounce" style={{ animationDelay: '1s', animationDuration: '3s' }}></div>
+                                        </>
+                                    )}
+                                </div>
+
+                                {/* Switch Circle with Icon */}
+                                <div className={`absolute top-0.5 w-7 h-7 rounded-full transition-all duration-500 ease-in-out transform ${darkTheme
+                                    ? 'translate-x-8 bg-gradient-to-br from-gray-100 to-gray-300 shadow-md'
+                                    : 'translate-x-0.5 bg-gradient-to-br from-yellow-300 to-yellow-500 shadow-lg'
+                                    } flex items-center justify-center`}>
+                                    {darkTheme ? (
+                                        // Moon Icon
+                                        <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                                        </svg>
+                                    ) : (
+                                        // Sun Icon
+                                        <svg className="w-4 h-4 text-yellow-800 animate-spin" viewBox="0 0 24 24" fill="currentColor" style={{ animationDuration: '8s' }}>
+                                            <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+                                        </svg>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
 
                         {isAdmin && (
-                            <button className="admin-button" onClick={openAdminModal}>
+                            <button
+                                className="flex items-center gap-3 px-3 py-3 rounded-lg border-none bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium cursor-pointer transition-all duration-200 w-full justify-start hover:bg-gray-300 dark:hover:bg-gray-600"
+                                onClick={openAdminModal}
+                            >
                                 <span>Gerenciar Usuários</span>
                             </button>
                         )}
 
-                        <button className="logout-button" onClick={onLogout}>
+                        <button
+                            className="flex items-center gap-3 px-3 py-3 rounded-lg border-none bg-gray-200 dark:bg-gray-700 text-red-600 dark:text-red-400 font-medium cursor-pointer transition-all duration-200 w-full justify-start hover:bg-gray-300 dark:hover:bg-gray-600"
+                            onClick={onLogout}
+                        >
                             <span>Sair</span>
                         </button>
                     </div>
@@ -142,7 +193,7 @@ const Nav: React.FC<NavProps> = ({
             </nav>
 
             {mobileMenuOpen && (
-                <div className="nav-backdrop" onClick={() => setMobileMenuOpen(false)} />
+                <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-[999] block lg:hidden" onClick={() => setMobileMenuOpen(false)} />
             )}
 
             {/* Modal para gerenciamento de admins */}

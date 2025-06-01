@@ -41,9 +41,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     // Atualizar a classe do documento quando o modo escuro mudar
     useEffect(() => {
         if (darkTheme) {
-            document.body.classList.add('dark-theme');
+            document.body.classList.add('dark');
         } else {
-            document.body.classList.remove('dark-theme');
+            document.body.classList.remove('dark');
         }
 
         // Salvar a preferência no localStorage

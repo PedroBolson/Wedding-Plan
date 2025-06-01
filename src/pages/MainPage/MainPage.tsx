@@ -4,7 +4,6 @@ import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../firebase/config";
 import { useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
-import "./MainPage.css";
 import Nav from "../../components/Nav/Nav";
 import Planning from "../../components/Planning/Planning";
 import Favorites from "../../components/Favorites/Favorites";
@@ -101,9 +100,9 @@ const MainPage = () => {
                 return <ExpenseChart />;
             case 'guests':
                 return (
-                    <div className="coming-soon">
-                        <h2>Em breve!</h2>
-                        <p>Esta funcionalidade estará disponível em uma atualização futura.</p>
+                    <div className="text-center p-12 bg-gray-50 dark:bg-gray-800 rounded-lg m-8 max-w-2xl mx-auto">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Em breve!</h2>
+                        <p className="text-gray-600 dark:text-gray-400">Esta funcionalidade estará disponível em uma atualização futura.</p>
                     </div>
                 );
             default:
@@ -112,7 +111,7 @@ const MainPage = () => {
     };
 
     return (
-        <div className={`main-page ${darkTheme ? "dark-theme" : ""}`}>
+        <div className="flex min-h-screen bg-white dark:bg-gray-900 relative">
             <Nav
                 activeSection={activeSection}
                 onSectionChange={setActiveSection}
@@ -122,8 +121,10 @@ const MainPage = () => {
                 isAdmin={isAdmin}
             />
 
-            <main className="main-container">
-                {renderActiveSection()}
+            <main className="flex-1 p-8 w-full lg:w-[calc(100%-16rem)] lg:ml-64 transition-all duration-300 min-h-screen box-border max-md:ml-0 max-md:w-full max-md:p-4 max-md:pt-16">
+                <div className="w-full max-w-6xl mx-auto">
+                    {renderActiveSection()}
+                </div>
             </main>
         </div>
     );
