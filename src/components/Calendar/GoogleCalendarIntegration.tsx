@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
+import { ThemeContext } from '../../contexts/ThemeContext';
 
 interface Event {
     id?: string;
@@ -18,6 +19,7 @@ interface GoogleCalendarIntegrationProps {
 }
 
 const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({ events, onImportEvents }) => {
+    const { colors } = useContext(ThemeContext);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -189,9 +191,36 @@ const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({ e
     };
 
     return (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 my-4 border border-gray-200 dark:border-gray-700">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none">
+        <div style={{
+            backgroundColor: colors.surface,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '0.5rem',
+            padding: '1rem',
+            margin: '1rem 0'
+        }}>
+            <style>
+                {`
+                .google-calendar-buttons {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.75rem;
+                }
+                @media (min-width: 640px) {
+                    .google-calendar-buttons {
+                        flex-direction: row;
+                    }
+                }
+                `}
+            </style>
+            <h4 style={{
+                fontSize: '1.125rem',
+                fontWeight: '600',
+                color: colors.text,
+                marginBottom: '0.75rem',
+                display: 'flex',
+                alignItems: 'center'
+            }}>
+                <svg style={{ width: '1.25rem', height: '1.25rem', marginRight: '0.5rem', color: colors.primary }} viewBox="0 0 24 24" fill="none">
                     <path fill="currentColor" d="M21.5 6c.276 0 .5.224.5.5v14c0 .276-.224.5-.5.5h-19c-.276 0-.5-.224-.5-.5v-14c0-.276.224-.5.5-.5h19zm0-1h-19c-.828 0-1.5.672-1.5 1.5v14c0 .828.672 1.5 1.5 1.5h19c.828 0 1.5-.672 1.5-1.5v-14c0-.828-.672-1.5-1.5-1.5z" />
                     <path fill="#EA4335" d="M6.5 15h-2c-.276 0-.5.224-.5.5s.224.5.5.5h2c.276 0 .5-.224.5-.5s-.224-.5-.5-.5z" />
                     <path fill="#FBBC05" d="M12.5 15h-2c-.276 0-.5.224-.5.5s.224.5.5.5h2c.276 0 .5-.224.5-.5s-.224-.5-.5-.5z" />
@@ -202,11 +231,24 @@ const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({ e
             </h4>
 
             {statusMessage && (
-                <div className={`flex items-center p-3 mb-3 rounded-lg text-sm ${statusType === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-l-4 border-green-400' :
-                        statusType === 'error' ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-l-4 border-red-400' :
-                            'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-l-4 border-blue-400'
-                    }`}>
-                    <div className="w-4 h-4 mr-2">
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0.75rem',
+                    marginBottom: '0.75rem',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    backgroundColor: statusType === 'success' ? colors.success + '20' :
+                        statusType === 'error' ? colors.error + '20' :
+                            colors.primary + '20',
+                    color: statusType === 'success' ? colors.success :
+                        statusType === 'error' ? colors.error :
+                            colors.primary,
+                    borderLeft: `4px solid ${statusType === 'success' ? colors.success :
+                        statusType === 'error' ? colors.error :
+                            colors.primary}`
+                }}>
+                    <div style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}>
                         {statusType === 'success' && '✅'}
                         {statusType === 'error' && '❌'}
                         {statusType === 'info' && 'ℹ️'}
@@ -215,75 +257,197 @@ const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({ e
                 </div>
             )}
 
-            <div className="bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-3 mb-4 text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                <span className="text-lg">ℹ️</span>
+            <div style={{
+                backgroundColor: colors.surface,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '0.5rem',
+                padding: '0.75rem',
+                marginBottom: '1rem',
+                fontSize: '0.875rem',
+                color: colors.textSecondary,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+            }}>
+                <span style={{ fontSize: '1.125rem' }}>ℹ️</span>
                 <div>
                     Esta integração permite sincronizar eventos com o Google Calendar.
                     {!isAuthenticated && " Clique para conectar."}
                 </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="google-calendar-buttons">
                 <button
                     onClick={exportToGoogleCalendar}
                     disabled={isSyncing}
-                    className="flex-1 min-w-[200px] px-4 py-3 rounded-lg border-none cursor-pointer font-medium transition-all duration-200 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed"
+                    style={{
+                        flex: '1',
+                        minWidth: '200px',
+                        padding: '0.75rem 1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        cursor: isSyncing ? 'not-allowed' : 'pointer',
+                        fontWeight: '500',
+                        transition: 'all 0.2s',
+                        backgroundColor: colors.primary,
+                        color: 'white',
+                        opacity: isSyncing ? 0.7 : 1
+                    }}
+                    onMouseEnter={(e) => !isSyncing && (e.currentTarget.style.backgroundColor = colors.primary + 'dd')}
+                    onMouseLeave={(e) => !isSyncing && (e.currentTarget.style.backgroundColor = colors.primary)}
                 >
                     {isSyncing ? 'Sincronizando...' : isAuthenticated ? 'Exportar' : 'Conectar e Exportar'}
                 </button>
                 <button
                     onClick={importFromGoogleCalendar}
                     disabled={isSyncing}
-                    className="flex-1 min-w-[200px] px-4 py-3 rounded-lg border-none cursor-pointer font-medium transition-all duration-200 bg-yellow-500 text-gray-900 hover:bg-yellow-600 disabled:opacity-70 disabled:cursor-not-allowed"
+                    style={{
+                        flex: '1',
+                        minWidth: '200px',
+                        padding: '0.75rem 1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        cursor: isSyncing ? 'not-allowed' : 'pointer',
+                        fontWeight: '500',
+                        transition: 'all 0.2s',
+                        backgroundColor: colors.accent,
+                        color: colors.text,
+                        opacity: isSyncing ? 0.7 : 1
+                    }}
+                    onMouseEnter={(e) => !isSyncing && (e.currentTarget.style.backgroundColor = colors.accent + 'dd')}
+                    onMouseLeave={(e) => !isSyncing && (e.currentTarget.style.backgroundColor = colors.accent)}
                 >
                     {isSyncing ? 'Sincronizando...' : isAuthenticated ? 'Importar' : 'Conectar e Importar'}
                 </button>
             </div>
 
             {showImportModal && (
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 mt-5 shadow-lg">
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                <div style={{
+                    backgroundColor: colors.surface,
+                    borderRadius: '0.5rem',
+                    border: `1px solid ${colors.border}`,
+                    padding: '1.25rem',
+                    marginTop: '1.25rem',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                }}>
+                    <h4 style={{
+                        fontSize: '1.125rem',
+                        fontWeight: '600',
+                        color: colors.text,
+                        marginBottom: '1rem'
+                    }}>
                         Selecione os eventos
                     </h4>
-                    <div className="flex flex-col sm:flex-row gap-2 mb-3">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.75rem' }}>
                         <button
                             onClick={() => toggleSelectAll(true)}
-                            className="flex-1 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                            style={{
+                                flex: '1',
+                                padding: '0.5rem 0.75rem',
+                                fontSize: '0.875rem',
+                                backgroundColor: colors.surface,
+                                color: colors.textSecondary,
+                                border: `1px solid ${colors.border}`,
+                                borderRadius: '0.25rem',
+                                cursor: 'pointer',
+                                transition: 'colors 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = colors.surface + 'dd';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = colors.surface;
+                            }}
                         >
                             Selecionar todos
                         </button>
                         <button
                             onClick={() => toggleSelectAll(false)}
-                            className="flex-1 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                            style={{
+                                flex: '1',
+                                padding: '0.5rem 0.75rem',
+                                fontSize: '0.875rem',
+                                backgroundColor: colors.surface,
+                                color: colors.textSecondary,
+                                border: `1px solid ${colors.border}`,
+                                borderRadius: '0.25rem',
+                                cursor: 'pointer',
+                                transition: 'colors 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = colors.surface + 'dd';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = colors.surface;
+                            }}
                         >
                             Desmarcar todos
                         </button>
                     </div>
-                    <div className="max-h-64 sm:max-h-80 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded mb-4 bg-white dark:bg-gray-900">
+                    <div style={{
+                        maxHeight: '20rem',
+                        overflowY: 'auto',
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: '0.25rem',
+                        marginBottom: '1rem',
+                        backgroundColor: colors.background
+                    }}>
                         {pendingImportEvents.map((event, index) => (
                             <div
                                 key={index}
-                                className={`flex p-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0 cursor-pointer transition-colors ${selectedImportEvents[index] ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
-                                    }`}
+                                style={{
+                                    display: 'flex',
+                                    padding: '0.75rem',
+                                    borderBottom: index < pendingImportEvents.length - 1 ? `1px solid ${colors.border}` : 'none',
+                                    cursor: 'pointer',
+                                    transition: 'colors 0.2s',
+                                    backgroundColor: selectedImportEvents[index] ? colors.primary + '20' : 'transparent'
+                                }}
                                 onClick={() => toggleEventSelection(index)}
+                                onMouseEnter={(e) => {
+                                    if (!selectedImportEvents[index]) {
+                                        e.currentTarget.style.backgroundColor = colors.surface;
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!selectedImportEvents[index]) {
+                                        e.currentTarget.style.backgroundColor = 'transparent';
+                                    }
+                                }}
                             >
-                                <div className="flex items-center mr-3">
+                                <div style={{ display: 'flex', alignItems: 'center', marginRight: '0.75rem' }}>
                                     <input
                                         type="checkbox"
                                         checked={selectedImportEvents[index] || false}
                                         onChange={() => toggleEventSelection(index)}
-                                        className="w-5 h-5 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                        style={{
+                                            width: '1.25rem',
+                                            height: '1.25rem',
+                                            cursor: 'pointer',
+                                            accentColor: colors.primary
+                                        }}
                                     />
                                 </div>
-                                <div className="flex-1">
-                                    <div className="font-medium text-gray-900 dark:text-white mb-1">
+                                <div style={{ flex: '1' }}>
+                                    <div style={{
+                                        fontWeight: '500',
+                                        color: colors.text,
+                                        marginBottom: '0.25rem'
+                                    }}>
                                         {event.title}
                                     </div>
-                                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    <div style={{
+                                        fontSize: '0.875rem',
+                                        color: colors.textSecondary,
+                                        marginBottom: '0.25rem'
+                                    }}>
                                         {new Date(event.date).toLocaleString()}
                                     </div>
                                     {event.location && (
-                                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                                        <div style={{
+                                            fontSize: '0.875rem',
+                                            color: colors.textSecondary
+                                        }}>
                                             📍 {event.location}
                                         </div>
                                     )}
@@ -291,20 +455,58 @@ const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({ e
                             </div>
                         ))}
                     </div>
-                    <div className="text-center mb-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div style={{
+                        textAlign: 'center',
+                        marginBottom: '1rem',
+                        fontSize: '0.875rem',
+                        color: colors.textSecondary
+                    }}>
                         {Object.values(selectedImportEvents).filter(Boolean).length} de {pendingImportEvents.length} selecionado(s)
                     </div>
-                    <div className="flex flex-col sm:flex-row justify-end gap-3">
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: '0.75rem' }}>
                         <button
                             onClick={() => setShowImportModal(false)}
-                            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                            style={{
+                                padding: '0.5rem 1rem',
+                                backgroundColor: colors.surface,
+                                color: colors.textSecondary,
+                                border: `1px solid ${colors.border}`,
+                                borderRadius: '0.25rem',
+                                cursor: 'pointer',
+                                transition: 'colors 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = colors.surface + 'dd';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = colors.surface;
+                            }}
                         >
                             Cancelar
                         </button>
                         <button
                             onClick={confirmImport}
                             disabled={Object.values(selectedImportEvents).filter(Boolean).length === 0}
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{
+                                padding: '0.5rem 1rem',
+                                backgroundColor: colors.primary,
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '0.25rem',
+                                cursor: Object.values(selectedImportEvents).filter(Boolean).length === 0 ? 'not-allowed' : 'pointer',
+                                transition: 'colors 0.2s',
+                                opacity: Object.values(selectedImportEvents).filter(Boolean).length === 0 ? 0.5 : 1
+                            }}
+                            onMouseEnter={(e) => {
+                                if (Object.values(selectedImportEvents).filter(Boolean).length > 0) {
+                                    e.currentTarget.style.backgroundColor = colors.primary + 'dd';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (Object.values(selectedImportEvents).filter(Boolean).length > 0) {
+                                    e.currentTarget.style.backgroundColor = colors.primary;
+                                }
+                            }}
                         >
                             Importar
                         </button>

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { ThemeContext } from '../../contexts/ThemeContext';
 
 interface Event {
     id?: string;
@@ -18,6 +19,7 @@ interface EventFormProps {
 }
 
 const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDelete }) => {
+    const { colors } = useContext(ThemeContext);
     const [title, setTitle] = useState('');
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
@@ -122,15 +124,37 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-5 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <div style={{
+                backgroundColor: colors.background,
+                borderRadius: '0.75rem',
+                padding: '1.5rem',
+                width: '100%',
+                maxWidth: '32rem',
+                maxHeight: '85vh',
+                overflowY: 'auto',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }} className="animate-in slide-in-from-bottom-4 duration-300">
+                <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: 'bold',
+                    color: colors.text,
+                    marginBottom: '1.25rem',
+                    paddingBottom: '1rem',
+                    borderBottom: `1px solid ${colors.border}`
+                }}>
                     {event ? 'Editar Evento' : 'Novo Evento'}
                 </h3>
 
                 {!showDeleteConfirmation ? (
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                         <div>
-                            <label htmlFor="title" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <label htmlFor="title" style={{
+                                display: 'block',
+                                fontSize: '0.875rem',
+                                fontWeight: '600',
+                                color: colors.text,
+                                marginBottom: '0.5rem'
+                            }}>
                                 Título
                             </label>
                             <input
@@ -140,57 +164,138 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                                 onChange={(e) => setTitle(e.target.value)}
                                 required
                                 placeholder="Nome do evento"
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    border: `1px solid ${colors.border}`,
+                                    borderRadius: '0.5rem',
+                                    backgroundColor: colors.surface,
+                                    color: colors.text,
+                                    fontSize: '1rem',
+                                    transition: 'border-color 0.2s, box-shadow 0.2s'
+                                }}
+                                onFocus={(e) => {
+                                    e.target.style.borderColor = colors.primary;
+                                    e.target.style.boxShadow = `0 0 0 2px ${colors.primary}20`;
+                                }}
+                                onBlur={(e) => {
+                                    e.target.style.borderColor = colors.border;
+                                    e.target.style.boxShadow = 'none';
+                                }}
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label htmlFor="date" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    Data
-                                </label>
-                                <input
-                                    type="date"
-                                    id="date"
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                />
-                            </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                                <div>
+                                    <label htmlFor="date" style={{
+                                        display: 'block',
+                                        fontSize: '0.875rem',
+                                        fontWeight: '600',
+                                        color: colors.text,
+                                        marginBottom: '0.5rem'
+                                    }}>
+                                        Data
+                                    </label>
+                                    <input
+                                        type="date"
+                                        id="date"
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                        required
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.75rem',
+                                            border: `1px solid ${colors.border}`,
+                                            borderRadius: '0.5rem',
+                                            backgroundColor: colors.surface,
+                                            color: colors.text,
+                                            fontSize: '1rem',
+                                            transition: 'border-color 0.2s, box-shadow 0.2s'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = colors.primary;
+                                            e.target.style.boxShadow = `0 0 0 2px ${colors.primary}20`;
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = colors.border;
+                                            e.target.style.boxShadow = 'none';
+                                        }}
+                                    />
+                                </div>
 
-                            <div>
-                                <label htmlFor="time" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    Hora de início
-                                </label>
-                                <input
-                                    type="time"
-                                    id="time"
-                                    value={time}
-                                    onChange={(e) => setTime(e.target.value)}
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                />
+                                <div>
+                                    <label htmlFor="time" style={{
+                                        display: 'block',
+                                        fontSize: '0.875rem',
+                                        fontWeight: '600',
+                                        color: colors.text,
+                                        marginBottom: '0.5rem'
+                                    }}>
+                                        Hora de início
+                                    </label>
+                                    <input
+                                        type="time"
+                                        id="time"
+                                        value={time}
+                                        onChange={(e) => setTime(e.target.value)}
+                                        required
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.75rem',
+                                            border: `1px solid ${colors.border}`,
+                                            borderRadius: '0.5rem',
+                                            backgroundColor: colors.surface,
+                                            color: colors.text,
+                                            fontSize: '1rem',
+                                            transition: 'border-color 0.2s, box-shadow 0.2s'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = colors.primary;
+                                            e.target.style.boxShadow = `0 0 0 2px ${colors.primary}20`;
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = colors.border;
+                                            e.target.style.boxShadow = 'none';
+                                        }}
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 cursor-pointer" onClick={toggleEndDate}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }} onClick={toggleEndDate}>
                             <input
                                 type="checkbox"
                                 id="enableEndDate"
                                 checked={endDateEnabled}
                                 onChange={toggleEndDate}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                                style={{
+                                    width: '1rem',
+                                    height: '1rem',
+                                    cursor: 'pointer',
+                                    accentColor: colors.primary
+                                }}
                             />
-                            <label htmlFor="enableEndDate" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                            <label htmlFor="enableEndDate" style={{
+                                fontSize: '0.875rem',
+                                fontWeight: '500',
+                                color: colors.text,
+                                cursor: 'pointer'
+                            }}>
                                 Definir hora de término
                             </label>
                         </div>
 
                         {endDateEnabled && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                                 <div>
-                                    <label htmlFor="endDate" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    <label htmlFor="endDate" style={{
+                                        display: 'block',
+                                        fontSize: '0.875rem',
+                                        fontWeight: '600',
+                                        color: colors.text,
+                                        marginBottom: '0.5rem'
+                                    }}>
                                         Data de término
                                     </label>
                                     <input
@@ -199,12 +304,35 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                                         value={endDate}
                                         onChange={(e) => setEndDate(e.target.value)}
                                         required={endDateEnabled}
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.75rem',
+                                            border: `1px solid ${colors.border}`,
+                                            borderRadius: '0.5rem',
+                                            backgroundColor: colors.surface,
+                                            color: colors.text,
+                                            fontSize: '1rem',
+                                            transition: 'border-color 0.2s, box-shadow 0.2s'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = colors.primary;
+                                            e.target.style.boxShadow = `0 0 0 2px ${colors.primary}20`;
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = colors.border;
+                                            e.target.style.boxShadow = 'none';
+                                        }}
                                     />
                                 </div>
 
                                 <div>
-                                    <label htmlFor="endTime" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    <label htmlFor="endTime" style={{
+                                        display: 'block',
+                                        fontSize: '0.875rem',
+                                        fontWeight: '600',
+                                        color: colors.text,
+                                        marginBottom: '0.5rem'
+                                    }}>
                                         Hora de término
                                     </label>
                                     <input
@@ -213,29 +341,81 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                                         value={endTime}
                                         onChange={(e) => setEndTime(e.target.value)}
                                         required={endDateEnabled}
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.75rem',
+                                            border: `1px solid ${colors.border}`,
+                                            borderRadius: '0.5rem',
+                                            backgroundColor: colors.surface,
+                                            color: colors.text,
+                                            fontSize: '1rem',
+                                            transition: 'border-color 0.2s, box-shadow 0.2s'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = colors.primary;
+                                            e.target.style.boxShadow = `0 0 0 2px ${colors.primary}20`;
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = colors.border;
+                                            e.target.style.boxShadow = 'none';
+                                        }}
                                     />
                                 </div>
                             </div>
                         )}
 
                         <div>
-                            <label htmlFor="type" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <label htmlFor="type" style={{
+                                display: 'block',
+                                fontSize: '0.875rem',
+                                fontWeight: '600',
+                                color: colors.text,
+                                marginBottom: '0.5rem'
+                            }}>
                                 Tipo de evento
                             </label>
-                            <div className="relative">
+                            <div style={{ position: 'relative' }}>
                                 <select
                                     id="type"
                                     value={type}
                                     onChange={(e) => setType(e.target.value as 'visita' | 'reuniao' | 'outro')}
                                     required
-                                    className="w-full px-12 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none cursor-pointer"
+                                    style={{
+                                        width: '100%',
+                                        paddingLeft: '3rem',
+                                        paddingRight: '3rem',
+                                        paddingTop: '0.75rem',
+                                        paddingBottom: '0.75rem',
+                                        border: `1px solid ${colors.border}`,
+                                        borderRadius: '0.5rem',
+                                        backgroundColor: colors.surface,
+                                        color: colors.text,
+                                        fontSize: '1rem',
+                                        appearance: 'none',
+                                        cursor: 'pointer',
+                                        transition: 'border-color 0.2s, box-shadow 0.2s'
+                                    }}
+                                    onFocus={(e) => {
+                                        e.target.style.borderColor = colors.primary;
+                                        e.target.style.boxShadow = `0 0 0 2px ${colors.primary}20`;
+                                    }}
+                                    onBlur={(e) => {
+                                        e.target.style.borderColor = colors.border;
+                                        e.target.style.boxShadow = 'none';
+                                    }}
                                 >
                                     <option value="visita">Visita a local</option>
                                     <option value="reuniao">Reunião</option>
                                     <option value="outro">Outro</option>
                                 </select>
-                                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-blue-600 dark:text-blue-400">
+                                <div style={{
+                                    position: 'absolute',
+                                    left: '1rem',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    pointerEvents: 'none',
+                                    color: colors.primary
+                                }}>
                                     {type === 'visita' && (
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -258,7 +438,14 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                                         </svg>
                                     )}
                                 </div>
-                                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400 dark:text-gray-500">
+                                <div style={{
+                                    position: 'absolute',
+                                    right: '1rem',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    pointerEvents: 'none',
+                                    color: colors.textSecondary
+                                }}>
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <polyline points="6 9 12 15 18 9"></polyline>
                                     </svg>
@@ -267,7 +454,13 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                         </div>
 
                         <div>
-                            <label htmlFor="location" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <label htmlFor="location" style={{
+                                display: 'block',
+                                fontSize: '0.875rem',
+                                fontWeight: '600',
+                                color: colors.text,
+                                marginBottom: '0.5rem'
+                            }}>
                                 Local
                             </label>
                             <input
@@ -276,12 +469,35 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
                                 placeholder="Endereço ou local do evento"
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    border: `1px solid ${colors.border}`,
+                                    borderRadius: '0.5rem',
+                                    backgroundColor: colors.surface,
+                                    color: colors.text,
+                                    fontSize: '1rem',
+                                    transition: 'border-color 0.2s, box-shadow 0.2s'
+                                }}
+                                onFocus={(e) => {
+                                    e.target.style.borderColor = colors.primary;
+                                    e.target.style.boxShadow = `0 0 0 2px ${colors.primary}20`;
+                                }}
+                                onBlur={(e) => {
+                                    e.target.style.borderColor = colors.border;
+                                    e.target.style.boxShadow = 'none';
+                                }}
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="description" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <label htmlFor="description" style={{
+                                display: 'block',
+                                fontSize: '0.875rem',
+                                fontWeight: '600',
+                                color: colors.text,
+                                marginBottom: '0.5rem'
+                            }}>
                                 Descrição
                             </label>
                             <textarea
@@ -291,22 +507,78 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                                 required
                                 placeholder="Detalhes sobre o evento, anotações, etc."
                                 rows={4}
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical"
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    border: `1px solid ${colors.border}`,
+                                    borderRadius: '0.5rem',
+                                    backgroundColor: colors.surface,
+                                    color: colors.text,
+                                    fontSize: '1rem',
+                                    resize: 'vertical',
+                                    transition: 'border-color 0.2s, box-shadow 0.2s'
+                                }}
+                                onFocus={(e) => {
+                                    e.target.style.borderColor = colors.primary;
+                                    e.target.style.boxShadow = `0 0 0 2px ${colors.primary}20`;
+                                }}
+                                onBlur={(e) => {
+                                    e.target.style.borderColor = colors.border;
+                                    e.target.style.boxShadow = 'none';
+                                }}
                             />
                         </div>
 
-                        <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
-                            <div className="flex gap-3 flex-1">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '1rem' }}>
+                            <div style={{ display: 'flex', gap: '0.75rem', flex: '1' }}>
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
+                                    style={{
+                                        flex: '1',
+                                        backgroundColor: colors.primary,
+                                        color: 'white',
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '0.5rem',
+                                        fontWeight: '600',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        transform: 'translateY(0)',
+                                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = colors.primaryHover;
+                                        e.currentTarget.style.transform = 'translateY(-1px)';
+                                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = colors.primary;
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+                                    }}
                                 >
                                     Salvar
                                 </button>
                                 <button
                                     type="button"
                                     onClick={onCancel}
-                                    className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                    style={{
+                                        flex: '1',
+                                        backgroundColor: colors.surface,
+                                        color: colors.text,
+                                        border: `1px solid ${colors.border}`,
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '0.5rem',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        transition: 'colors 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = colors.surfaceHover;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = colors.surface;
+                                    }}
                                 >
                                     Cancelar
                                 </button>
@@ -315,7 +587,22 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                                 <button
                                     type="button"
                                     onClick={handleShowDeleteConfirmation}
-                                    className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 px-6 py-3 rounded-lg font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                                    style={{
+                                        backgroundColor: colors.error + '10',
+                                        color: colors.error,
+                                        border: `1px solid ${colors.error}`,
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '0.5rem',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        transition: 'colors 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = colors.error + '20';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = colors.error + '10';
+                                    }}
                                 >
                                     Excluir
                                 </button>
@@ -323,27 +610,66 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                         </div>
                     </form>
                 ) : (
-                    <div className="text-center animate-in fade-in duration-300">
-                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <div style={{ textAlign: 'center' }}>
+                        <h4 style={{
+                            fontSize: '1.125rem',
+                            fontWeight: '600',
+                            color: colors.text,
+                            marginBottom: '1rem'
+                        }}>
                             Confirmar exclusão
                         </h4>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-                            Tem certeza que deseja excluir <strong className="text-gray-900 dark:text-white">{title}</strong>?
+                        <p style={{
+                            color: colors.textSecondary,
+                            marginBottom: '1.5rem',
+                            lineHeight: '1.6'
+                        }}>
+                            Tem certeza que deseja excluir <strong style={{ color: colors.text }}>{title}</strong>?
                             <br />
                             Esta ação não pode ser desfeita.
                         </p>
-                        <div className="flex flex-col sm:flex-row justify-center gap-3">
+                        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.75rem' }}>
                             <button
                                 type="button"
                                 onClick={handleCancelDelete}
-                                className="px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                style={{
+                                    padding: '0.75rem 1.5rem',
+                                    backgroundColor: colors.surface,
+                                    color: colors.text,
+                                    border: `1px solid ${colors.border}`,
+                                    borderRadius: '0.5rem',
+                                    fontWeight: '500',
+                                    cursor: 'pointer',
+                                    transition: 'colors 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = colors.surfaceHover;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = colors.surface;
+                                }}
                             >
                                 Cancelar
                             </button>
                             <button
                                 type="button"
                                 onClick={handleConfirmDelete}
-                                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                                style={{
+                                    padding: '0.75rem 1.5rem',
+                                    backgroundColor: colors.error,
+                                    color: 'white',
+                                    borderRadius: '0.5rem',
+                                    fontWeight: '500',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    transition: 'colors 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = colors.error + 'dd';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = colors.error;
+                                }}
                             >
                                 Excluir
                             </button>

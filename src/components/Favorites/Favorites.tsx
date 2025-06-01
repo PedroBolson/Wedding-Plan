@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useLoading } from '../../contexts/LoadingContext';
+import { ThemeContext } from '../../contexts/ThemeContext';
 
 interface FavoriteVenue {
     id: string;
@@ -40,6 +41,7 @@ interface BudgetExtra {
 const Favorites = () => {
     const [favorites, setFavorites] = useState<FavoriteVenue[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const { colors } = useContext(ThemeContext);
 
     const { isLoading, setIsLoading, setLoadingMessage } = useLoading();
 
@@ -166,7 +168,11 @@ const Favorites = () => {
 
     if (error) {
         return (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg">
+            <div style={{
+                backgroundColor: colors.error.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
+                borderColor: colors.error.replace('rgb(', 'rgba(').replace(')', ', 0.3)'),
+                color: colors.error
+            }} className="border px-4 py-3 rounded-lg">
                 {error}
             </div>
         );
@@ -180,29 +186,35 @@ const Favorites = () => {
 
     return (
         <div className="max-w-7xl mx-auto p-6">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Locais Favoritos</h2>
+            <h2 className="text-3xl font-bold mb-8" style={{ color: colors.text }}>Locais Favoritos</h2>
 
             {favorites.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600">
+                <div className="text-center py-12 rounded-xl border-2 border-dashed" style={{
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border
+                }}>
                     <div className="max-w-md mx-auto">
-                        <svg className="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="mx-auto h-16 w-16 mb-4" style={{ color: colors.textSecondary }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
-                        <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">Você ainda não possui locais favoritos.</p>
-                        <p className="text-gray-500 dark:text-gray-500">Acesse o Planejamento de Locais e adicione locais aos favoritos!</p>
+                        <p className="text-lg mb-2" style={{ color: colors.textSecondary }}>Você ainda não possui locais favoritos.</p>
+                        <p style={{ color: colors.textSecondary }}>Acesse o Planejamento de Locais e adicione locais aos favoritos!</p>
                     </div>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                     {favorites.map(favorite => (
-                        <div key={favorite.id} className="bg-white dark:bg-gray-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div key={favorite.id} className="rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border overflow-hidden" style={{
+                            backgroundColor: colors.surface,
+                            borderColor: colors.border
+                        }}>
                             <div className="p-6">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex-1">
-                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                                        <h3 className="text-xl font-bold mb-1" style={{ color: colors.text }}>
                                             {favorite.venueName || 'Local não encontrado'}
                                         </h3>
-                                        <p className="text-gray-600 dark:text-gray-400 flex items-center">
+                                        <p className="flex items-center" style={{ color: colors.textSecondary }}>
                                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -210,7 +222,7 @@ const Favorites = () => {
                                             {favorite.cityName || 'Cidade desconhecida'}
                                         </p>
                                     </div>
-                                    <div className="text-red-500">
+                                    <div style={{ color: colors.accent }}>
                                         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                                         </svg>
@@ -219,29 +231,35 @@ const Favorites = () => {
 
                                 {favorite.venueCost && (
                                     <div className="space-y-4">
-                                        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                                        <div className="p-4 rounded-lg" style={{
+                                            backgroundColor: colors.primary.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
+                                            borderColor: colors.primary.replace('rgb(', 'rgba(').replace(')', ', 0.3)')
+                                        }}>
                                             <div className="flex justify-between items-center mb-2">
-                                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Custo do Local:</span>
-                                                <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                                                <span className="text-sm font-medium" style={{ color: colors.textSecondary }}>Custo do Local:</span>
+                                                <span className="text-sm font-bold" style={{ color: colors.primary }}>
                                                     R$ {favorite.venueCost.toLocaleString('pt-BR')}
                                                 </span>
                                             </div>
                                         </div>
 
                                         {(favorite.professionalsCost ?? 0) > 0 && (
-                                            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                                            <div className="p-4 rounded-lg" style={{
+                                                backgroundColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
+                                                borderColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.3)')
+                                            }}>
                                                 <div className="flex justify-between items-center mb-3">
-                                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Custo de Profissionais:</span>
-                                                    <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                                                    <span className="text-sm font-medium" style={{ color: colors.textSecondary }}>Custo de Profissionais:</span>
+                                                    <span className="text-sm font-bold" style={{ color: colors.success }}>
                                                         R$ {(favorite.professionalsCost ?? 0).toLocaleString('pt-BR')}
                                                     </span>
                                                 </div>
 
-                                                <div className="border-t border-green-200 dark:border-green-800 pt-3">
-                                                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Profissionais Incluídos:</p>
+                                                <div className="pt-3" style={{ borderTopColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.3)'), borderTopWidth: '1px' }}>
+                                                    <p className="text-xs font-medium mb-2" style={{ color: colors.textSecondary }}>Profissionais Incluídos:</p>
                                                     <ul className="space-y-1">
                                                         {favorite.selectedProfessionalNames?.map((prof, index) => (
-                                                            <li key={index} className="text-xs text-gray-600 dark:text-gray-400 flex justify-between">
+                                                            <li key={index} className="text-xs flex justify-between" style={{ color: colors.textSecondary }}>
                                                                 <span>{prof.name}</span>
                                                                 <span>R$ {prof.price.toLocaleString('pt-BR')}</span>
                                                             </li>
@@ -252,19 +270,22 @@ const Favorites = () => {
                                         )}
 
                                         {(favorite.budgetExtrasCost ?? 0) > 0 && (
-                                            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                                            <div className="p-4 rounded-lg" style={{
+                                                backgroundColor: colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
+                                                borderColor: colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.3)')
+                                            }}>
                                                 <div className="flex justify-between items-center mb-3">
-                                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Custos Extras:</span>
-                                                    <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
+                                                    <span className="text-sm font-medium" style={{ color: colors.textSecondary }}>Custos Extras:</span>
+                                                    <span className="text-sm font-bold" style={{ color: colors.secondary }}>
                                                         R$ {(favorite.budgetExtrasCost ?? 0).toLocaleString('pt-BR')}
                                                     </span>
                                                 </div>
 
-                                                <div className="border-t border-purple-200 dark:border-purple-800 pt-3">
-                                                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Itens Extras Incluídos:</p>
+                                                <div className="pt-3" style={{ borderTopColor: colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.3)'), borderTopWidth: '1px' }}>
+                                                    <p className="text-xs font-medium mb-2" style={{ color: colors.textSecondary }}>Itens Extras Incluídos:</p>
                                                     <ul className="space-y-1">
                                                         {favorite.budgetExtrasItems?.map((item, index) => (
-                                                            <li key={index} className="text-xs text-gray-600 dark:text-gray-400 flex justify-between">
+                                                            <li key={index} className="text-xs flex justify-between" style={{ color: colors.textSecondary }}>
                                                                 <span>{item.description}</span>
                                                                 <span>R$ {item.cost.toLocaleString('pt-BR')}</span>
                                                             </li>
@@ -274,10 +295,13 @@ const Favorites = () => {
                                             </div>
                                         )}
 
-                                        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600">
+                                        <div className="p-4 rounded-lg border-2" style={{
+                                            backgroundColor: colors.accent.replace('rgb(', 'rgba(').replace(')', ', 0.2)'),
+                                            borderColor: colors.accent
+                                        }}>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-base font-bold text-gray-800 dark:text-gray-200">Custo Total Estimado:</span>
-                                                <span className="text-lg font-bold text-gray-900 dark:text-white">
+                                                <span className="text-base font-bold" style={{ color: colors.text }}>Custo Total Estimado:</span>
+                                                <span className="text-lg font-bold" style={{ color: colors.text }}>
                                                     R$ {favorite.totalCost?.toLocaleString('pt-BR')}
                                                 </span>
                                             </div>
@@ -285,8 +309,8 @@ const Favorites = () => {
                                     </div>
                                 )}
 
-                                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                                <div className="mt-6 pt-4" style={{ borderTopColor: colors.border, borderTopWidth: '1px' }}>
+                                    <p className="text-sm flex items-center" style={{ color: colors.textSecondary }}>
                                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>

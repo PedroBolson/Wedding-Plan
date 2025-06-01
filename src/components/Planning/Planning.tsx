@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { collection, getDocs, query, where, doc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '../../firebase/config';
 import { useLoading } from '../../contexts/LoadingContext';
+import { ThemeContext } from '../../contexts/ThemeContext';
 
 interface City {
     id?: string;
@@ -81,6 +82,7 @@ interface ProfessionalFormData {
 }
 
 const Planning = () => {
+    const { colors, darkTheme } = useContext(ThemeContext);
     const [activeView, setActiveView] = useState<'cities' | 'venues' | 'cityProfessionals' | 'professionalTypes'>('cities');
     const [cities, setCities] = useState<City[]>([]);
     const [venues, setVenues] = useState<Venue[]>([]);
@@ -805,77 +807,146 @@ const Planning = () => {
 
         if (error) {
             return (
-                <>
-                    <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg my-4">{error}</div>
-                    <button className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" onClick={() => setError(null)}>Fechar</button>
-                </>
+                <div className="p-6 rounded-xl shadow-lg border" style={{
+                    backgroundColor: colors.surface,
+                    borderColor: colors.error + '40',
+                }}>
+                    <div className="p-4 rounded-lg my-4" style={{
+                        backgroundColor: colors.error + '20',
+                        color: colors.error
+                    }}>
+                        💔 {error}
+                    </div>
+                    <button
+                        className="px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+                        style={{
+                            backgroundColor: colors.surface,
+                            color: colors.text,
+                            border: `1px solid ${colors.border}`
+                        }}
+                        onClick={() => setError(null)}
+                    >
+                        ✨ Fechar
+                    </button>
+                </div>
             );
         }
 
         switch (activeView) {
             case 'cities':
                 return (
-                    <div className="p-4">
+                    <div className="p-6 rounded-xl shadow-lg border" style={{
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border
+                    }}>
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Cidades</h2>
+                            <h2 className="text-2xl font-bold bg-gradient-to-r bg-clip-text text-transparent" style={{
+                                backgroundImage: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`
+                            }}>
+                                🏙️ Cidades dos Sonhos 💕
+                            </h2>
                             <button
-                                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                                className="px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 transform cursor-pointer font-semibold"
+                                style={{
+                                    background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                                    color: 'white',
+                                    boxShadow: `0 4px 15px ${colors.primary}30`
+                                }}
                                 onClick={() => setShowCityForm(true)}
                             >
-                                + Nova Cidade
+                                ✨ Nova Cidade 💕
                             </button>
                         </div>
 
                         <div className="mb-6">
                             <button
-                                className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium flex items-center gap-2"
+                                className="px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 transform cursor-pointer font-medium border"
+                                style={{
+                                    backgroundColor: colors.accent,
+                                    color: colors.text,
+                                    borderColor: colors.border
+                                }}
                                 onClick={handleViewProfessionalTypes}
                             >
-                                <i className="icon-manage"></i> Gerenciar Tipos de Profissionais
+                                👨‍💼 Gerenciar Tipos de Profissionais 💼
                             </button>
                         </div>
 
                         {cities.length === 0 ? (
-                            <p className="text-gray-600 dark:text-gray-400 text-center py-8">Nenhuma cidade encontrada. Adicione uma nova cidade.</p>
+                            <div className="p-12 rounded-lg text-center" style={{
+                                backgroundColor: colors.background,
+                                color: colors.textSecondary
+                            }}>
+                                <p className="text-lg">💔 Nenhuma cidade encontrada. Adicione uma nova cidade para começar!</p>
+                            </div>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {cities.map(city => (
-                                    <div key={city.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 relative">
-                                        <div className="p-6 cursor-pointer" onClick={() => handleSelectCity(city.id!)}>
-                                            <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">{city.name}</h3>
-                                            <p className="text-gray-600 dark:text-gray-400">{city.state}</p>
-                                        </div>
+                                    <div
+                                        key={city.id}
+                                        className="p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer relative"
+                                        style={{
+                                            backgroundColor: colors.background,
+                                            borderLeft: `4px solid ${colors.primary}`
+                                        }}
+                                        onClick={() => handleSelectCity(city.id!)}
+                                    >
+                                        <h3 className="text-lg font-semibold mb-2" style={{ color: colors.primary }}>
+                                            🌟 {city.name}
+                                        </h3>
+                                        <p className="text-sm mb-4" style={{ color: colors.textSecondary }}>
+                                            📍 {city.state}
+                                        </p>
                                         <button
-                                            className="absolute bottom-4 right-4 bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400 border border-red-500 px-3 py-1 rounded text-sm hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-colors"
+                                            className="absolute top-3 right-3 p-2 rounded-full transition-all duration-200 hover:scale-110 cursor-pointer"
+                                            style={{
+                                                backgroundColor: colors.error + '20',
+                                                color: colors.error
+                                            }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setConfirmDelete(`city-${city.id}`);
                                             }}
                                         >
-                                            Excluir
+                                            🗑️
                                         </button>
 
                                         {confirmDelete === `city-${city.id}` && (
-                                            <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2 border-red-500">
-                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4 text-sm">Tem certeza? Esta ação não pode ser desfeita.</p>
+                                            <div className="absolute inset-0 rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2" style={{
+                                                backgroundColor: colors.surface + 'F0',
+                                                backdropFilter: 'blur(8px)',
+                                                borderColor: colors.error
+                                            }}>
+                                                <p className="font-medium mb-4" style={{ color: colors.text }}>
+                                                    💔 Tem certeza que deseja excluir esta cidade?
+                                                </p>
                                                 <div className="flex gap-3">
                                                     <button
-                                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium text-sm"
+                                                        className="px-4 py-2 rounded font-medium min-w-[100px] transition-all duration-200 hover:scale-105 cursor-pointer"
+                                                        style={{
+                                                            backgroundColor: colors.error,
+                                                            color: 'white'
+                                                        }}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleDeleteCity(city.id!);
                                                         }}
                                                     >
-                                                        Sim, excluir
+                                                        💔 Sim, excluir
                                                     </button>
                                                     <button
-                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
+                                                        className="px-4 py-2 rounded transition-all duration-200 hover:scale-105 cursor-pointer text-sm border"
+                                                        style={{
+                                                            backgroundColor: colors.background,
+                                                            color: colors.text,
+                                                            borderColor: colors.border
+                                                        }}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             setConfirmDelete(null);
                                                         }}
                                                     >
-                                                        Cancelar
+                                                        ❌ Cancelar
                                                     </button>
                                                 </div>
                                             </div>
@@ -887,11 +958,37 @@ const Planning = () => {
 
                         {showCityForm && (
                             <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-                                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto shadow-xl">
-                                    <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">Adicionar Nova Cidade</h3>
+                                <div style={{
+                                    backgroundColor: colors.background,
+                                    borderRadius: '0.5rem',
+                                    padding: '1.5rem',
+                                    width: '100%',
+                                    maxWidth: '28rem',
+                                    maxHeight: '80vh',
+                                    overflowY: 'auto',
+                                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                                }}>
+                                    <h3 style={{
+                                        fontSize: '1.25rem',
+                                        fontWeight: '600',
+                                        color: colors.primary,
+                                        marginBottom: '1rem',
+                                        paddingBottom: '0.75rem',
+                                        borderBottom: `1px solid ${colors.border}`
+                                    }}>Adicionar Nova Cidade</h3>
                                     <form onSubmit={handleCityFormSubmit}>
-                                        <div className="mb-4">
-                                            <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Nome da Cidade:</label>
+                                        <div style={{ marginBottom: '1rem' }}>
+                                            <label
+                                                htmlFor="name"
+                                                style={{
+                                                    display: 'block',
+                                                    marginBottom: '0.5rem',
+                                                    fontWeight: '500',
+                                                    color: colors.text
+                                                }}
+                                            >
+                                                Nome da Cidade:
+                                            </label>
                                             <input
                                                 type="text"
                                                 id="name"
@@ -899,11 +996,40 @@ const Planning = () => {
                                                 value={cityFormData.name}
                                                 onChange={handleCityFormChange}
                                                 required
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.75rem',
+                                                    border: `1px solid ${colors.border}`,
+                                                    borderRadius: '8px',
+                                                    backgroundColor: colors.surface,
+                                                    color: colors.text,
+                                                    fontSize: '1rem',
+                                                    transition: 'border-color 0.2s, box-shadow 0.2s'
+                                                }}
+                                                onFocus={(e) => {
+                                                    const target = e.target as HTMLInputElement;
+                                                    target.style.borderColor = colors.primary;
+                                                    target.style.boxShadow = `0 0 0 2px ${colors.primary}20`;
+                                                }}
+                                                onBlur={(e) => {
+                                                    const target = e.target as HTMLInputElement;
+                                                    target.style.borderColor = colors.border;
+                                                    target.style.boxShadow = 'none';
+                                                }}
                                             />
                                         </div>
-                                        <div className="mb-6">
-                                            <label htmlFor="state" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Estado:</label>
+                                        <div style={{ marginBottom: '1.5rem' }}>
+                                            <label
+                                                htmlFor="state"
+                                                style={{
+                                                    display: 'block',
+                                                    marginBottom: '0.5rem',
+                                                    fontWeight: '500',
+                                                    color: colors.text
+                                                }}
+                                            >
+                                                Estado:
+                                            </label>
                                             <input
                                                 type="text"
                                                 id="state"
@@ -913,15 +1039,69 @@ const Planning = () => {
                                                 required
                                                 maxLength={2}
                                                 placeholder="UF"
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.75rem',
+                                                    border: `1px solid ${colors.border}`,
+                                                    borderRadius: '8px',
+                                                    backgroundColor: colors.surface,
+                                                    color: colors.text,
+                                                    fontSize: '1rem',
+                                                    transition: 'border-color 0.2s, box-shadow 0.2s'
+                                                }}
+                                                onFocus={(e) => {
+                                                    e.target.style.borderColor = colors.primary;
+                                                    e.target.style.boxShadow = `0 0 0 2px ${colors.primary}20`;
+                                                }}
+                                                onBlur={(e) => {
+                                                    e.target.style.borderColor = colors.border;
+                                                    e.target.style.boxShadow = 'none';
+                                                }}
                                             />
                                         </div>
-                                        <div className="flex gap-3">
-                                            <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">Salvar</button>
+                                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                            <button
+                                                type="submit"
+                                                style={{
+                                                    flex: 1,
+                                                    backgroundColor: colors.primary,
+                                                    color: 'white',
+                                                    padding: '0.75rem 1.5rem',
+                                                    borderRadius: '8px',
+                                                    border: 'none',
+                                                    fontWeight: '500',
+                                                    cursor: 'pointer',
+                                                    transition: 'background-color 0.2s'
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    (e.target as HTMLButtonElement).style.backgroundColor = colors.primaryHover;
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    (e.target as HTMLButtonElement).style.backgroundColor = colors.primary;
+                                                }}
+                                            >
+                                                Salvar
+                                            </button>
                                             <button
                                                 type="button"
-                                                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                                 onClick={() => setShowCityForm(false)}
+                                                style={{
+                                                    flex: 1,
+                                                    backgroundColor: colors.surface,
+                                                    color: colors.text,
+                                                    border: `1px solid ${colors.border}`,
+                                                    padding: '0.75rem 1.5rem',
+                                                    borderRadius: '8px',
+                                                    fontWeight: '500',
+                                                    cursor: 'pointer',
+                                                    transition: 'background-color 0.2s'
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    (e.target as HTMLButtonElement).style.backgroundColor = colors.surfaceHover;
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    (e.target as HTMLButtonElement).style.backgroundColor = colors.surface;
+                                                }}
                                             >
                                                 Cancelar
                                             </button>
@@ -937,62 +1117,112 @@ const Planning = () => {
                 return (
                     <div className="p-4">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-                            <button className="flex items-center gap-2 bg-transparent border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium" onClick={handleBackButton}>
-                                ← Voltar para Cidades
+                            <button
+                                className="flex items-center gap-2 bg-transparent border-2 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 font-medium cursor-pointer transform hover:scale-105"
+                                style={{
+                                    borderColor: colors.primary,
+                                    color: colors.primary
+                                }}
+                                onClick={handleBackButton}
+                            >
+                                💕 ← Voltar para Cidades
                             </button>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                Locais em {cities.find(c => c.id === selectedCityId)?.name}
+                            <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                🏰 Locais dos Sonhos em {cities.find(c => c.id === selectedCityId)?.name} 💒
                             </h2>
                             <div className="flex flex-wrap gap-2">
                                 <button
-                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium"
+                                    className="px-4 py-2 rounded-lg font-medium cursor-pointer transform hover:scale-105 transition-all duration-300 shadow-md text-white"
+                                    style={{
+                                        background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                                        boxShadow: `0 4px 15px ${colors.primary}40`
+                                    }}
                                     onClick={handleViewVenues}
                                 >
-                                    Locais
+                                    🏰 Locais
                                 </button>
                                 <button
-                                    className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                    className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
                                     onClick={handleViewProfessionals}
                                 >
-                                    Profissionais
+                                    👨‍💼 Profissionais
                                 </button>
                                 <button
-                                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                                    className="px-4 py-2 rounded-lg transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                    style={{
+                                        background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
+                                        boxShadow: `0 4px 15px ${colors.accent}40`
+                                    }}
                                     onClick={() => setShowVenueForm(true)}
                                 >
-                                    + Novo Local
+                                    ✨ + Novo Local 💕
                                 </button>
                             </div>
                         </div>
 
                         {venues.length === 0 ? (
-                            <p className="text-gray-600 dark:text-gray-400 text-center py-8">Nenhum local encontrado. Adicione um novo local.</p>
+                            <p style={{ color: colors.textSecondary, textAlign: 'center', padding: '2rem 0' }}>💒 Nenhum local encontrado. Adicione um novo local dos sonhos! ✨</p>
                         ) : (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <div
+                                className="grid gap-6"
+                                style={{
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))'
+                                }}
+                            >
                                 {venues.map(venue => (
-                                    <div key={venue.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 p-6 relative">
+                                    <div
+                                        key={venue.id}
+                                        className="rounded-lg shadow-md transition-all duration-300 p-6 relative transform"
+                                        style={{
+                                            backgroundColor: colors.surface,
+                                            borderLeft: `4px solid ${colors.primary}`,
+                                            background: darkTheme
+                                                ? `linear-gradient(135deg, ${colors.surface}15, ${colors.primary}08)`
+                                                : `linear-gradient(135deg, ${colors.surface}, ${colors.primary}08)`,
+                                            boxShadow: `0 4px 6px ${colors.primary}20`,
+                                            transform: 'scale(1)'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                                            e.currentTarget.style.boxShadow = `0 8px 25px ${colors.primary}30`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                                            e.currentTarget.style.boxShadow = `0 4px 6px ${colors.primary}20`;
+                                        }}
+                                    >
                                         <div className="flex justify-between items-start mb-4">
-                                            <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 flex-1">{venue.name}</h3>
+                                            <h3 className="text-lg font-semibold flex-1" style={{ color: colors.primary }}>
+                                                🏰 {venue.name}
+                                            </h3>
                                             <button
-                                                className={`text-2xl transition-all duration-300 hover:scale-110 p-1 ${venue.isFavorite ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500'}`}
+                                                style={{
+                                                    fontSize: '1.5rem',
+                                                    transition: 'all 0.3s',
+                                                    cursor: 'pointer',
+                                                    padding: '0.25rem',
+                                                    color: venue.isFavorite ? colors.accent : colors.textSecondary
+                                                }}
+                                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.25)'}
+                                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     toggleFavorite(venue);
                                                 }}
                                                 aria-label={venue.isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                                             >
-                                                {venue.isFavorite ? '★' : '☆'}
+                                                {venue.isFavorite ? '💕' : '🤍'}
                                             </button>
                                         </div>
                                         <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                                            <p><strong className="text-gray-900 dark:text-gray-100">Endereço:</strong> {venue.address}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">Telefone:</strong> {venue.phone}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">Preço do Local:</strong> R$ {venue.venuePrice.toLocaleString('pt-BR')}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">Preço da Comida:</strong> R$ {venue.foodPrice.toLocaleString('pt-BR')}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">Preço da Bebida:</strong> R$ {venue.drinkPrice.toLocaleString('pt-BR')}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">Total Estimado:</strong> R$ {(venue.venuePrice + venue.foodPrice + venue.drinkPrice).toLocaleString('pt-BR')}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">Formatos:</strong> {venue.formats}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">Parcelamento:</strong> {venue.installmentPlan}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">📍 Endereço:</strong> {venue.address}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">📞 Telefone:</strong> {venue.phone}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">💰 Preço do Local:</strong> R$ {venue.venuePrice.toLocaleString('pt-BR')}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">🍽️ Preço da Comida:</strong> R$ {venue.foodPrice.toLocaleString('pt-BR')}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">🥂 Preço da Bebida:</strong> R$ {venue.drinkPrice.toLocaleString('pt-BR')}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100" style={{ color: colors.success }}>💎 Total Estimado:</strong> R$ {(venue.venuePrice + venue.foodPrice + venue.drinkPrice).toLocaleString('pt-BR')}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">✨ Formatos:</strong> {venue.formats}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">💳 Parcelamento:</strong> {venue.installmentPlan}</p>
                                             {venue.pdfDocuments && venue.pdfDocuments.length > 0 && (
                                                 <div className="mt-3">
                                                     <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Documentos:</p>
@@ -1020,34 +1250,43 @@ const Planning = () => {
 
                                         <div className="flex flex-col gap-2 mt-4">
                                             <button
-                                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors font-medium"
+                                                className="px-4 py-2 rounded transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                                style={{
+                                                    background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                                                    boxShadow: `0 4px 15px ${colors.primary}40`
+                                                }}
                                                 onClick={() => handleEditVenue(venue)}
                                             >
-                                                Editar
+                                                ✏️ Editar
                                             </button>
                                             <button
-                                                className="bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400 border border-red-500 px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-colors"
+                                                className="bg-gray-100 dark:bg-gray-700 border px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
+                                                style={{
+                                                    color: colors.error,
+                                                    borderColor: colors.error
+                                                }}
                                                 onClick={() => setConfirmDelete(`venue-${venue.id}`)}
                                             >
-                                                Excluir
+                                                🗑️ Excluir
                                             </button>
                                         </div>
 
                                         {confirmDelete === `venue-${venue.id}` && (
-                                            <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2 border-red-500">
-                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4">Tem certeza que deseja excluir este local?</p>
+                                            <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2" style={{ borderColor: colors.error }}>
+                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4">💔 Tem certeza que deseja excluir este local dos sonhos?</p>
                                                 <div className="flex gap-3">
                                                     <button
-                                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px]"
+                                                        className="hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px] cursor-pointer transition-all duration-300 transform hover:scale-105"
+                                                        style={{ backgroundColor: colors.error }}
                                                         onClick={() => handleDeleteVenue(venue.id!)}
                                                     >
-                                                        Sim
+                                                        💔 Sim
                                                     </button>
                                                     <button
-                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors min-w-[100px]"
+                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 min-w-[100px] cursor-pointer transform hover:scale-105"
                                                         onClick={() => setConfirmDelete(null)}
                                                     >
-                                                        Não
+                                                        💕 Não
                                                     </button>
                                                 </div>
                                             </div>
@@ -1059,11 +1298,13 @@ const Planning = () => {
 
                         {showVenueForm && (
                             <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-                                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-xl">
-                                    <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">{editingVenueId ? 'Editar Local' : 'Adicionar Novo Local'}</h3>
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-xl border-2" style={{ borderColor: colors.primary }}>
+                                    <h3 className="text-xl font-semibold mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                        {editingVenueId ? '✏️ Editar Local dos Sonhos 💒' : '✨ Adicionar Novo Local dos Sonhos 💕'}
+                                    </h3>
                                     <form onSubmit={handleVenueFormSubmit}>
                                         <div className="mb-4">
-                                            <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Nome:</label>
+                                            <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">🏰 Nome do Local:</label>
                                             <input
                                                 type="text"
                                                 id="name"
@@ -1071,29 +1312,41 @@ const Planning = () => {
                                                 value={venueFormData.name}
                                                 onChange={handleVenueFormChange}
                                                 required
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 transition-all duration-300 cursor-text focus:outline-none"
+                                                style={{
+                                                    borderColor: colors.border,
+                                                    '--tw-ring-color': colors.primary
+                                                } as React.CSSProperties}
                                             />
                                         </div>
                                         <div className="mb-4">
-                                            <label htmlFor="address" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Endereço:</label>
+                                            <label htmlFor="address" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">📍 Endereço:</label>
                                             <input
                                                 type="text"
                                                 id="address"
                                                 name="address"
                                                 value={venueFormData.address}
                                                 onChange={handleVenueFormChange}
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 transition-all duration-300 cursor-text focus:outline-none"
+                                                style={{
+                                                    borderColor: colors.border,
+                                                    '--tw-ring-color': colors.primary
+                                                } as React.CSSProperties}
                                             />
                                         </div>
                                         <div className="mb-4">
-                                            <label htmlFor="phone" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Telefone:</label>
+                                            <label htmlFor="phone" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">📞 Telefone:</label>
                                             <input
                                                 type="text"
                                                 id="phone"
                                                 name="phone"
                                                 value={venueFormData.phone}
                                                 onChange={handleVenueFormChange}
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 transition-all duration-300 cursor-text focus:outline-none"
+                                                style={{
+                                                    borderColor: colors.border,
+                                                    '--tw-ring-color': colors.primary
+                                                } as React.CSSProperties}
                                             />
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
@@ -1253,62 +1506,112 @@ const Planning = () => {
                 return (
                     <div className="p-4">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-                            <button className="flex items-center gap-2 bg-transparent border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium" onClick={handleBackButton}>
-                                ← Voltar para Cidades
+                            <button
+                                className="flex items-center gap-2 bg-transparent border-2 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 font-medium cursor-pointer transform hover:scale-105"
+                                style={{
+                                    borderColor: colors.primary,
+                                    color: colors.primary
+                                }}
+                                onClick={handleBackButton}
+                            >
+                                💕 ← Voltar para Cidades
                             </button>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                Profissionais em {cities.find(c => c.id === selectedCityId)?.name}
+                            <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                👨‍💼 Profissionais dos Sonhos em {cities.find(c => c.id === selectedCityId)?.name} ✨
                             </h2>
                             <div className="flex flex-wrap gap-2">
                                 <button
-                                    className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                    className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
                                     onClick={handleViewVenues}
                                 >
-                                    Locais
+                                    🏰 Locais
                                 </button>
                                 <button
-                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium"
+                                    className="px-4 py-2 rounded-lg font-medium cursor-pointer transform hover:scale-105 transition-all duration-300 shadow-md text-white"
+                                    style={{
+                                        background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                                        boxShadow: `0 4px 15px ${colors.primary}40`
+                                    }}
                                     onClick={handleViewProfessionals}
                                 >
-                                    Profissionais
+                                    👨‍💼 Profissionais
                                 </button>
                                 <button
-                                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                                    className="px-4 py-2 rounded-lg transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                    style={{
+                                        background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
+                                        boxShadow: `0 4px 15px ${colors.accent}40`
+                                    }}
                                     onClick={() => setShowProfessionalForm(true)}
                                 >
-                                    + Novo Profissional
+                                    ✨ + Novo Profissional 💼
                                 </button>
                             </div>
                         </div>
 
                         {professionals.length === 0 ? (
-                            <p className="text-gray-600 dark:text-gray-400 text-center py-8">Nenhum profissional encontrado. Adicione um novo profissional.</p>
+                            <p style={{ color: colors.textSecondary, textAlign: 'center', padding: '2rem 0' }}>👨‍💼 Nenhum profissional encontrado. Adicione um novo profissional dos sonhos! ✨</p>
                         ) : (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <div
+                                className="grid gap-6"
+                                style={{
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
+                                }}
+                            >
                                 {professionals.map(professional => (
-                                    <div key={professional.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 p-6 relative">
+                                    <div
+                                        key={professional.id}
+                                        className="rounded-lg shadow-md transition-all duration-300 p-6 relative transform"
+                                        style={{
+                                            backgroundColor: colors.surface,
+                                            borderLeft: `4px solid ${colors.secondary}`,
+                                            background: darkTheme
+                                                ? `linear-gradient(135deg, ${colors.surface}15, ${colors.secondary}08)`
+                                                : `linear-gradient(135deg, ${colors.surface}, ${colors.secondary}08)`,
+                                            boxShadow: `0 4px 6px ${colors.secondary}20`,
+                                            transform: 'scale(1)'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                                            e.currentTarget.style.boxShadow = `0 8px 25px ${colors.secondary}30`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                                            e.currentTarget.style.boxShadow = `0 4px 6px ${colors.secondary}20`;
+                                        }}
+                                    >
                                         <div className="flex justify-between items-start mb-4">
-                                            <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 flex-1">{professional.name}</h3>
+                                            <h3 className="text-lg font-semibold flex-1" style={{ color: colors.primary }}>
+                                                👨‍💼 {professional.name}
+                                            </h3>
                                             <button
-                                                className={`text-2xl transition-all duration-300 hover:scale-110 p-1 ${professional.isFavorite ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500'}`}
+                                                style={{
+                                                    fontSize: '1.5rem',
+                                                    transition: 'all 0.3s',
+                                                    cursor: 'pointer',
+                                                    padding: '0.25rem',
+                                                    color: professional.isFavorite ? colors.accent : colors.textSecondary
+                                                }}
+                                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.25)'}
+                                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                                                 onClick={() => toggleProfessionalFavorite(professional)}
                                                 aria-label={professional.isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                                             >
-                                                {professional.isFavorite ? '★' : '☆'}
+                                                {professional.isFavorite ? '💕' : '🤍'}
                                             </button>
                                         </div>
                                         <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                                             <p>
-                                                <strong className="text-gray-900 dark:text-gray-100">Tipo:</strong> {
+                                                <strong className="text-gray-900 dark:text-gray-100">💼 Tipo:</strong> {
                                                     professionalTypes.find(t => t.id === professional.typeId)?.name || 'Não especificado'
                                                 }
                                             </p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">Preço:</strong> R$ {professional.price.toLocaleString('pt-BR')}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">Opções de Pagamento:</strong> {professional.paymentOptions || 'Não especificado'}</p>
-                                            <p><strong className="text-gray-900 dark:text-gray-100">Parcelamento:</strong> {professional.installmentPlan || 'Não especificado'}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">💰 Preço:</strong> R$ {professional.price.toLocaleString('pt-BR')}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">💳 Opções de Pagamento:</strong> {professional.paymentOptions || 'Não especificado'}</p>
+                                            <p><strong className="text-gray-900 dark:text-gray-100">📅 Parcelamento:</strong> {professional.installmentPlan || 'Não especificado'}</p>
                                             {professional.notes && (
                                                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                                    <strong className="text-gray-900 dark:text-gray-100">Observações:</strong>
+                                                    <strong className="text-gray-900 dark:text-gray-100">📝 Observações:</strong>
                                                     <p className="mt-1 whitespace-pre-wrap">{professional.notes}</p>
                                                 </div>
                                             )}
@@ -1316,34 +1619,43 @@ const Planning = () => {
 
                                         <div className="flex flex-col gap-2 mt-4">
                                             <button
-                                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors font-medium"
+                                                className="px-4 py-2 rounded transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                                style={{
+                                                    background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                                                    boxShadow: `0 4px 15px ${colors.primary}40`
+                                                }}
                                                 onClick={() => handleEditProfessional(professional)}
                                             >
-                                                Editar
+                                                ✏️ Editar
                                             </button>
                                             <button
-                                                className="bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400 border border-red-500 px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-colors"
+                                                className="bg-gray-100 dark:bg-gray-700 border px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
+                                                style={{
+                                                    color: colors.error,
+                                                    borderColor: colors.error
+                                                }}
                                                 onClick={() => setConfirmDelete(`professional-${professional.id}`)}
                                             >
-                                                Excluir
+                                                🗑️ Excluir
                                             </button>
                                         </div>
 
                                         {confirmDelete === `professional-${professional.id}` && (
-                                            <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2 border-red-500">
-                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4">Tem certeza que deseja excluir este profissional?</p>
+                                            <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2" style={{ borderColor: colors.error }}>
+                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4">💔 Tem certeza que deseja excluir este profissional?</p>
                                                 <div className="flex gap-3">
                                                     <button
-                                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px]"
+                                                        className="hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px] cursor-pointer transition-all duration-300 transform hover:scale-105"
+                                                        style={{ backgroundColor: colors.error }}
                                                         onClick={() => handleDeleteProfessional(professional.id!)}
                                                     >
-                                                        Sim
+                                                        💔 Sim
                                                     </button>
                                                     <button
-                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors min-w-[100px]"
+                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 min-w-[100px] cursor-pointer transform hover:scale-105"
                                                         onClick={() => setConfirmDelete(null)}
                                                     >
-                                                        Não
+                                                        💕 Não
                                                     </button>
                                                 </div>
                                             </div>
@@ -1355,8 +1667,10 @@ const Planning = () => {
 
                         {showProfessionalForm && (
                             <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-                                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-xl">
-                                    <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">{editingProfessionalId ? 'Editar Profissional' : 'Adicionar Novo Profissional'}</h3>
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-xl border-2" style={{ borderColor: colors.primary }}>
+                                    <h3 className="text-xl font-semibold mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                        {editingProfessionalId ? '✏️ Editar Profissional dos Sonhos 👨‍💼' : '✨ Adicionar Novo Profissional 💼'}
+                                    </h3>
                                     <form onSubmit={handleProfessionalFormSubmit}>
                                         <div className="mb-4">
                                             <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Nome:</label>
@@ -1470,61 +1784,94 @@ const Planning = () => {
                 return (
                     <div className="p-4">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                            <button className="flex items-center gap-2 bg-transparent border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium" onClick={handleBackButton}>
-                                ← Voltar para Cidades
-                            </button>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Tipos de Profissionais</h2>
                             <button
-                                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                                className="flex items-center gap-2 bg-transparent border-2 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 font-medium cursor-pointer transform hover:scale-105"
+                                style={{
+                                    borderColor: colors.primary,
+                                    color: colors.primary
+                                }}
+                                onClick={handleBackButton}
+                            >
+                                💕 ← Voltar para Cidades
+                            </button>
+                            <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                💼 Tipos de Profissionais dos Sonhos ✨
+                            </h2>
+                            <button
+                                className="px-4 py-2 rounded-lg transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                style={{
+                                    background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                                    boxShadow: `0 4px 15px ${colors.primary}40`
+                                }}
                                 onClick={() => setShowTypeForm(true)}
                             >
-                                + Novo Tipo
+                                ✨ + Novo Tipo 💼
                             </button>
                         </div>
 
                         {professionalTypes.length === 0 ? (
-                            <p className="text-gray-600 dark:text-gray-400 text-center py-8">Nhum tipo encontrado. Adicione um novo tipo.</p>
+                            <p style={{ color: colors.textSecondary, textAlign: 'center', padding: '2rem 0' }}>💼 Nenhum tipo encontrado. Adicione um novo tipo de profissional! ✨</p>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {professionalTypes.map(type => (
-                                    <div key={type.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 p-6 relative">
+                                    <div
+                                        key={type.id}
+                                        className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 p-6 relative border-l-4 transform hover:scale-105"
+                                        style={{
+                                            borderLeftColor: colors.accent,
+                                            background: darkTheme
+                                                ? `linear-gradient(135deg, ${colors.surface}15, ${colors.accent}08)`
+                                                : `linear-gradient(135deg, ${colors.surface}, ${colors.accent}08)`
+                                        }}
+                                    >
                                         <div className="flex-1 mb-4">
-                                            <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">{type.name}</h3>
+                                            <h3 className="text-lg font-semibold mb-2" style={{ color: colors.primary }}>
+                                                💼 {type.name}
+                                            </h3>
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <button
-                                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors font-medium"
+                                                className="px-4 py-2 rounded transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                                style={{
+                                                    background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                                                    boxShadow: `0 4px 15px ${colors.primary}40`
+                                                }}
                                                 onClick={() => {
                                                     setTypeFormData({ name: type.name });
                                                     setEditingTypeId(type.id!);
                                                     setShowTypeForm(true);
                                                 }}
                                             >
-                                                Editar
+                                                ✏️ Editar
                                             </button>
                                             <button
-                                                className="bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400 border border-red-500 px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-colors"
+                                                className="bg-gray-100 dark:bg-gray-700 border px-4 py-2 rounded hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
+                                                style={{
+                                                    color: colors.error,
+                                                    borderColor: colors.error
+                                                }}
                                                 onClick={() => setConfirmDelete(`type-${type.id}`)}
                                             >
-                                                Excluir
+                                                🗑️ Excluir
                                             </button>
                                         </div>
 
                                         {confirmDelete === `type-${type.id}` && (
-                                            <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2 border-red-500">
-                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4">Tem certeza que deseja excluir este tipo?</p>
+                                            <div className="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 flex flex-col justify-center items-center text-center z-10 border-2" style={{ borderColor: colors.error }}>
+                                                <p className="text-gray-900 dark:text-gray-100 font-medium mb-4">💔 Tem certeza que deseja excluir este tipo?</p>
                                                 <div className="flex gap-3">
                                                     <button
-                                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px]"
+                                                        className="hover:bg-red-700 text-white px-4 py-2 rounded font-medium min-w-[100px] cursor-pointer transition-all duration-300 transform hover:scale-105"
+                                                        style={{ backgroundColor: colors.error }}
                                                         onClick={() => handleDeleteProfessionalType(type.id!)}
                                                     >
-                                                        Sim
+                                                        💔 Sim
                                                     </button>
                                                     <button
-                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors min-w-[100px]"
+                                                        className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 min-w-[100px] cursor-pointer transform hover:scale-105"
                                                         onClick={() => setConfirmDelete(null)}
                                                     >
-                                                        Não
+                                                        💕 Não
                                                     </button>
                                                 </div>
                                             </div>
@@ -1537,11 +1884,13 @@ const Planning = () => {
                         {
                             showTypeForm && (
                                 <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto shadow-xl">
-                                        <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">{editingTypeId ? 'Editar Tipo de Profissional' : 'Adicionar Novo Tipo'}</h3>
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto shadow-xl border-2" style={{ borderColor: colors.primary }}>
+                                        <h3 className="text-xl font-semibold mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                            {editingTypeId ? '✏️ Editar Tipo de Profissional 💼' : '✨ Adicionar Novo Tipo 💼'}
+                                        </h3>
                                         <form onSubmit={handleTypeFormSubmit}>
                                             <div className="mb-6">
-                                                <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Nome:</label>
+                                                <label htmlFor="name" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">💼 Nome do Tipo:</label>
                                                 <input
                                                     type="text"
                                                     id="name"
@@ -1549,21 +1898,34 @@ const Planning = () => {
                                                     value={typeFormData.name}
                                                     onChange={(e) => setTypeFormData({ name: e.target.value })}
                                                     required
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 transition-all duration-300 cursor-text focus:outline-none"
+                                                    style={{
+                                                        borderColor: colors.border,
+                                                        '--tw-ring-color': colors.primary
+                                                    } as React.CSSProperties}
                                                 />
                                             </div>
                                             <div className="flex gap-3">
-                                                <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">Salvar</button>
+                                                <button
+                                                    type="submit"
+                                                    className="flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                                    style={{
+                                                        background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                                                        boxShadow: `0 4px 15px ${colors.primary}40`
+                                                    }}
+                                                >
+                                                    💕 Salvar
+                                                </button>
                                                 <button
                                                     type="button"
-                                                    className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                    className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
                                                     onClick={() => {
                                                         setShowTypeForm(false);
                                                         setEditingTypeId(null);
                                                         setTypeFormData({ name: '' });
                                                     }}
                                                 >
-                                                    Cancelar
+                                                    ❌ Cancelar
                                                 </button>
                                             </div>
                                         </form>

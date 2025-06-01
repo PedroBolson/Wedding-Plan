@@ -1,5 +1,5 @@
 // src/components/LoginForm.tsx
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
     signInWithEmailAndPassword,
     sendPasswordResetEmail
@@ -7,6 +7,8 @@ import {
 import { auth } from "../../firebase/config";
 import { useNavigate } from "react-router-dom";
 import { useLoading } from "../../contexts/LoadingContext";
+import { ThemeContext } from "../../contexts/ThemeContext";
+import { Heart, Mail, Lock, Church, HelpCircle, Frown, Sparkles, Loader2 } from "lucide-react";
 
 const authErrorMessages: Record<string, string> = {
     "auth/invalid-email": "Por favor, informe um e-mail no formato correto.",
@@ -31,6 +33,7 @@ const resetErrorMessages: Record<string, string> = {
 };
 
 const LoginForm: React.FC = () => {
+    const { colors } = useContext(ThemeContext);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -98,29 +101,66 @@ const LoginForm: React.FC = () => {
                     } ${isProcessing ? "hidden" : ""}`}
             >
                 <form onSubmit={handleLogin} className="space-y-6">
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">Login</h2>
+                    <div className="text-center mb-8">
+                        <h2
+                            className="text-4xl font-bold mb-2 bg-gradient-to-r bg-clip-text text-transparent flex items-center justify-center gap-3"
+                            style={{
+                                backgroundImage: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`
+                            }}
+                        >
+                            <Heart className="w-8 h-8" style={{ color: colors.primary }} />
+                            Bem-vindos
+                            <Heart className="w-8 h-8" style={{ color: colors.primary }} />
+                        </h2>
+                        <p
+                            className="text-lg italic"
+                            style={{ color: colors.textSecondary }}
+                        >
+                            Entre para planejar seu grande dia
+                        </p>
+                    </div>
 
                     <div className="space-y-4">
-                        <div>
+                        <div className="relative">
                             <input
                                 type="email"
-                                placeholder="Email"
+                                placeholder="Seu email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
                                 disabled={isProcessing}
-                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors disabled:opacity-50"
+                                className="w-full pl-12 pr-4 py-3 rounded-lg transition-all duration-200 disabled:opacity-50 cursor-pointer focus:outline-none focus:ring-2 transform hover:scale-105 focus:scale-105"
+                                style={{
+                                    backgroundColor: colors.surface,
+                                    color: colors.text,
+                                    border: `2px solid ${colors.accent}`,
+                                    boxShadow: `0 2px 8px ${colors.primary}20`
+                                }}
+                            />
+                            <Mail
+                                className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5"
+                                style={{ color: colors.primary }}
                             />
                         </div>
-                        <div>
+                        <div className="relative">
                             <input
                                 type="password"
-                                placeholder="Senha"
+                                placeholder="Sua senha"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 disabled={isProcessing}
-                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors disabled:opacity-50"
+                                className="w-full pl-12 pr-4 py-3 rounded-lg transition-all duration-200 disabled:opacity-50 cursor-pointer focus:outline-none focus:ring-2 transform hover:scale-105 focus:scale-105"
+                                style={{
+                                    backgroundColor: colors.surface,
+                                    color: colors.text,
+                                    border: `2px solid ${colors.accent}`,
+                                    boxShadow: `0 2px 8px ${colors.primary}20`
+                                }}
+                            />
+                            <Lock
+                                className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5"
+                                style={{ color: colors.primary }}
                             />
                         </div>
                     </div>
@@ -128,9 +168,15 @@ const LoginForm: React.FC = () => {
                     <button
                         type="submit"
                         disabled={isProcessing}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 transform hover:scale-105 disabled:hover:scale-100"
+                        className="w-full font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:hover:scale-100 cursor-pointer disabled:opacity-50 shadow-lg flex items-center justify-center gap-2"
+                        style={{
+                            background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                            color: 'white',
+                            boxShadow: `0 4px 15px ${colors.primary}50`
+                        }}
                     >
-                        Entrar
+                        <Church className="w-5 h-5" />
+                        Entrar no Nosso Casamento
                     </button>
 
                     <div className="text-center">
@@ -138,21 +184,39 @@ const LoginForm: React.FC = () => {
                             type="button"
                             onClick={handleResetPassword}
                             disabled={isProcessing}
-                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium transition-colors disabled:opacity-50"
+                            className="font-medium transition-colors disabled:opacity-50 cursor-pointer hover:underline flex items-center justify-center gap-2 mx-auto"
+                            style={{ color: colors.primary }}
                         >
+                            <HelpCircle className="w-4 h-4" />
                             Esqueci minha senha
                         </button>
                     </div>
 
                     {error && (
-                        <p className="text-red-600 dark:text-red-400 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
-                            {error}
-                        </p>
+                        <div
+                            className="text-center p-4 rounded-lg border-2 flex items-center justify-center gap-2"
+                            style={{
+                                backgroundColor: `${colors.error}20`,
+                                borderColor: colors.error,
+                                color: colors.error
+                            }}
+                        >
+                            <Frown className="w-5 h-5" />
+                            <p className="font-medium">Ops! {error}</p>
+                        </div>
                     )}
                     {info && (
-                        <p className="text-green-600 dark:text-green-400 text-sm text-center bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                            {info}
-                        </p>
+                        <div
+                            className="text-center p-4 rounded-lg border-2 flex items-center justify-center gap-2"
+                            style={{
+                                backgroundColor: `${colors.success}20`,
+                                borderColor: colors.success,
+                                color: colors.success
+                            }}
+                        >
+                            <Sparkles className="w-5 h-5" />
+                            <p className="font-medium">{info}</p>
+                        </div>
                     )}
                 </form>
             </div>
@@ -161,8 +225,17 @@ const LoginForm: React.FC = () => {
                 className={`flex flex-col items-center justify-center space-y-4 transition-all duration-300 ${isProcessing ? "opacity-100" : "opacity-0 pointer-events-none"
                     }`}
             >
-                <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-                <p className="text-gray-600 dark:text-gray-400">Autenticando...</p>
+                <Loader2
+                    className="w-12 h-12 animate-spin"
+                    style={{ color: colors.primary }}
+                />
+                <p
+                    className="font-medium flex items-center gap-2"
+                    style={{ color: colors.textSecondary }}
+                >
+                    <Church className="w-5 h-5" style={{ color: colors.primary }} />
+                    Preparando seu acesso...
+                </p>
             </div>
         </div>
     );

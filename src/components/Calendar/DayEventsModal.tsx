@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { ThemeContext } from '../../contexts/ThemeContext';
 
 interface Event {
     id?: string;
@@ -18,6 +19,8 @@ interface DayEventsModalProps {
 }
 
 const DayEventsModal: React.FC<DayEventsModalProps> = ({ date, events, onClose, onEditEvent }) => {
+    const { colors } = useContext(ThemeContext);
+
     // Ordenar eventos por hora de início
     const sortedEvents = [...events].sort((a, b) => a.date.getTime() - b.date.getTime());
 
@@ -67,32 +70,78 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({ date, events, onClose, 
         const baseClasses = "p-4 rounded-lg mb-4 cursor-pointer transition-all duration-200 border hover:transform hover:-translate-y-1 hover:shadow-lg";
         switch (type) {
             case 'visita':
-                return `${baseClasses} bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700 hover:border-yellow-300 dark:hover:border-yellow-600`;
+                return {
+                    className: baseClasses,
+                    style: {
+                        backgroundColor: colors.warning.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
+                        borderColor: colors.warning.replace('rgb(', 'rgba(').replace(')', ', 0.3)')
+                    }
+                };
             case 'reuniao':
-                return `${baseClasses} bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 hover:border-green-300 dark:hover:border-green-600`;
+                return {
+                    className: baseClasses,
+                    style: {
+                        backgroundColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
+                        borderColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.3)')
+                    }
+                };
             default:
-                return `${baseClasses} bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700 hover:border-purple-300 dark:hover:border-purple-600`;
+                return {
+                    className: baseClasses,
+                    style: {
+                        backgroundColor: colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
+                        borderColor: colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.3)')
+                    }
+                };
+        }
+    };
+
+    const getEventTypeBadgeStyle = (type: string) => {
+        switch (type) {
+            case 'visita':
+                return {
+                    backgroundColor: colors.warning.replace('rgb(', 'rgba(').replace(')', ', 0.2)'),
+                    color: colors.warning
+                };
+            case 'reuniao':
+                return {
+                    backgroundColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.2)'),
+                    color: colors.success
+                };
+            default:
+                return {
+                    backgroundColor: colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.2)'),
+                    color: colors.secondary
+                };
         }
     };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-gray-900 rounded-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col animate-in slide-in-from-bottom-4 duration-300">
-                <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-900 z-10">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white capitalize">
+            <div className="rounded-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col animate-in slide-in-from-bottom-4 duration-300"
+                style={{ backgroundColor: colors.surface }}>
+                <div className="flex justify-between items-center p-6 border-b sticky top-0 z-10"
+                    style={{
+                        borderColor: colors.border,
+                        backgroundColor: colors.surface
+                    }}>
+                    <h3 className="text-xl font-bold capitalize" style={{ color: colors.text }}>
                         {formatDate(date)}
                     </h3>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-3xl font-light transition-all duration-200 hover:scale-110 leading-none"
+                        className="text-3xl font-light transition-all duration-200 hover:scale-110 leading-none"
+                        style={{ color: colors.textSecondary }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = colors.text}
+                        onMouseLeave={(e) => e.currentTarget.style.color = colors.textSecondary}
                     >
                         ×
                     </button>
                 </div>
 
                 {sortedEvents.length === 0 ? (
-                    <div className="p-10 text-center text-gray-500 dark:text-gray-400 flex flex-col items-center gap-4">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" className="text-gray-300 dark:text-gray-600">
+                    <div className="p-10 text-center flex flex-col items-center gap-4" style={{ color: colors.textSecondary }}>
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" style={{ color: colors.textSecondary }}>
                             <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             <path d="M16 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             <path d="M8 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -104,43 +153,49 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({ date, events, onClose, 
                     </div>
                 ) : (
                     <div className="p-6 flex-1 overflow-y-auto">
-                        {sortedEvents.map(event => (
-                            <div key={event.id} className={getEventTypeClasses(event.type)} onClick={() => onEditEvent(event)}>
-                                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 font-medium">
-                                    <span>{formatTime(event.date)}</span>
-                                    {event.endDate && (
-                                        <>
-                                            <span> - </span>
-                                            <span>{formatTime(event.endDate)}</span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-500 font-normal"> {getEventDuration(event.date, event.endDate)}</span>
-                                        </>
-                                    )}
+                        {sortedEvents.map(event => {
+                            const eventStyle = getEventTypeClasses(event.type);
+                            const badgeStyle = getEventTypeBadgeStyle(event.type);
+
+                            return (
+                                <div key={event.id} className={eventStyle.className} style={eventStyle.style} onClick={() => onEditEvent(event)}>
+                                    <div className="text-sm mb-2 font-medium" style={{ color: colors.textSecondary }}>
+                                        <span>{formatTime(event.date)}</span>
+                                        {event.endDate && (
+                                            <>
+                                                <span> - </span>
+                                                <span>{formatTime(event.endDate)}</span>
+                                                <span className="text-xs font-normal" style={{ color: colors.textSecondary }}> {getEventDuration(event.date, event.endDate)}</span>
+                                            </>
+                                        )}
+                                    </div>
+                                    <h4 className="text-lg font-semibold mb-3" style={{ color: colors.text }}>{event.title}</h4>
+                                    <div className="text-sm" style={{ color: colors.textSecondary }}>
+                                        <span className="inline-block px-3 py-1 rounded-full text-xs font-medium mr-3"
+                                            style={badgeStyle}>
+                                            {getEventTypeLabel(event.type)}
+                                        </span>
+                                        {event.location && (
+                                            <div className="flex items-center gap-1 mt-3" style={{ color: colors.textSecondary }}>
+                                                <span>📍</span>
+                                                <span>{event.location}</span>
+                                            </div>
+                                        )}
+                                        <p className="mt-3 whitespace-pre-line" style={{ color: colors.text }}>{event.description}</p>
+                                    </div>
                                 </div>
-                                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">{event.title}</h4>
-                                <div className="text-sm text-gray-600 dark:text-gray-400">
-                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mr-3 ${event.type === 'visita' ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200' :
-                                            event.type === 'reuniao' ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200' :
-                                                'bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200'
-                                        }`}>
-                                        {getEventTypeLabel(event.type)}
-                                    </span>
-                                    {event.location && (
-                                        <div className="flex items-center gap-1 mt-3 text-gray-600 dark:text-gray-400">
-                                            <span>📍</span>
-                                            <span>{event.location}</span>
-                                        </div>
-                                    )}
-                                    <p className="mt-3 text-gray-700 dark:text-gray-300 whitespace-pre-line">{event.description}</p>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
 
-                <div className="p-6 border-t border-gray-200 dark:border-gray-700 text-right">
+                <div className="p-6 border-t text-right" style={{ borderColor: colors.border }}>
                     <button
                         onClick={onClose}
-                        className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-5 py-2 rounded-lg font-medium transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
+                        className="text-white px-5 py-2 rounded-lg font-medium transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
+                        style={{ backgroundColor: colors.primary }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.primaryHover}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.primary}
                     >
                         Fechar
                     </button>

@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase/config";
 import CountUp from "../common/CountUp";
 import { useLoading } from "../../contexts/LoadingContext";
+import { ThemeContext } from "../../contexts/ThemeContext";
 
 interface BudgetItem {
     id?: string;
@@ -25,6 +26,7 @@ interface City {
 }
 
 const Budget = () => {
+    const { colors } = useContext(ThemeContext);
     const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
     const [cities, setCities] = useState<City[]>([]);
     const [newItem, setNewItem] = useState<BudgetItem>({
@@ -67,7 +69,6 @@ const Budget = () => {
         fetchBudgetItems();
     }, []);
 
-    // Calcular totais quando os itens mudarem
     useEffect(() => {
         calculateTotals();
     }, [budgetItems, filterCity, filterCategory]);
@@ -135,7 +136,6 @@ const Budget = () => {
         }
 
         if (isEditing) {
-            // Se estiver editando, atualize o item específico
             setBudgetItems(items =>
                 items.map(item =>
                     item.id === isEditing
@@ -144,7 +144,6 @@ const Budget = () => {
                 )
             );
         } else {
-            // Se estiver criando um novo item
             setNewItem(prev => ({ ...prev, [name]: parsedValue }));
         }
     };
@@ -294,58 +293,91 @@ const Budget = () => {
         const city = cities.find(city => city.id === cityId);
         return city ? city.name : "Cidade não encontrada";
     };
+
     return (
         <div className="max-w-6xl mx-auto p-4">
-            <h1 className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">Orçamento de Itens Extras</h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
-                Gerencie custos extras não incluídos nos serviços de locais ou profissionais contratados.
-                Itens marcados como favoritos serão adicionados ao total na aba de Favoritos.
+            <h1 className="text-3xl font-bold mb-4" style={{
+                background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+            }}>
+                💰 Orçamento de Itens Extras 💕
+            </h1>
+            <p className="mb-8 leading-relaxed" style={{ color: colors.textSecondary }}>
+                ✨ Gerencie custos extras não incluídos nos serviços de locais ou profissionais contratados.
+                Itens marcados como favoritos 💖 serão adicionados ao total na aba de Favoritos.
             </p>
 
             {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
-                    {error}
+                <div className="px-4 py-3 rounded-lg mb-6 border" style={{
+                    backgroundColor: colors.error + '15',
+                    borderColor: colors.error + '40',
+                    color: colors.error
+                }}>
+                    ❌ {error}
                 </div>
             )}
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 border border-gray-200 dark:border-gray-700">
+            <div className="rounded-xl shadow-lg p-6 mb-8 border transform hover:scale-105 transition-all duration-300" style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                background: `linear-gradient(135deg, ${colors.surface} 0%, ${colors.accent} 100%)`
+            }}>
                 <div className="grid md:grid-cols-2 gap-6">
-                    <div className="text-center">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Total Estimado</h3>
-                        <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                    <div className="text-center p-4 rounded-lg" style={{ backgroundColor: colors.background }}>
+                        <h3 className="text-lg font-semibold mb-2" style={{ color: colors.text }}>💰 Total Estimado</h3>
+                        <p className="text-3xl font-bold" style={{ color: colors.primary }}>
                             R$ <CountUp end={totalEstimated} className="inline" />
                         </p>
                     </div>
-                    <div className="text-center">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Total Gasto (Real)</h3>
-                        <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                    <div className="text-center p-4 rounded-lg" style={{ backgroundColor: colors.background }}>
+                        <h3 className="text-lg font-semibold mb-2" style={{ color: colors.text }}>💸 Total Gasto (Real)</h3>
+                        <p className="text-3xl font-bold" style={{ color: colors.success }}>
                             R$ <CountUp end={totalActual} className="inline" />
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-8">
+            <div className="rounded-xl shadow-lg border mb-8" style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.border
+            }}>
                 <div
-                    className="flex justify-between items-center p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-t-xl"
+                    className="flex justify-between items-center p-6 cursor-pointer rounded-t-xl transition-all duration-200 hover:scale-[1.02]"
+                    style={{
+                        backgroundColor: isFormExpanded ? colors.accent : 'transparent',
+                    }}
                     onClick={toggleFormExpansion}
                 >
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Adicionar Novo Item Extra</h2>
+                    <h2 className="text-xl font-semibold" style={{ color: colors.text }}>
+                        ✨ Adicionar Novo Item Extra 💕
+                    </h2>
                     <button
-                        className={`text-2xl font-bold text-indigo-600 dark:text-indigo-400 transition-transform duration-300 ${isFormExpanded ? 'rotate-180' : ''}`}
+                        className={`text-2xl font-bold transition-all duration-300 hover:scale-110 ${isFormExpanded ? 'rotate-180' : ''}`}
+                        style={{ color: colors.primary }}
                         aria-label={isFormExpanded ? "Recolher formulário" : "Expandir formulário"}
                     >
-                        {isFormExpanded ? '−' : '+'}
+                        {isFormExpanded ? '💖' : '✨'}
                     </button>
                 </div>
 
                 {isFormExpanded && (
-                    <form className="p-6 pt-0 border-t border-gray-200 dark:border-gray-700 animate-in slide-in-from-top duration-300" onSubmit={addBudgetItem}>
+                    <form className="p-6 pt-0 border-t animate-in slide-in-from-top duration-300"
+                        style={{ borderColor: colors.border }}
+                        onSubmit={addBudgetItem}>
                         <div className="grid md:grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="description">Descrição</label>
+                                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="description">
+                                    💬 Descrição
+                                </label>
                                 <input
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                    className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                    style={{
+                                        backgroundColor: colors.background,
+                                        borderColor: colors.border,
+                                        color: colors.text,
+                                    }}
                                     type="text"
                                     id="description"
                                     name="description"
@@ -356,9 +388,16 @@ const Budget = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="category">Categoria</label>
+                                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="category">
+                                    🏷️ Categoria
+                                </label>
                                 <select
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                    className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                    style={{
+                                        backgroundColor: colors.background,
+                                        borderColor: colors.border,
+                                        color: colors.text,
+                                    }}
                                     id="category"
                                     name="category"
                                     value={newItem.category}
@@ -372,9 +411,16 @@ const Budget = () => {
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="cityId">Cidade</label>
+                            <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="cityId">
+                                🏙️ Cidade
+                            </label>
                             <select
-                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                style={{
+                                    backgroundColor: colors.background,
+                                    borderColor: colors.border,
+                                    color: colors.text,
+                                }}
                                 id="cityId"
                                 name="cityId"
                                 value={newItem.cityId}
@@ -390,9 +436,16 @@ const Budget = () => {
 
                         <div className="grid md:grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="estimatedCost">Custo Estimado (R$)</label>
+                                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="estimatedCost">
+                                    💰 Custo Estimado (R$)
+                                </label>
                                 <input
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                    className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                    style={{
+                                        backgroundColor: colors.background,
+                                        borderColor: colors.border,
+                                        color: colors.text,
+                                    }}
                                     type="number"
                                     id="estimatedCost"
                                     name="estimatedCost"
@@ -405,9 +458,16 @@ const Budget = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="actualCost">Custo Real (R$)</label>
+                                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="actualCost">
+                                    💸 Custo Real (R$)
+                                </label>
                                 <input
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                    className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                    style={{
+                                        backgroundColor: colors.background,
+                                        borderColor: colors.border,
+                                        color: colors.text,
+                                    }}
                                     type="number"
                                     id="actualCost"
                                     name="actualCost"
@@ -421,65 +481,102 @@ const Budget = () => {
 
                         <div className="grid md:grid-cols-2 gap-4 mb-4">
                             <div className="flex items-center">
-                                <label className="flex items-center cursor-pointer">
+                                <label className="flex items-center cursor-pointer hover:scale-105 transition-transform duration-200">
                                     <input
-                                        className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                        className="w-4 h-4 rounded cursor-pointer"
+                                        style={{
+                                            accentColor: colors.primary,
+                                        }}
                                         type="checkbox"
                                         name="paid"
                                         checked={newItem.paid}
                                         onChange={handleInputChange}
                                     />
-                                    <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Pago</span>
+                                    <span className="ml-2 text-sm font-medium" style={{ color: colors.text }}>
+                                        ✅ Pago
+                                    </span>
                                 </label>
                             </div>
 
                             <div className="flex items-center">
-                                <label className="flex items-center cursor-pointer">
+                                <label className="flex items-center cursor-pointer hover:scale-105 transition-transform duration-200">
                                     <input
-                                        className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                        className="w-4 h-4 rounded cursor-pointer"
+                                        style={{
+                                            accentColor: colors.primary,
+                                        }}
                                         type="checkbox"
                                         name="isFavorite"
                                         checked={newItem.isFavorite}
                                         onChange={handleInputChange}
                                     />
-                                    <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Adicionar aos Favoritos</span>
+                                    <span className="ml-2 text-sm font-medium" style={{ color: colors.text }}>
+                                        💖 Adicionar aos Favoritos
+                                    </span>
                                 </label>
                             </div>
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="notes">Observações</label>
+                            <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="notes">
+                                📝 Observações
+                            </label>
                             <textarea
-                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 resize-none"
+                                className="w-full px-4 py-2 border rounded-lg resize-none transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                style={{
+                                    backgroundColor: colors.background,
+                                    borderColor: colors.border,
+                                    color: colors.text,
+                                }}
                                 id="notes"
                                 name="notes"
                                 rows={3}
                                 value={newItem.notes}
                                 onChange={handleInputChange}
-                                placeholder="Detalhes adicionais sobre este item"
+                                placeholder="Detalhes adicionais sobre este item ✨"
                             />
                         </div>
 
                         <button
                             type="submit"
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full font-semibold py-3 px-6 rounded-lg transition-all duration-200 hover:scale-105 transform cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{
+                                background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
+                                color: 'white',
+                                boxShadow: isLoading ? 'none' : `0 4px 15px ${colors.primary}30`
+                            }}
                             disabled={isLoading}
                         >
-                            {isLoading ? "Adicionando..." : "Adicionar Item"}
+                            {isLoading ? "✨ Adicionando..." : "💕 Adicionar Item"}
                         </button>
                     </form>
                 )}
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 p-6 border-b border-gray-200 dark:border-gray-700">Lista de Itens Extras</h2>
+            <div className="rounded-xl shadow-lg border" style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.border
+            }}>
+                <h2 className="text-xl font-semibold p-6 border-b" style={{
+                    color: colors.text,
+                    borderColor: colors.border
+                }}>
+                    📋 Lista de Itens Extras 💕
+                </h2>
 
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="p-6 border-b" style={{ borderColor: colors.border }}>
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="filterCategory">Filtrar por categoria:</label>
+                            <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="filterCategory">
+                                🏷️ Filtrar por categoria:
+                            </label>
                             <select
-                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                style={{
+                                    backgroundColor: colors.background,
+                                    borderColor: colors.border,
+                                    color: colors.text,
+                                }}
                                 id="filterCategory"
                                 value={filterCategory}
                                 onChange={(e) => setFilterCategory(e.target.value)}
@@ -492,9 +589,16 @@ const Budget = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="filterCity">Filtrar por cidade:</label>
+                            <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="filterCity">
+                                🏙️ Filtrar por cidade:
+                            </label>
                             <select
-                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                style={{
+                                    backgroundColor: colors.background,
+                                    borderColor: colors.border,
+                                    color: colors.text,
+                                }}
                                 id="filterCity"
                                 value={filterCity}
                                 onChange={(e) => setFilterCity(e.target.value)}
@@ -510,26 +614,35 @@ const Budget = () => {
 
                 {filteredItems.length === 0 ? (
                     <div className="p-6">
-                        <p className="text-center text-gray-500 dark:text-gray-400 py-8">Nenhum item encontrado com os filtros atuais.</p>
+                        <p className="text-center py-8" style={{ color: colors.textSecondary }}>
+                            ✨ Nenhum item encontrado com os filtros atuais 💫
+                        </p>
                     </div>
                 ) : (
                     <div className="p-6 space-y-4">
                         {filteredItems.map(item => (
-                            <div key={item.id} className={`border rounded-lg p-6 transition-all duration-200 ${item.paid
-                                    ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
-                                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
-                                } ${item.isFavorite
-                                    ? 'ring-2 ring-yellow-300 dark:ring-yellow-600'
-                                    : ''
-                                }`}>
+                            <div key={item.id}
+                                className={`border rounded-lg p-6 transition-all duration-200 hover:scale-[1.02] ${item.isFavorite ? 'ring-2' : ''}`}
+                                style={{
+                                    backgroundColor: item.paid ? colors.success + '10' : colors.surface,
+                                    borderColor: item.paid ? colors.success : colors.border,
+                                    outline: item.isFavorite ? `2px solid ${colors.warning}` : 'none',
+                                    outlineOffset: item.isFavorite ? '2px' : '0'
+                                }}>
                                 {isEditing === item.id ? (
-                                    // Formulário de edição
                                     <div className="space-y-4">
                                         <div className="grid md:grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descrição</label>
+                                                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                                                    💬 Descrição
+                                                </label>
                                                 <input
-                                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                                    className="w-full px-4 py-2 border rounded-lg cursor-pointer"
+                                                    style={{
+                                                        backgroundColor: colors.background,
+                                                        borderColor: colors.border,
+                                                        color: colors.text,
+                                                    }}
                                                     type="text"
                                                     name="description"
                                                     value={item.description}
@@ -538,9 +651,16 @@ const Budget = () => {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Categoria</label>
+                                                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                                                    🏷️ Categoria
+                                                </label>
                                                 <select
-                                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                                    className="w-full px-4 py-2 border rounded-lg cursor-pointer"
+                                                    style={{
+                                                        backgroundColor: colors.background,
+                                                        borderColor: colors.border,
+                                                        color: colors.text,
+                                                    }}
                                                     name="category"
                                                     value={item.category}
                                                     onChange={handleInputChange}
@@ -552,194 +672,132 @@ const Budget = () => {
                                             </div>
                                         </div>
 
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cidade</label>
-                                            <select
-                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                                name="cityId"
-                                                value={item.cityId}
-                                                onChange={handleInputChange}
-                                                required
-                                            >
-                                                <option value="">Selecione uma cidade</option>
-                                                {cities.map(city => (
-                                                    <option key={city.id} value={city.id}>{city.name} - {city.state}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="grid md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Custo Estimado (R$)</label>
-                                                <input
-                                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                                    type="number"
-                                                    name="estimatedCost"
-                                                    min="0"
-                                                    step="0.01"
-                                                    value={item.estimatedCost}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Custo Real (R$)</label>
-                                                <input
-                                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                                    type="number"
-                                                    name="actualCost"
-                                                    min="0"
-                                                    step="0.01"
-                                                    value={item.actualCost}
-                                                    onChange={handleInputChange}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid md:grid-cols-2 gap-4">
-                                            <div className="flex items-center">
-                                                <label className="flex items-center cursor-pointer">
-                                                    <input
-                                                        className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                                        type="checkbox"
-                                                        name="paid"
-                                                        checked={item.paid}
-                                                        onChange={handleInputChange}
-                                                    />
-                                                    <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Pago</span>
-                                                </label>
-                                            </div>
-
-                                            <div className="flex items-center">
-                                                <label className="flex items-center cursor-pointer">
-                                                    <input
-                                                        className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                                        type="checkbox"
-                                                        name="isFavorite"
-                                                        checked={item.isFavorite}
-                                                        onChange={handleInputChange}
-                                                    />
-                                                    <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Adicionar aos Favoritos</span>
-                                                </label>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Observações</label>
-                                            <textarea
-                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 resize-none"
-                                                name="notes"
-                                                rows={3}
-                                                value={item.notes}
-                                                onChange={handleInputChange}
-                                            />
-                                        </div>
-
-                                        <div className="flex gap-2 pt-4">
+                                        <div className="flex gap-2 pt-4 border-t" style={{ borderColor: colors.border }}>
                                             <button
-                                                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer disabled:opacity-50"
+                                                style={{
+                                                    background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
+                                                    color: 'white'
+                                                }}
                                                 onClick={() => saveEdit(item.id!)}
                                                 disabled={isLoading}
                                             >
-                                                {isLoading ? "Salvando..." : "Salvar"}
+                                                {isLoading ? "✨ Salvando..." : "💕 Salvar"}
                                             </button>
                                             <button
-                                                className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+                                                style={{
+                                                    backgroundColor: colors.textSecondary + '20',
+                                                    color: colors.text
+                                                }}
                                                 onClick={cancelEditing}
-                                                disabled={isLoading}
                                             >
-                                                Cancelar
+                                                ✖️ Cancelar
                                             </button>
                                         </div>
                                     </div>
                                 ) : (
-                                    // Visualização normal
                                     <>
                                         <div className="flex justify-between items-start mb-4">
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{item.description}</h3>
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-semibold mb-2" style={{ color: colors.text }}>
+                                                    {item.description}
+                                                </h3>
+                                                <div className="grid md:grid-cols-2 gap-4 text-sm" style={{ color: colors.textSecondary }}>
+                                                    <p><span className="font-medium">🏷️ Categoria:</span> {item.category.charAt(0).toUpperCase() + item.category.slice(1)}</p>
+                                                    <p><span className="font-medium">🏙️ Cidade:</span> {getCityName(item.cityId)}</p>
+                                                    <p><span className="font-medium">💰 Estimado:</span> R$ {item.estimatedCost.toFixed(2)}</p>
+                                                    <p><span className="font-medium">💸 Real:</span> R$ {item.actualCost.toFixed(2)}</p>
+                                                </div>
+                                                <div className="flex items-center gap-4 mt-2">
+                                                    <span className={`px-2 py-1 rounded text-xs font-medium ${item.paid ? 'text-white' : ''}`}
+                                                        style={{
+                                                            backgroundColor: item.paid ? colors.success : colors.textSecondary + '20',
+                                                            color: item.paid ? 'white' : colors.textSecondary
+                                                        }}>
+                                                        {item.paid ? '✅ Pago' : '⏳ Pendente'}
+                                                    </span>
+                                                    {item.isFavorite && (
+                                                        <span className="px-2 py-1 rounded text-xs font-medium text-white"
+                                                            style={{ backgroundColor: colors.warning }}>
+                                                            💖 Favorito
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
                                             <button
-                                                className={`text-2xl transition-colors duration-200 hover:scale-110 ${item.isFavorite
-                                                        ? 'text-yellow-500 dark:text-yellow-400'
-                                                        : 'text-gray-400 dark:text-gray-500 hover:text-yellow-500 dark:hover:text-yellow-400'
-                                                    }`}
+                                                className="ml-4 p-2 rounded-lg transition-all duration-200 hover:scale-110 cursor-pointer"
+                                                style={{
+                                                    color: item.isFavorite ? colors.warning : colors.textSecondary,
+                                                    backgroundColor: colors.background
+                                                }}
                                                 onClick={() => toggleFavorite(item)}
                                                 aria-label={item.isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                                                disabled={isLoading}
                                             >
-                                                {item.isFavorite ? '★' : '☆'}
+                                                {item.isFavorite ? '💖' : '🤍'}
                                             </button>
                                         </div>
 
-                                        <div className="flex gap-2 mb-4">
-                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
-                                                {item.category}
-                                            </span>
-                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                                {getCityName(item.cityId)}
-                                            </span>
-                                        </div>
-
-                                        <div className="grid md:grid-cols-2 gap-4 mb-4">
-                                            <div className="space-y-2">
-                                                <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                    <span className="font-medium text-gray-900 dark:text-gray-100">Estimado:</span> R$ {item.estimatedCost.toFixed(2)}
-                                                </p>
-                                                <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                    <span className="font-medium text-gray-900 dark:text-gray-100">Real:</span> R$ {item.actualCost.toFixed(2)}
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${item.paid
-                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                                                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                                                    }`}>
-                                                    {item.paid ? 'Pago' : 'Pendente'}
-                                                </span>
-                                            </div>
-                                        </div>
-
                                         {item.notes && (
-                                            <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                                                <p className="text-sm text-gray-700 dark:text-gray-300">
-                                                    <span className="font-medium text-gray-900 dark:text-gray-100">Observações:</span> {item.notes}
+                                            <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: colors.background }}>
+                                                <p className="text-sm" style={{ color: colors.text }}>
+                                                    <span className="font-medium">📝 Observações:</span> {item.notes}
                                                 </p>
                                             </div>
                                         )}
 
-                                        <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                        <div className="flex gap-2 pt-4 border-t" style={{ borderColor: colors.border }}>
                                             <button
-                                                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer disabled:opacity-50"
+                                                style={{
+                                                    background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
+                                                    color: 'white'
+                                                }}
                                                 onClick={() => startEditing(item)}
                                                 disabled={isLoading}
                                             >
-                                                Editar
+                                                ✏️ Editar
                                             </button>
                                             <button
-                                                className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer disabled:opacity-50"
+                                                style={{
+                                                    backgroundColor: colors.error,
+                                                    color: 'white'
+                                                }}
                                                 onClick={() => handleDeleteConfirmation(item.id!)}
                                                 disabled={isLoading}
                                             >
-                                                Excluir
+                                                🗑️ Excluir
                                             </button>
 
                                             {confirmDelete === item.id && (
                                                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                                                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
-                                                        <p className="text-gray-900 dark:text-gray-100 mb-4">Tem certeza que deseja excluir este item?</p>
+                                                    <div className="p-6 rounded-lg shadow-xl max-w-sm w-full mx-4" style={{ backgroundColor: colors.surface }}>
+                                                        <p className="mb-4" style={{ color: colors.text }}>
+                                                            💔 Tem certeza que deseja excluir este item?
+                                                        </p>
                                                         <div className="flex gap-2">
                                                             <button
-                                                                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                className="flex-1 font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer disabled:opacity-50"
+                                                                style={{
+                                                                    backgroundColor: colors.error,
+                                                                    color: 'white'
+                                                                }}
                                                                 onClick={() => deleteBudgetItem(item.id!)}
                                                                 disabled={isLoading}
                                                             >
-                                                                Sim
+                                                                🗑️ Sim, Excluir
                                                             </button>
                                                             <button
-                                                                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                className="flex-1 font-semibold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+                                                                style={{
+                                                                    backgroundColor: colors.textSecondary + '20',
+                                                                    color: colors.text
+                                                                }}
                                                                 onClick={() => setConfirmDelete(null)}
-                                                                disabled={isLoading}
                                                             >
-                                                                Não
+                                                                ❌ Cancelar
                                                             </button>
                                                         </div>
                                                     </div>

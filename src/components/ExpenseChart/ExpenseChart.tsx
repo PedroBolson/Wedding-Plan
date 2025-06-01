@@ -55,7 +55,7 @@ interface BudgetExtra {
 }
 
 const ExpenseChart = () => {
-    const { darkTheme } = useContext(ThemeContext);
+    const { darkTheme, colors } = useContext(ThemeContext);
     const [favorites, setFavorites] = useState<FavoriteVenue[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [selectedFavorite, setSelectedFavorite] = useState<string | null>(null);
@@ -222,14 +222,14 @@ const ExpenseChart = () => {
                         favorite.budgetExtrasCost || 0
                     ],
                     backgroundColor: [
-                        'rgba(255, 99, 132, 0.8)',
-                        'rgba(54, 162, 235, 0.8)',
-                        'rgba(255, 206, 86, 0.8)'
+                        colors.primary.replace('rgb(', 'rgba(').replace(')', ', 0.8)'),
+                        colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.8)'),
+                        colors.accent.replace('rgb(', 'rgba(').replace(')', ', 0.8)')
                     ],
                     borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)'
+                        colors.primary,
+                        colors.secondary,
+                        colors.accent
                     ],
                     borderWidth: 2,
                     hoverOffset: 20,
@@ -317,16 +317,16 @@ const ExpenseChart = () => {
     };
 
     if (error) {
-        return <div className="text-center p-8 text-red-600 dark:text-red-400 text-lg">{error}</div>;
+        return <div className="text-center p-8 text-lg" style={{ color: colors.error }}>{error}</div>;
     }
 
     if (favorites.length === 0) {
         return (
-            <div className="p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg mb-6">
-                <h2 className="text-2xl font-semibold text-center text-gray-900 dark:text-white mb-6">Gráfico de Gastos</h2>
-                <div className="text-center p-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">Não há locais favoritos para exibir gráficos de gastos.</p>
-                    <p className="text-gray-500 dark:text-gray-500">Adicione locais aos favoritos para visualizar suas distribuições de custos.</p>
+            <div className="p-6 rounded-xl shadow-lg mb-6" style={{ backgroundColor: colors.surface }}>
+                <h2 className="text-2xl font-semibold text-center mb-6" style={{ color: colors.text }}>Gráfico de Gastos</h2>
+                <div className="text-center p-12 rounded-lg" style={{ backgroundColor: colors.background }}>
+                    <p className="text-lg mb-4" style={{ color: colors.textSecondary }}>Não há locais favoritos para exibir gráficos de gastos.</p>
+                    <p style={{ color: colors.textSecondary }}>Adicione locais aos favoritos para visualizar suas distribuições de custos.</p>
                 </div>
             </div>
         );
@@ -336,18 +336,21 @@ const ExpenseChart = () => {
     const percentages = calculatePercentages(currentFavorite);
 
     return (
-        <div className="p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg mb-6">
-            <h2 className="text-2xl font-semibold text-center text-gray-900 dark:text-white mb-6">Gráfico de Gastos</h2>
+        <div className="p-6 rounded-xl shadow-lg mb-6" style={{ backgroundColor: colors.surface }}>
+            <h2 className="text-2xl font-semibold text-center mb-6" style={{ color: colors.text }}>Gráfico de Gastos</h2>
 
             <div className="mb-8">
                 <div className="w-full mb-4">
-                    <label htmlFor="favorite-select" className="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Escolha um Local Favorito:</label>
+                    <label htmlFor="favorite-select" className="block mb-2 font-medium" style={{ color: colors.text }}>Escolha um Local Favorito:</label>
                     <select
                         id="favorite-select"
                         value={selectedFavorite || ''}
                         onChange={(e) => setSelectedFavorite(e.target.value)}
-                        className="w-full p-3 pr-8 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base appearance-none cursor-pointer focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20"
+                        className="w-full p-3 pr-8 rounded-lg border text-base appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-opacity-20"
                         style={{
+                            backgroundColor: colors.surface,
+                            borderColor: colors.border,
+                            color: colors.text,
                             backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'><path d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/></svg>")`,
                             backgroundRepeat: 'no-repeat',
                             backgroundPosition: 'calc(100% - 12px) center'
@@ -362,38 +365,43 @@ const ExpenseChart = () => {
                 </div>
             </div>
 
-            <h3 className="text-xl font-semibold text-center text-gray-900 dark:text-white mb-2">{currentFavorite.venueName} - {currentFavorite.cityName}</h3>
-            <p className="text-center font-semibold text-blue-600 dark:text-blue-400 text-lg mb-6">Custo Total: R$ {currentFavorite.totalCost?.toLocaleString('pt-BR')}</p>
+            <h3 className="text-xl font-semibold text-center mb-2" style={{ color: colors.text }}>{currentFavorite.venueName} - {currentFavorite.cityName}</h3>
+            <p className="text-center font-semibold text-lg mb-6" style={{ color: colors.primary }}>Custo Total: R$ {currentFavorite.totalCost?.toLocaleString('pt-BR')}</p>
 
             <div className="flex flex-col md:flex-row justify-between gap-4 mb-8">
-                <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg p-5 relative shadow-md hover:-translate-y-1 transition-transform duration-200 overflow-hidden">
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Local</div>
-                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">R$ {currentFavorite.venueCost?.toLocaleString('pt-BR')}</div>
-                    <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">{percentages.venue.toFixed(1)}%</div>
-                    <div className="absolute w-2 h-full top-0 left-0 bg-red-400" style={{ backgroundColor: 'rgba(255, 99, 132, 0.8)' }}></div>
+                <div className="flex-1 rounded-lg p-5 relative shadow-md hover:-translate-y-1 transition-transform duration-200 overflow-hidden" style={{ backgroundColor: colors.surface }}>
+                    <div className="text-sm mb-2" style={{ color: colors.textSecondary }}>Local</div>
+                    <div className="text-xl font-bold mb-1" style={{ color: colors.text }}>R$ {currentFavorite.venueCost?.toLocaleString('pt-BR')}</div>
+                    <div className="text-lg font-semibold" style={{ color: colors.primary }}>{percentages.venue.toFixed(1)}%</div>
+                    <div className="absolute w-2 h-full top-0 left-0" style={{ backgroundColor: colors.primary }}></div>
                 </div>
 
-                <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg p-5 relative shadow-md hover:-translate-y-1 transition-transform duration-200 overflow-hidden">
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Profissionais</div>
-                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">R$ {currentFavorite.professionalsCost?.toLocaleString('pt-BR')}</div>
-                    <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">{percentages.professionals.toFixed(1)}%</div>
-                    <div className="absolute w-2 h-full top-0 left-0 bg-blue-400" style={{ backgroundColor: 'rgba(54, 162, 235, 0.8)' }}></div>
+                <div className="flex-1 rounded-lg p-5 relative shadow-md hover:-translate-y-1 transition-transform duration-200 overflow-hidden" style={{ backgroundColor: colors.surface }}>
+                    <div className="text-sm mb-2" style={{ color: colors.textSecondary }}>Profissionais</div>
+                    <div className="text-xl font-bold mb-1" style={{ color: colors.text }}>R$ {currentFavorite.professionalsCost?.toLocaleString('pt-BR')}</div>
+                    <div className="text-lg font-semibold" style={{ color: colors.secondary }}>{percentages.professionals.toFixed(1)}%</div>
+                    <div className="absolute w-2 h-full top-0 left-0" style={{ backgroundColor: colors.secondary }}></div>
                 </div>
 
-                <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg p-5 relative shadow-md hover:-translate-y-1 transition-transform duration-200 overflow-hidden">
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Extras</div>
-                    <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">R$ {currentFavorite.budgetExtrasCost?.toLocaleString('pt-BR')}</div>
-                    <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">{percentages.extras.toFixed(1)}%</div>
-                    <div className="absolute w-2 h-full top-0 left-0 bg-yellow-400" style={{ backgroundColor: 'rgba(255, 206, 86, 0.8)' }}></div>
+                <div className="flex-1 rounded-lg p-5 relative shadow-md hover:-translate-y-1 transition-transform duration-200 overflow-hidden" style={{ backgroundColor: colors.surface }}>
+                    <div className="text-sm mb-2" style={{ color: colors.textSecondary }}>Extras</div>
+                    <div className="text-xl font-bold mb-1" style={{ color: colors.text }}>R$ {currentFavorite.budgetExtrasCost?.toLocaleString('pt-BR')}</div>
+                    <div className="text-lg font-semibold" style={{ color: colors.accent }}>{percentages.extras.toFixed(1)}%</div>
+                    <div className="absolute w-2 h-full top-0 left-0" style={{ backgroundColor: colors.accent }}></div>
                 </div>
             </div>
 
             <div className="flex justify-center gap-4 my-8 flex-wrap">
                 <button
                     className={`px-5 py-3 rounded-lg font-medium transition-all duration-200 min-w-[120px] ${chartType === 'macro'
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:-translate-y-1 hover:shadow-md'
+                        ? 'text-white shadow-lg'
+                        : 'hover:-translate-y-1 hover:shadow-md'
                         }`}
+                    style={{
+                        backgroundColor: chartType === 'macro' ? colors.primary : colors.surface,
+                        color: chartType === 'macro' ? 'white' : colors.textSecondary,
+                        boxShadow: chartType === 'macro' ? `0 10px 15px -3px ${colors.primary}30` : undefined
+                    }}
                     onClick={() => setChartType('macro')}
                     disabled={isLoading}
                 >
@@ -401,9 +409,14 @@ const ExpenseChart = () => {
                 </button>
                 <button
                     className={`px-5 py-3 rounded-lg font-medium transition-all duration-200 min-w-[120px] ${chartType === 'professionals'
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:-translate-y-1 hover:shadow-md'
+                        ? 'text-white shadow-lg'
+                        : 'hover:-translate-y-1 hover:shadow-md'
                         } ${(!currentFavorite.selectedProfessionalNames?.length || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    style={{
+                        backgroundColor: chartType === 'professionals' ? colors.primary : colors.surface,
+                        color: chartType === 'professionals' ? 'white' : colors.textSecondary,
+                        boxShadow: chartType === 'professionals' ? `0 10px 15px -3px ${colors.primary}30` : undefined
+                    }}
                     onClick={() => setChartType('professionals')}
                     disabled={isLoading || !currentFavorite.selectedProfessionalNames?.length}
                 >
@@ -411,9 +424,14 @@ const ExpenseChart = () => {
                 </button>
                 <button
                     className={`px-5 py-3 rounded-lg font-medium transition-all duration-200 min-w-[120px] ${chartType === 'extras'
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:-translate-y-1 hover:shadow-md'
+                        ? 'text-white shadow-lg'
+                        : 'hover:-translate-y-1 hover:shadow-md'
                         } ${(!currentFavorite.budgetExtrasItems?.length || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    style={{
+                        backgroundColor: chartType === 'extras' ? colors.primary : colors.surface,
+                        color: chartType === 'extras' ? 'white' : colors.textSecondary,
+                        boxShadow: chartType === 'extras' ? `0 10px 15px -3px ${colors.primary}30` : undefined
+                    }}
                     onClick={() => setChartType('extras')}
                     disabled={isLoading || !currentFavorite.budgetExtrasItems?.length}
                 >
@@ -421,10 +439,13 @@ const ExpenseChart = () => {
                 </button>
             </div>
 
-            <div className="mt-8 bg-gray-50 dark:bg-gray-800 p-6 rounded-xl shadow-inner border border-gray-200 dark:border-gray-700 text-center relative overflow-hidden max-w-full">
+            <div className="mt-8 p-6 rounded-xl shadow-inner border text-center relative overflow-hidden max-w-full" style={{
+                backgroundColor: colors.background,
+                borderColor: colors.border
+            }}>
                 {chartType === 'macro' && (
                     <>
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mb-6">Distribuição Geral de Custos</h3>
+                        <h3 className="text-xl font-semibold text-center mb-6" style={{ color: colors.text }}>Distribuição Geral de Custos</h3>
                         <div className="flex flex-col lg:flex-row gap-8 mt-6 flex-wrap overflow-visible w-full">
                             <div className="flex-1 min-w-[300px] relative rounded-lg overflow-visible bg-transparent">
                                 <div className="h-[350px] w-full max-w-[500px] mx-auto relative overflow-visible">
@@ -450,10 +471,10 @@ const ExpenseChart = () => {
                                                 caretSize: 8,
                                                 caretPadding: 10,
                                                 displayColors: true,
-                                                backgroundColor: darkTheme ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)',
-                                                bodyColor: darkTheme ? '#fff' : '#333',
-                                                titleColor: darkTheme ? '#fff' : '#111',
-                                                borderColor: darkTheme ? '#333' : '#ddd',
+                                                backgroundColor: darkTheme ? colors.surface : colors.surface,
+                                                bodyColor: colors.text,
+                                                titleColor: colors.text,
+                                                borderColor: colors.border,
                                                 borderWidth: 1,
                                                 titleFont: {
                                                     weight: 'bold'
@@ -465,7 +486,7 @@ const ExpenseChart = () => {
                                             legend: {
                                                 position: 'right',
                                                 labels: {
-                                                    color: darkTheme ? 'rgba(255,255,255,0.8)' : '#333',
+                                                    color: colors.text,
                                                     font: {
                                                         size: 14,
                                                         weight: 500
@@ -486,7 +507,7 @@ const ExpenseChart = () => {
                             </div>
 
                             <div className="flex-1 min-w-[300px] flex flex-col justify-center w-full px-2">
-                                <h4 className="text-lg text-gray-900 dark:text-white mb-6 mt-0">Detalhamento de Custos</h4>
+                                <h4 className="text-lg mb-6 mt-0" style={{ color: colors.text }}>Detalhamento de Custos</h4>
                                 <div className="flex flex-col gap-5">
                                     {['Local', 'Profissionais', 'Extras'].map((category, index) => {
                                         const values = [
@@ -494,25 +515,21 @@ const ExpenseChart = () => {
                                             currentFavorite.professionalsCost || 0,
                                             currentFavorite.budgetExtrasCost || 0
                                         ];
-                                        const colors = [
-                                            'rgba(255, 99, 132, 0.8)',
-                                            'rgba(54, 162, 235, 0.8)',
-                                            'rgba(255, 206, 86, 0.8)'
-                                        ];
+                                        const chartColors = [colors.primary, colors.secondary, colors.accent];
                                         const percentage = ((values[index] / currentFavorite.totalCost!) * 100).toFixed(1);
 
                                         return (
                                             <div key={category} className="w-full">
                                                 <div className="flex justify-between items-center mb-2 w-full">
-                                                    <span className="font-semibold text-gray-900 dark:text-white flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap mr-2 text-sm">{category}</span>
-                                                    <span className="font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap text-sm">{percentage}%</span>
+                                                    <span className="font-semibold flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap mr-2 text-sm" style={{ color: colors.text }}>{category}</span>
+                                                    <span className="font-semibold whitespace-nowrap text-sm" style={{ color: colors.primary }}>{percentage}%</span>
                                                 </div>
-                                                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md overflow-hidden w-full">
+                                                <div className="h-3 rounded-md overflow-hidden w-full" style={{ backgroundColor: colors.border }}>
                                                     <div
                                                         className="h-full rounded-md transition-all duration-1000 ease-out"
                                                         style={{
                                                             width: `${percentage}%`,
-                                                            backgroundColor: colors[index]
+                                                            backgroundColor: chartColors[index]
                                                         }}
                                                     />
                                                 </div>
@@ -528,7 +545,7 @@ const ExpenseChart = () => {
                 {chartType === 'professionals' ? (
                     (currentFavorite.selectedProfessionalNames && currentFavorite.selectedProfessionalNames.length > 0) ? (
                         <>
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mb-6">Distribuição de Custos por Profissionais</h3>
+                            <h3 className="text-xl font-semibold text-center mb-6" style={{ color: colors.text }}>Distribuição de Custos por Profissionais</h3>
                             <div className="flex flex-col lg:flex-row gap-8 mt-6 flex-wrap overflow-visible w-full">
                                 <div className="flex-1 min-w-[300px] relative rounded-lg overflow-visible bg-transparent">
                                     <div className="h-[350px] w-full max-w-[500px] mx-auto relative overflow-visible">
@@ -539,7 +556,7 @@ const ExpenseChart = () => {
                                                 legend: {
                                                     position: 'right',
                                                     labels: {
-                                                        color: darkTheme ? 'rgba(255,255,255,0.8)' : '#333',
+                                                        color: colors.text,
                                                         font: {
                                                             size: 14,
                                                             weight: 500
@@ -567,10 +584,10 @@ const ExpenseChart = () => {
                                                     caretSize: 8,
                                                     caretPadding: 10,
                                                     displayColors: true,
-                                                    backgroundColor: darkTheme ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)',
-                                                    bodyColor: darkTheme ? '#fff' : '#333',
-                                                    titleColor: darkTheme ? '#fff' : '#111',
-                                                    borderColor: darkTheme ? '#333' : '#ddd',
+                                                    backgroundColor: darkTheme ? colors.surface : colors.surface,
+                                                    bodyColor: colors.text,
+                                                    titleColor: colors.text,
+                                                    borderColor: colors.border,
                                                     borderWidth: 1,
                                                     titleFont: {
                                                         weight: 'bold'
@@ -585,7 +602,7 @@ const ExpenseChart = () => {
                                 </div>
 
                                 <div className="flex-1 min-w-[300px] flex flex-col justify-center w-full px-2">
-                                    <h4 className="text-lg text-gray-900 dark:text-white mb-6 mt-0">Detalhamento por Profissional</h4>
+                                    <h4 className="text-lg mb-6 mt-0" style={{ color: colors.text }}>Detalhamento por Profissional</h4>
                                     <div className="flex flex-col gap-5">
                                         {(currentFavorite.selectedProfessionalNames || []).map((prof, index) => {
                                             const cost = prof.price || 0;
@@ -599,10 +616,10 @@ const ExpenseChart = () => {
                                             return (
                                                 <div key={prof.name} className="w-full">
                                                     <div className="flex justify-between items-center mb-2 w-full">
-                                                        <span className="font-semibold text-gray-900 dark:text-white flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap mr-2 text-sm">{prof.name}</span>
-                                                        <span className="font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap text-sm">{percentage}%</span>
+                                                        <span className="font-semibold flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap mr-2 text-sm" style={{ color: colors.text }}>{prof.name}</span>
+                                                        <span className="font-semibold whitespace-nowrap text-sm" style={{ color: colors.primary }}>{percentage}%</span>
                                                     </div>
-                                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md overflow-hidden w-full">
+                                                    <div className="h-3 rounded-md overflow-hidden w-full" style={{ backgroundColor: colors.border }}>
                                                         <div
                                                             className="h-full rounded-md transition-all duration-1000 ease-out"
                                                             style={{
@@ -619,13 +636,17 @@ const ExpenseChart = () => {
                             </div>
                         </>
                     ) : (
-                        <p className="text-center p-12 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-400">Não há profissionais selecionados para este local.</p>
+                        <p className="text-center p-12 rounded-lg" style={{
+                            backgroundColor: colors.surface,
+                            color: colors.textSecondary
+                        }}>Não há profissionais selecionados para este local.</p>
                     )
                 ) : null}
+
                 {chartType === 'extras' ? (
                     (currentFavorite.budgetExtrasItems && currentFavorite.budgetExtrasItems.length > 0) ? (
                         <>
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mb-6">Distribuição de Custos Extras</h3>
+                            <h3 className="text-xl font-semibold text-center mb-6" style={{ color: colors.text }}>Distribuição de Custos Extras</h3>
                             <div className="flex flex-col lg:flex-row gap-8 mt-6 flex-wrap overflow-visible w-full">
                                 <div className="flex-1 min-w-[300px] relative rounded-lg overflow-visible bg-transparent">
                                     <div className="h-[350px] w-full max-w-[500px] mx-auto relative overflow-visible">
@@ -636,7 +657,7 @@ const ExpenseChart = () => {
                                                 legend: {
                                                     position: 'right',
                                                     labels: {
-                                                        color: darkTheme ? 'rgba(255,255,255,0.8)' : '#333',
+                                                        color: colors.text,
                                                         font: {
                                                             size: 14,
                                                             weight: 500
@@ -664,10 +685,10 @@ const ExpenseChart = () => {
                                                     caretSize: 8,
                                                     caretPadding: 10,
                                                     displayColors: true,
-                                                    backgroundColor: darkTheme ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)',
-                                                    bodyColor: darkTheme ? '#fff' : '#333',
-                                                    titleColor: darkTheme ? '#fff' : '#111',
-                                                    borderColor: darkTheme ? '#333' : '#ddd',
+                                                    backgroundColor: darkTheme ? colors.surface : colors.surface,
+                                                    bodyColor: colors.text,
+                                                    titleColor: colors.text,
+                                                    borderColor: colors.border,
                                                     borderWidth: 1,
                                                     titleFont: {
                                                         weight: 'bold'
@@ -682,7 +703,7 @@ const ExpenseChart = () => {
                                 </div>
 
                                 <div className="flex-1 min-w-[300px] flex flex-col justify-center w-full px-2">
-                                    <h4 className="text-lg text-gray-900 dark:text-white mb-6 mt-0">Detalhamento de Itens Extras</h4>
+                                    <h4 className="text-lg mb-6 mt-0" style={{ color: colors.text }}>Detalhamento de Itens Extras</h4>
                                     <div className="flex flex-col gap-5">
                                         {currentFavorite.budgetExtrasItems?.map((item, index) => {
                                             const totalExtras = currentFavorite.budgetExtrasItems?.reduce((sum, item) => sum + item.cost, 0) || 0;
@@ -695,10 +716,10 @@ const ExpenseChart = () => {
                                             return (
                                                 <div key={index} className="w-full">
                                                     <div className="flex justify-between items-center mb-2 w-full">
-                                                        <span className="font-semibold text-gray-900 dark:text-white flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap mr-2 text-sm">{item.description}</span>
-                                                        <span className="font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap text-sm">{percentage}%</span>
+                                                        <span className="font-semibold flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap mr-2 text-sm" style={{ color: colors.text }}>{item.description}</span>
+                                                        <span className="font-semibold whitespace-nowrap text-sm" style={{ color: colors.primary }}>{percentage}%</span>
                                                     </div>
-                                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md overflow-hidden w-full">
+                                                    <div className="h-3 rounded-md overflow-hidden w-full" style={{ backgroundColor: colors.border }}>
                                                         <div
                                                             className="h-full rounded-md transition-all duration-1000 ease-out"
                                                             style={{
@@ -715,7 +736,10 @@ const ExpenseChart = () => {
                             </div>
                         </>
                     ) : (
-                        <p className="text-center p-12 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-400">Não há itens extras para este local.</p>
+                        <p className="text-center p-12 rounded-lg" style={{
+                            backgroundColor: colors.surface,
+                            color: colors.textSecondary
+                        }}>Não há itens extras para este local.</p>
                     )
                 ) : null}
             </div>

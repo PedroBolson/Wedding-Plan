@@ -15,7 +15,7 @@ import { useLoading } from "../../contexts/LoadingContext";
 
 const MainPage = () => {
     const navigate = useNavigate();
-    const { darkTheme, toggleTheme } = useContext(ThemeContext);
+    const { darkTheme, toggleTheme, colors } = useContext(ThemeContext);
     const [activeSection, setActiveSection] = useState('planning');
     const [isAdmin, setIsAdmin] = useState(false);
     const { setIsLoading, setLoadingMessage } = useLoading();
@@ -100,9 +100,25 @@ const MainPage = () => {
                 return <ExpenseChart />;
             case 'guests':
                 return (
-                    <div className="text-center p-12 bg-gray-50 dark:bg-gray-800 rounded-lg m-8 max-w-2xl mx-auto">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Em breve!</h2>
-                        <p className="text-gray-600 dark:text-gray-400">Esta funcionalidade estará disponível em uma atualização futura.</p>
+                    <div style={{
+                        textAlign: 'center',
+                        padding: '3rem',
+                        backgroundColor: colors.surface,
+                        borderRadius: '0.5rem',
+                        margin: '2rem',
+                        maxWidth: '32rem',
+                        marginLeft: 'auto',
+                        marginRight: 'auto'
+                    }}>
+                        <h2 style={{
+                            fontSize: '1.5rem',
+                            fontWeight: 'bold',
+                            color: colors.text,
+                            marginBottom: '1rem'
+                        }}>Em breve!</h2>
+                        <p style={{
+                            color: colors.textSecondary
+                        }}>Esta funcionalidade estará disponível em uma atualização futura.</p>
                     </div>
                 );
             default:
@@ -111,7 +127,12 @@ const MainPage = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-white dark:bg-gray-900 relative">
+        <div style={{
+            display: 'flex',
+            minHeight: '100vh',
+            backgroundColor: colors.background,
+            position: 'relative'
+        }}>
             <Nav
                 activeSection={activeSection}
                 onSectionChange={setActiveSection}

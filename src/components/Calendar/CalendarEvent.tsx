@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { ThemeContext } from '../../contexts/ThemeContext';
 
 interface Event {
     id?: string;
@@ -16,15 +17,44 @@ interface CalendarEventProps {
 }
 
 const CalendarEvent: React.FC<CalendarEventProps> = ({ event, onClick }) => {
-    const getEventClasses = (type: string) => {
-        const baseClasses = "px-2 py-1 mb-1 rounded text-xs cursor-pointer transition-all duration-200 block w-full box-border hover:transform hover:-translate-y-0.5 hover:shadow-md hover:z-10";
+    const { colors } = useContext(ThemeContext);
+
+    const getEventStyles = (type: string) => {
+        const baseStyles = {
+            padding: '0.25rem 0.5rem',
+            marginBottom: '0.25rem',
+            borderRadius: '0.25rem',
+            fontSize: '0.75rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            display: 'block' as const,
+            width: '100%',
+            boxSizing: 'border-box' as const,
+            borderLeft: '2px solid'
+        };
+
         switch (type) {
             case 'visita':
-                return `${baseClasses} bg-yellow-100 dark:bg-yellow-900/30 border-l-2 border-yellow-500 text-yellow-800 dark:text-yellow-200`;
+                return {
+                    ...baseStyles,
+                    backgroundColor: colors.accent + '40',
+                    borderLeftColor: colors.accent,
+                    color: colors.text
+                };
             case 'reuniao':
-                return `${baseClasses} bg-green-100 dark:bg-green-900/30 border-l-2 border-green-500 text-green-800 dark:text-green-200`;
+                return {
+                    ...baseStyles,
+                    backgroundColor: colors.primary + '40',
+                    borderLeftColor: colors.primary,
+                    color: colors.text
+                };
             default:
-                return `${baseClasses} bg-purple-100 dark:bg-purple-900/30 border-l-2 border-purple-500 text-purple-800 dark:text-purple-200`;
+                return {
+                    ...baseStyles,
+                    backgroundColor: colors.secondary + '40',
+                    borderLeftColor: colors.secondary,
+                    color: colors.text
+                };
         }
     };
 
@@ -48,11 +78,31 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({ event, onClick }) => {
 
     return (
         <div
-            className={getEventClasses(event.type)}
+            style={{
+                ...getEventStyles(event.type),
+                transform: 'translateY(0)',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+            }}
             onClick={onClick}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                e.currentTarget.style.zIndex = '10';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.zIndex = 'auto';
+            }}
         >
-            <div className="text-xs text-gray-600 dark:text-gray-400">{formatTimeDisplay()}</div>
-            <div className="font-semibold whitespace-nowrap overflow-hidden text-ellipsis max-w-full">{event.title}</div>
+            <div style={{ fontSize: '0.75rem', color: colors.textSecondary }}>{formatTimeDisplay()}</div>
+            <div style={{
+                fontWeight: '600',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%'
+            }}>{event.title}</div>
         </div>
     );
 };
