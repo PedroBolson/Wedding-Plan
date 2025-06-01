@@ -59,7 +59,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword }) => {
     };
 
     return (
-        <div className="w-full">
+        <div className="w-full relative min-h-[400px] flex flex-col justify-center">
             <div
                 className={`transition-all duration-300 ${fadeOut ? "opacity-0 transform scale-95" : "opacity-100 transform scale-100"
                     } ${isProcessing ? "hidden" : ""}`}
@@ -174,7 +174,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword }) => {
             </div>
 
             <div
-                className={`flex flex-col items-center justify-center space-y-4 transition-all duration-300 ${isProcessing ? "opacity-100" : "opacity-0 pointer-events-none"
+                className={`flex flex-col items-center justify-center space-y-4 transition-all duration-300 absolute inset-0 ${isProcessing ? "opacity-100" : "opacity-0 pointer-events-none"
                     }`}
             >
                 <Loader2

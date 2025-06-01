@@ -27,18 +27,18 @@ const LoginPage = () => {
                 ></div>
 
                 <div
-                    className="rounded-2xl shadow-2xl overflow-hidden relative min-h-[600px] flex flex-col md:flex-row"
+                    className="rounded-2xl shadow-2xl overflow-hidden relative min-h-[600px] md:min-h-[600px] flex flex-col md:flex-row"
                     style={{ backgroundColor: colors.background }}
                 >
                     {/* Password Reset Form - Fixed Left Side (Desktop) / Top (Mobile) */}
-                    <div className="w-full md:w-1/2 p-6 md:p-8 lg:p-12 flex items-center justify-center">
+                    <div className="w-full md:w-1/2 p-6 md:p-8 lg:p-12 flex items-center justify-center min-h-[350px] md:min-h-0 relative z-0">
                         <div className="w-full max-w-md">
                             <PasswordResetForm onBackToLogin={() => setIsResetMode(false)} />
                         </div>
                     </div>
 
                     {/* Login Form - Fixed Right Side (Desktop) / Bottom (Mobile) */}
-                    <div className="w-full md:w-1/2 p-6 md:p-8 lg:p-12 flex items-center justify-center">
+                    <div className="w-full md:w-1/2 p-6 md:p-8 lg:p-12 flex items-center justify-center min-h-[350px] md:min-h-0 relative z-0">
                         <div className="w-full max-w-md">
                             <LoginForm onForgotPassword={() => setIsResetMode(true)} />
                         </div>
@@ -46,13 +46,14 @@ const LoginPage = () => {
 
                     {/* Sliding Cover/Title Overlay - Responsive */}
                     <div
-                        className={`absolute inset-0 flex items-center justify-center text-center transition-all duration-700 ease-in-out md:w-1/2 md:h-full w-full h-1/2 ${isResetMode
+                        className={`absolute top-0 left-0 right-0 flex items-center justify-center text-center transition-all duration-700 ease-in-out md:w-1/2 md:h-full md:inset-0 h-1/2 ${isResetMode
                             ? 'md:translate-x-full md:translate-y-0 translate-y-full'
                             : 'md:translate-x-0 translate-y-0'
                             }`}
                         style={{
                             backgroundColor: colors.surface,
-                            zIndex: 10
+                            zIndex: 20,
+                            minHeight: '50%'
                         }}
                     >
                         <div className="p-8 md:p-12">
@@ -113,7 +114,7 @@ const LoginPage = () => {
                                     </p>
                                     <button
                                         onClick={() => setIsResetMode(false)}
-                                        className="inline-flex cursor-pointer items-center gap-2 font-medium transition-all duration-200 hover:underline transform hover:scale-105"
+                                        className="inline-flex cursor-pointer items-center gap-2 font-medium transition-all duration-200 hover:underline transform hover:scale-105 text-sm md:text-base"
                                         style={{ color: colors.primary }}
                                     >
                                         <ArrowLeft className="w-4 h-4" />
