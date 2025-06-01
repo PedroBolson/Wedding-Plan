@@ -116,7 +116,8 @@ const Nav: React.FC<NavProps> = ({
             )}
 
             <nav
-                className={`fixed top-0 left-0 bottom-0 w-64 shadow-lg overflow-y-auto transition-transform duration-300 z-[1000] ${mobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0 lg:shadow-lg'}`}
+                className={`fixed top-0 left-0 bottom-0 w-64 shadow-lg overflow-y-auto transition-transform duration-300 z-[1000] ${mobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+                    } ${windowWidth >= 1051 ? 'translate-x-0 lg:shadow-lg' : ''}`}
                 style={{
                     backgroundColor: colors.surface,
                     borderRight: `2px solid ${colors.accent}`
@@ -129,13 +130,13 @@ const Nav: React.FC<NavProps> = ({
                     >
                         <div className="flex items-center justify-center gap-2 mb-2">
                             <Heart
-                                size={24}
+                                size={windowWidth < 768 ? 20 : 24}
                                 fill={colors.primary}
                                 color={colors.primary}
                                 className="animate-pulse"
                             />
                             <h1
-                                className="text-2xl font-bold m-0 bg-gradient-to-r bg-clip-text text-transparent"
+                                className={`${windowWidth < 768 ? 'text-lg' : 'text-2xl'} font-bold m-0 bg-gradient-to-r bg-clip-text text-transparent`}
                                 style={{
                                     backgroundImage: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`
                                 }}
@@ -143,14 +144,14 @@ const Nav: React.FC<NavProps> = ({
                                 {isAdmin ? 'Admin Casamento' : 'Nosso Casamento'}
                             </h1>
                             <Heart
-                                size={24}
+                                size={windowWidth < 768 ? 20 : 24}
                                 fill={colors.primary}
                                 color={colors.primary}
                                 className="animate-pulse"
                             />
                         </div>
                         <p
-                            className="text-sm mt-2 italic"
+                            className={`${windowWidth < 768 ? 'text-xs' : 'text-sm'} mt-2 italic`}
                             style={{ color: colors.textSecondary }}
                         >
                             Planejando nosso dia especial
@@ -163,16 +164,16 @@ const Nav: React.FC<NavProps> = ({
                                 <li key={option.id} className="w-full">
                                     {option.isAvailable ? (
                                         <button
-                                            className={`block w-full px-4 py-3 rounded-lg font-medium text-left transition-all duration-200 border-none cursor-pointer transform hover:scale-105 hover:shadow-lg ${activeSection === option.id
-                                                ? 'shadow-md'
-                                                : 'hover:shadow-md'
+                                            className={`block w-full px-3 py-2 rounded-lg font-medium text-left transition-all duration-200 border-none cursor-pointer transform hover:scale-105 hover:shadow-lg ${activeSection === option.id ? 'shadow-md' : 'hover:shadow-md'
                                                 }`}
                                             style={{
                                                 backgroundColor: activeSection === option.id ? colors.primary : colors.accent,
                                                 color: activeSection === option.id ? 'white' : colors.text,
                                                 boxShadow: activeSection === option.id
                                                     ? `0 4px 12px ${colors.primary}60`
-                                                    : `0 2px 8px ${colors.primary}20`
+                                                    : `0 2px 8px ${colors.primary}20`,
+                                                fontSize: windowWidth < 768 ? '0.875rem' : '1rem',
+                                                lineHeight: windowWidth < 768 ? '1.25' : '1.5'
                                             }}
                                             onClick={() => handleNavClick(option.id)}
                                         >
@@ -180,12 +181,14 @@ const Nav: React.FC<NavProps> = ({
                                         </button>
                                     ) : (
                                         <span
-                                            className="relative block w-full px-4 py-3 rounded-lg font-medium text-left opacity-60 cursor-not-allowed"
+                                            className="relative block w-full px-3 py-2 rounded-lg font-medium text-left opacity-60 cursor-not-allowed"
                                             title="Em breve"
                                             style={{
                                                 backgroundColor: colors.background,
                                                 color: colors.textSecondary,
-                                                border: `1px dashed ${colors.border}`
+                                                border: `1px dashed ${colors.border}`,
+                                                fontSize: windowWidth < 768 ? '0.875rem' : '1rem',
+                                                lineHeight: windowWidth < 768 ? '1.25' : '1.5'
                                             }}
                                         >
                                             {option.label}

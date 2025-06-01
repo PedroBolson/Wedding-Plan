@@ -148,18 +148,18 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
     };
 
     return (
-        <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center z-[1100]" onClick={onClose}>
-            <div className="rounded-lg w-[90%] max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl"
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center z-[1100] p-2 sm:p-4" onClick={onClose}>
+            <div className="rounded-lg w-full max-w-sm sm:max-w-2xl lg:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl"
                 style={{ backgroundColor: colors.surface }}
                 onClick={e => e.stopPropagation()}>
-                <header className="flex justify-between items-center p-4 border-b sticky top-0 z-10"
+                <header className="flex justify-between items-center p-3 sm:p-4 border-b sticky top-0 z-10"
                     style={{
                         borderColor: colors.border,
                         backgroundColor: colors.surface
                     }}>
-                    <h2 className="text-xl font-semibold m-0" style={{ color: colors.text }}>Gerenciar Usuários</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold m-0" style={{ color: colors.text }}>Gerenciar Usuários</h2>
                     <button
-                        className="bg-none border-none text-2xl cursor-pointer w-9 h-9 rounded-full flex justify-center items-center hover:scale-125 transition-transform"
+                        className="bg-none border-none text-xl sm:text-2xl cursor-pointer w-8 h-8 sm:w-9 sm:h-9 rounded-full flex justify-center items-center hover:scale-125 transition-transform"
                         style={{ color: colors.textSecondary }}
                         onClick={onClose}
                     >
@@ -167,9 +167,9 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                     </button>
                 </header>
 
-                <section className="flex gap-4 mx-4 mt-4 flex-wrap">
+                <section className="flex flex-col sm:flex-row gap-2 sm:gap-4 mx-3 sm:mx-4 mt-3 sm:mt-4">
                     <button
-                        className="px-4 py-2 border-none rounded text-white font-medium transition-all duration-200 hover:brightness-90 disabled:opacity-70"
+                        className="px-3 sm:px-4 py-2 border-none rounded text-white font-medium transition-all duration-200 hover:brightness-90 disabled:opacity-70 text-sm sm:text-base"
                         style={{ backgroundColor: colors.primary }}
                         onClick={() => setShowAdd(!showAdd)}
                         disabled={loading}
@@ -177,19 +177,19 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                         {showAdd ? 'Cancelar criação' : 'Criar Novo Usuário'}
                     </button>
                     <button
-                        className="px-4 py-2 border-none rounded text-white font-medium transition-all duration-200 hover:brightness-90 disabled:opacity-70 flex items-center gap-2"
+                        className="px-3 sm:px-4 py-2 border-none rounded text-white font-medium transition-all duration-200 hover:brightness-90 disabled:opacity-70 flex items-center justify-center gap-2 text-sm sm:text-base"
                         style={{ backgroundColor: colors.primary }}
                         onClick={loadUsers}
                         disabled={loading}
                     >
-                        {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Atualizar Lista'}
+                        {loading ? <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Atualizar Lista'}
                     </button>
                 </section>
 
                 {showAdd && (
-                    <form className="mx-4 my-4 space-y-4" onSubmit={handleCreateUser}>
+                    <form className="mx-3 sm:mx-4 my-3 sm:my-4 space-y-3 sm:space-y-4" onSubmit={handleCreateUser}>
                         <input
-                            className="w-full px-4 py-2 border rounded text-base focus:ring-2 focus:border-transparent"
+                            className="w-full px-3 sm:px-4 py-2 border rounded text-sm sm:text-base focus:ring-2 focus:border-transparent"
                             style={{
                                 backgroundColor: colors.surface,
                                 borderColor: colors.border,
@@ -203,7 +203,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                             required
                         />
                         <input
-                            className="w-full px-4 py-2 border rounded text-base focus:ring-2 focus:border-transparent"
+                            className="w-full px-3 sm:px-4 py-2 border rounded text-sm sm:text-base focus:ring-2 focus:border-transparent"
                             style={{
                                 backgroundColor: colors.surface,
                                 borderColor: colors.border,
@@ -218,18 +218,18 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                             required
                         />
                         <button
-                            className="px-6 py-3 border-none rounded text-white font-medium cursor-pointer text-base transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 border-none rounded text-white font-medium cursor-pointer text-sm sm:text-base transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             style={{ backgroundColor: colors.success }}
                             type="submit"
                             disabled={loading}
                         >
-                            {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Criar Usuário'}
+                            {loading ? <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Criar Usuário'}
                         </button>
                     </form>
                 )}
 
                 {error && (
-                    <div className="mx-4 my-4 px-3 py-3 rounded text-center font-medium border"
+                    <div className="mx-3 sm:mx-4 my-3 sm:my-4 px-3 py-3 rounded text-center font-medium border text-sm sm:text-base"
                         style={{
                             backgroundColor: colors.error.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
                             color: colors.error,
@@ -239,7 +239,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                     </div>
                 )}
                 {success && (
-                    <div className="mx-4 my-4 px-3 py-3 rounded text-center font-medium border"
+                    <div className="mx-3 sm:mx-4 my-3 sm:my-4 px-3 py-3 rounded text-center font-medium border text-sm sm:text-base"
                         style={{
                             backgroundColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
                             color: colors.success,
@@ -249,22 +249,22 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                     </div>
                 )}
 
-                <div className="overflow-x-auto mx-4 mb-4">
-                    <table className="w-full border-collapse border rounded-lg overflow-hidden"
+                <div className="overflow-x-auto mx-3 sm:mx-4 mb-3 sm:mb-4">
+                    <table className="w-full border-collapse border rounded-lg overflow-hidden text-sm sm:text-base"
                         style={{ borderColor: colors.border }}>
                         <thead>
                             <tr style={{ backgroundColor: colors.background }}>
-                                <th className="border px-4 py-3 text-left font-semibold"
+                                <th className="border px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold"
                                     style={{
                                         borderColor: colors.border,
                                         color: colors.text
                                     }}>Email</th>
-                                <th className="border px-4 py-3 text-left font-semibold"
+                                <th className="border px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold"
                                     style={{
                                         borderColor: colors.border,
                                         color: colors.text
                                     }}>Função</th>
-                                <th className="border px-4 py-3 text-left font-semibold"
+                                <th className="border px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold"
                                     style={{
                                         borderColor: colors.border,
                                         color: colors.text
@@ -284,22 +284,22 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                                     onMouseLeave={(e) => {
                                         e.currentTarget.style.backgroundColor = 'transparent';
                                     }}>
-                                    <td className="border px-4 py-3"
+                                    <td className="border px-2 sm:px-4 py-2 sm:py-3 break-words"
                                         style={{
                                             borderColor: colors.border,
                                             color: colors.text
                                         }}>{u.email}</td>
-                                    <td className="border px-4 py-3"
+                                    <td className="border px-2 sm:px-4 py-2 sm:py-3"
                                         style={{
                                             borderColor: colors.border,
                                             color: colors.text
                                         }}>{u.isAdmin ? 'Admin' : 'User'}</td>
-                                    <td className="border px-4 py-3"
+                                    <td className="border px-2 sm:px-4 py-2 sm:py-3"
                                         style={{ borderColor: colors.border }}>
-                                        <div className="flex gap-2 flex-wrap">
+                                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
                                             {u.isAdmin ? (
                                                 <button
-                                                    className="px-3 py-1.5 border-none rounded text-white font-medium transition-all duration-200 disabled:opacity-70 text-sm flex items-center gap-1"
+                                                    className="px-2 sm:px-3 py-1 sm:py-1.5 border-none rounded text-white font-medium transition-all duration-200 disabled:opacity-70 text-xs sm:text-sm flex items-center justify-center gap-1"
                                                     style={{ backgroundColor: colors.error }}
                                                     onClick={() => handleRevokeAdmin(u.uid)}
                                                     disabled={loading}
@@ -309,7 +309,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                                             ) : (
                                                 <>
                                                     <button
-                                                        className="px-3 py-1.5 border-none rounded text-white font-medium transition-all duration-200 hover:brightness-90 hover:-translate-y-0.5 disabled:opacity-70 text-sm flex items-center gap-1"
+                                                        className="px-2 sm:px-3 py-1 sm:py-1.5 border-none rounded text-white font-medium transition-all duration-200 hover:brightness-90 hover:-translate-y-0.5 disabled:opacity-70 text-xs sm:text-sm flex items-center justify-center gap-1"
                                                         style={{ backgroundColor: colors.primary }}
                                                         onClick={() => handleGrantAdmin(u.uid, u.email)}
                                                         disabled={loading}
@@ -317,7 +317,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                                                         {loading ? <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" /> : 'Conceder Admin'}
                                                     </button>
                                                     <button
-                                                        className="px-3 py-1.5 border rounded font-medium transition-all duration-200 disabled:opacity-70 text-sm flex items-center gap-1"
+                                                        className="px-2 sm:px-3 py-1 sm:py-1.5 border rounded font-medium transition-all duration-200 disabled:opacity-70 text-xs sm:text-sm flex items-center justify-center gap-1"
                                                         style={{
                                                             backgroundColor: colors.background,
                                                             borderColor: colors.border,

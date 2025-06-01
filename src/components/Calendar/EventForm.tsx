@@ -123,25 +123,25 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-3 sm:p-4 animate-in fade-in duration-200">
             <div style={{
                 backgroundColor: colors.background,
                 borderRadius: '0.75rem',
-                padding: '1.5rem',
+                padding: '1rem',
                 width: '100%',
-                maxWidth: '32rem',
-                maxHeight: '85vh',
+                maxWidth: '28rem',
+                maxHeight: '90vh',
                 overflowY: 'auto',
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-            }} className="animate-in slide-in-from-bottom-4 duration-300">
+            }} className="animate-in slide-in-from-bottom-4 duration-300 sm:p-6 sm:max-w-lg sm:max-h-85vh">
                 <h3 style={{
-                    fontSize: '1.25rem',
+                    fontSize: '1.125rem',
                     fontWeight: 'bold',
                     color: colors.text,
-                    marginBottom: '1.25rem',
-                    paddingBottom: '1rem',
+                    marginBottom: '1rem',
+                    paddingBottom: '0.75rem',
                     borderBottom: `1px solid ${colors.border}`
-                }}>
+                }} className="sm:text-xl sm:mb-5 sm:pb-4">
                     {event ? 'Editar Evento' : 'Novo Evento'}
                 </h3>
 
@@ -186,7 +186,7 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
                                 <div>
                                     <label htmlFor="date" style={{
                                         display: 'block',
@@ -287,7 +287,7 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel, onDele
                         </div>
 
                         {endDateEnabled && (
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
                                 <div>
                                     <label htmlFor="endDate" style={{
                                         display: 'block',

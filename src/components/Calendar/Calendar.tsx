@@ -211,7 +211,7 @@ const Calendar: React.FC = () => {
             days.push(
                 <div
                     key={`empty-${i}`}
-                    className="aspect-square min-h-[60px] sm:min-h-[100px] border border-dashed rounded-lg"
+                    className="aspect-square min-h-[50px] sm:min-h-[80px] md:min-h-[100px] border border-dashed rounded-lg"
                     style={{
                         backgroundColor: colors.background,
                         borderColor: colors.border
@@ -241,7 +241,7 @@ const Calendar: React.FC = () => {
             days.push(
                 <div
                     key={day}
-                    className={`aspect-square min-h-[60px] sm:min-h-[100px] border rounded-lg p-2 relative cursor-pointer transition-all duration-200 flex flex-col overflow-hidden ${isToday ? 'ring-2' : ''
+                    className={`aspect-square min-h-[50px] sm:min-h-[80px] md:min-h-[100px] border rounded-lg p-1 sm:p-2 relative cursor-pointer transition-all duration-200 flex flex-col overflow-hidden ${isToday ? 'ring-2' : ''
                         } hover:transform hover:-translate-y-0.5 hover:shadow-lg`}
                     style={{
                         backgroundColor: dayEvents.length > 0
@@ -251,8 +251,8 @@ const Calendar: React.FC = () => {
                     }}
                     onClick={() => openDayEvents(date)}
                 >
-                    <div className={`text-sm font-medium mb-2 ${isToday
-                        ? 'text-white rounded-full w-7 h-7 flex items-center justify-center -m-1 mb-1'
+                    <div className={`text-xs sm:text-sm font-medium mb-1 sm:mb-2 ${isToday
+                        ? 'text-white rounded-full w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center -m-1 mb-1'
                         : ''
                         }`}
                         style={{
@@ -264,7 +264,7 @@ const Calendar: React.FC = () => {
 
                     {/* Indicador de eventos centralizado para mobile */}
                     {sortedDayEvents.length > 0 && isMobile && (
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-xs font-medium shadow-sm"
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white min-w-[16px] h-[16px] rounded-full flex items-center justify-center text-xs font-medium shadow-sm"
                             style={{ backgroundColor: colors.primary }}>
                             {sortedDayEvents.length}
                         </div>
@@ -320,14 +320,14 @@ const Calendar: React.FC = () => {
     };
 
     return (
-        <div className="w-full max-w-7xl mx-auto rounded-xl shadow-lg p-5" style={{ backgroundColor: colors.surface }}>
-            <div className="flex flex-col lg:flex-row justify-between items-center pb-5 border-b gap-4" style={{ borderColor: colors.border }}>
-                <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Calendário de Eventos</h2>
-                <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-                    <div className="flex items-center gap-3">
+        <div className="w-full max-w-7xl mx-auto rounded-xl shadow-lg p-3 sm:p-5" style={{ backgroundColor: colors.surface }}>
+            <div className="flex flex-col gap-4 pb-4 sm:pb-5 border-b" style={{ borderColor: colors.border }}>
+                <h2 className="text-xl sm:text-2xl font-bold text-center sm:text-left" style={{ color: colors.text }}>Calendário de Eventos</h2>
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
                         <button
                             onClick={prevMonth}
-                            className="border rounded-lg px-3 py-2 transition-all duration-200"
+                            className="border rounded-lg px-2 sm:px-3 py-2 transition-all duration-200 text-lg sm:text-base"
                             style={{
                                 backgroundColor: colors.surface,
                                 borderColor: colors.border,
@@ -344,12 +344,12 @@ const Calendar: React.FC = () => {
                         >
                             &lt;
                         </button>
-                        <h3 className="text-lg font-semibold min-w-[140px] text-center pt-1" style={{ color: colors.text }}>
+                        <h3 className="text-base sm:text-lg font-semibold min-w-[120px] sm:min-w-[140px] text-center pt-1" style={{ color: colors.text }}>
                             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                         </h3>
                         <button
                             onClick={nextMonth}
-                            className="border rounded-lg px-3 py-2 transition-all duration-200"
+                            className="border rounded-lg px-2 sm:px-3 py-2 transition-all duration-200 text-lg sm:text-base"
                             style={{
                                 backgroundColor: colors.surface,
                                 borderColor: colors.border,
@@ -372,7 +372,7 @@ const Calendar: React.FC = () => {
                             setSelectedEvent(null);
                             setShowEventForm(true);
                         }}
-                        className="w-full sm:w-auto text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
+                        className="w-full sm:w-auto text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg text-sm sm:text-base"
                         style={{
                             backgroundColor: colors.primary
                         }}
@@ -395,20 +395,27 @@ const Calendar: React.FC = () => {
                 />
             </GoogleOAuthProvider>
 
-            <div className="grid grid-cols-7 gap-2 py-4 font-semibold border-b text-center" style={{
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 py-3 sm:py-4 font-semibold border-b text-center text-xs sm:text-sm" style={{
                 borderColor: colors.border,
                 color: colors.textSecondary
             }}>
-                <div>Dom</div>
-                <div>Seg</div>
-                <div>Ter</div>
-                <div>Qua</div>
-                <div>Qui</div>
-                <div>Sex</div>
-                <div>Sáb</div>
+                <div className="hidden sm:block">Domingo</div>
+                <div className="hidden sm:block">Segunda</div>
+                <div className="hidden sm:block">Terça</div>
+                <div className="hidden sm:block">Quarta</div>
+                <div className="hidden sm:block">Quinta</div>
+                <div className="hidden sm:block">Sexta</div>
+                <div className="hidden sm:block">Sábado</div>
+                <div className="sm:hidden">Dom</div>
+                <div className="sm:hidden">Seg</div>
+                <div className="sm:hidden">Ter</div>
+                <div className="sm:hidden">Qua</div>
+                <div className="sm:hidden">Qui</div>
+                <div className="sm:hidden">Sex</div>
+                <div className="sm:hidden">Sáb</div>
             </div>
 
-            <div className="grid grid-cols-7 gap-2 pt-4">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 pt-3 sm:pt-4">
                 {renderCalendar()}
             </div>
 

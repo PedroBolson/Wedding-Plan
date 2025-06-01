@@ -18,8 +18,19 @@ const MainPage = () => {
     const { darkTheme, toggleTheme, colors } = useContext(ThemeContext);
     const [activeSection, setActiveSection] = useState('planning');
     const [isAdmin, setIsAdmin] = useState(false);
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const { setIsLoading, setLoadingMessage } = useLoading();
     const isMountedRef = useRef(true);
+
+    // Monitor window resize for responsive design
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         isMountedRef.current = true;
@@ -142,7 +153,13 @@ const MainPage = () => {
                 isAdmin={isAdmin}
             />
 
-            <main className="flex-1 p-8 w-full lg:w-[calc(100%-16rem)] lg:ml-64 transition-all duration-300 min-h-screen box-border max-md:ml-0 max-md:w-full max-md:p-4 max-md:pt-16">
+            <main className="flex-1 transition-all duration-300 min-h-screen"
+                style={{
+                    paddingTop: windowWidth < 1051 ? '4rem' : '1.5rem',
+                    paddingRight: windowWidth < 768 ? '0.5rem' : windowWidth < 1024 ? '1rem' : '2rem',
+                    paddingBottom: windowWidth < 768 ? '1rem' : '2rem',
+                    paddingLeft: windowWidth >= 1051 ? '18rem' : windowWidth < 768 ? '0.5rem' : '1.5rem'
+                }}>
                 <div className="w-full max-w-6xl mx-auto">
                     {renderActiveSection()}
                 </div>

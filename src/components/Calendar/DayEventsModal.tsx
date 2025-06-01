@@ -68,7 +68,7 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({ date, events, onClose, 
     };
 
     const getEventTypeClasses = (type: string) => {
-        const baseClasses = "p-4 rounded-lg mb-4 cursor-pointer transition-all duration-200 border hover:transform hover:-translate-y-1 hover:shadow-lg";
+        const baseClasses = "p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 cursor-pointer transition-all duration-200 border hover:transform hover:-translate-y-1 hover:shadow-lg";
         switch (type) {
             case 'visita':
                 return {
@@ -118,20 +118,20 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({ date, events, onClose, 
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 animate-in fade-in duration-200">
-            <div className="rounded-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col animate-in slide-in-from-bottom-4 duration-300"
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-2 sm:p-4 animate-in fade-in duration-200">
+            <div className="rounded-xl w-full max-w-sm sm:max-w-2xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col animate-in slide-in-from-bottom-4 duration-300"
                 style={{ backgroundColor: colors.surface }}>
-                <div className="flex justify-between items-center p-6 border-b sticky top-0 z-10"
+                <div className="flex justify-between items-center p-4 sm:p-6 border-b sticky top-0 z-10"
                     style={{
                         borderColor: colors.border,
                         backgroundColor: colors.surface
                     }}>
-                    <h3 className="text-xl font-bold capitalize" style={{ color: colors.text }}>
+                    <h3 className="text-lg sm:text-xl font-bold capitalize pr-2" style={{ color: colors.text }}>
                         {formatDate(date)}
                     </h3>
                     <button
                         onClick={onClose}
-                        className="text-3xl font-light transition-all duration-200 hover:scale-110 leading-none"
+                        className="text-2xl sm:text-3xl font-light transition-all duration-200 hover:scale-110 leading-none flex-shrink-0"
                         style={{ color: colors.textSecondary }}
                         onMouseEnter={(e) => e.currentTarget.style.color = colors.text}
                         onMouseLeave={(e) => e.currentTarget.style.color = colors.textSecondary}
@@ -141,8 +141,8 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({ date, events, onClose, 
                 </div>
 
                 {sortedEvents.length === 0 ? (
-                    <div className="p-10 text-center flex flex-col items-center gap-4" style={{ color: colors.textSecondary }}>
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" style={{ color: colors.textSecondary }}>
+                    <div className="p-6 sm:p-10 text-center flex flex-col items-center gap-3 sm:gap-4" style={{ color: colors.textSecondary }}>
+                        <svg width="48" height="48" className="sm:w-16 sm:h-16" viewBox="0 0 24 24" fill="none" style={{ color: colors.textSecondary }}>
                             <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             <path d="M16 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             <path d="M8 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -150,17 +150,17 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({ date, events, onClose, 
                             <path d="M12 16L12 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                             <path d="M12 20.01L12.01 19.9989" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        <p className="text-lg">Nenhum evento agendado para este dia.</p>
+                        <p className="text-base sm:text-lg">Nenhum evento agendado para este dia.</p>
                     </div>
                 ) : (
-                    <div className="p-6 flex-1 overflow-y-auto">
+                    <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
                         {sortedEvents.map(event => {
                             const eventStyle = getEventTypeClasses(event.type);
                             const badgeStyle = getEventTypeBadgeStyle(event.type);
 
                             return (
                                 <div key={event.id} className={eventStyle.className} style={eventStyle.style} onClick={() => onEditEvent(event)}>
-                                    <div className="text-sm mb-2 font-medium" style={{ color: colors.textSecondary }}>
+                                    <div className="text-xs sm:text-sm mb-2 font-medium" style={{ color: colors.textSecondary }}>
                                         <span>{formatTime(event.date)}</span>
                                         {event.endDate && (
                                             <>
@@ -170,19 +170,19 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({ date, events, onClose, 
                                             </>
                                         )}
                                     </div>
-                                    <h4 className="text-lg font-semibold mb-3" style={{ color: colors.text }}>{event.title}</h4>
-                                    <div className="text-sm" style={{ color: colors.textSecondary }}>
-                                        <span className="inline-block px-3 py-1 rounded-full text-xs font-medium mr-3"
+                                    <h4 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3" style={{ color: colors.text }}>{event.title}</h4>
+                                    <div className="text-xs sm:text-sm" style={{ color: colors.textSecondary }}>
+                                        <span className="inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium mr-2 sm:mr-3"
                                             style={badgeStyle}>
                                             {getEventTypeLabel(event.type)}
                                         </span>
                                         {event.location && (
-                                            <div className="flex items-center gap-1 mt-3" style={{ color: colors.textSecondary }}>
-                                                <MapPin className="w-4 h-4" />
-                                                <span>{event.location}</span>
+                                            <div className="flex items-center gap-1 mt-2 sm:mt-3" style={{ color: colors.textSecondary }}>
+                                                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                                                <span className="text-xs sm:text-sm">{event.location}</span>
                                             </div>
                                         )}
-                                        <p className="mt-3 whitespace-pre-line" style={{ color: colors.text }}>{event.description}</p>
+                                        <p className="mt-2 sm:mt-3 whitespace-pre-line text-xs sm:text-sm" style={{ color: colors.text }}>{event.description}</p>
                                     </div>
                                 </div>
                             );
@@ -190,10 +190,10 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({ date, events, onClose, 
                     </div>
                 )}
 
-                <div className="p-6 border-t text-right" style={{ borderColor: colors.border }}>
+                <div className="p-4 sm:p-6 border-t text-right" style={{ borderColor: colors.border }}>
                     <button
                         onClick={onClose}
-                        className="text-white px-5 py-2 rounded-lg font-medium transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
+                        className="text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg text-sm sm:text-base"
                         style={{ backgroundColor: colors.primary }}
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.primaryHover}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.primary}

@@ -1168,27 +1168,30 @@ const Planning = () => {
             case 'venues':
                 return (
                     <div className="p-4">
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-                            <button
-                                className="flex items-center gap-2 bg-transparent border-2 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 font-medium cursor-pointer transform hover:scale-105"
-                                style={{
-                                    borderColor: colors.primary,
-                                    color: colors.primary
-                                }}
-                                onClick={handleBackButton}
-                            >
-                                <ArrowLeft size={18} />
-                                <span>Voltar para Cidades</span>
-                            </button>
-                            <div className="flex items-center gap-2">
-                                <Building2 size={28} style={{ color: colors.primary }} />
-                                <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
-                                    {cities.find(c => c.id === selectedCityId)?.name}
-                                </h2>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-col gap-4 mb-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <button
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium cursor-pointer transform hover:scale-105 transition-all duration-300 shadow-md text-white"
+                                    className="flex items-center gap-2 bg-transparent border-2 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 self-start"
+                                    style={{
+                                        borderColor: colors.primary,
+                                        color: colors.primary
+                                    }}
+                                    onClick={handleBackButton}
+                                >
+                                    <ArrowLeft size={18} />
+                                    <span className="hidden sm:inline">Voltar para Cidades</span>
+                                    <span className="sm:hidden">Voltar</span>
+                                </button>
+                                <div className="flex items-center gap-2 justify-center">
+                                    <Building2 size={24} style={{ color: colors.primary }} />
+                                    <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                                        {cities.find(c => c.id === selectedCityId)?.name}
+                                    </h2>
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
+                                <button
+                                    className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium cursor-pointer transform hover:scale-105 transition-all duration-300 shadow-md text-white"
                                     style={{
                                         background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
                                         boxShadow: `0 4px 15px ${colors.primary}40`
@@ -1196,17 +1199,17 @@ const Planning = () => {
                                     onClick={handleViewVenues}
                                 >
                                     <Building2 size={18} />
-                                    Locais
+                                    <span className="text-sm sm:text-base">Locais</span>
                                 </button>
                                 <button
-                                    className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
+                                    className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-3 sm:px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer transform hover:scale-105"
                                     onClick={handleViewProfessionals}
                                 >
                                     <Users size={18} />
-                                    Profissionais
+                                    <span className="text-sm sm:text-base">Profissionais</span>
                                 </button>
                                 <button
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
+                                    className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 shadow-md text-white"
                                     style={{
                                         background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
                                         boxShadow: `0 4px 15px ${colors.accent}40`
@@ -1214,7 +1217,7 @@ const Planning = () => {
                                     onClick={() => setShowVenueForm(true)}
                                 >
                                     <Plus size={18} />
-                                    <span>Novo Local</span>
+                                    <span className="text-sm sm:text-base">Novo Local</span>
                                 </button>
                             </div>
                         </div>
@@ -1229,9 +1232,13 @@ const Planning = () => {
                             </div>
                         ) : (
                             <div
-                                className="grid gap-6"
+                                className="grid gap-4 lg:gap-6"
                                 style={{
-                                    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))'
+                                    gridTemplateColumns: window.innerWidth < 768
+                                        ? '1fr'
+                                        : window.innerWidth < 1024
+                                            ? 'repeat(auto-fill, minmax(300px, 1fr))'
+                                            : 'repeat(auto-fill, minmax(350px, 1fr))'
                                 }}
                             >
                                 {venues.map(venue => (
@@ -1398,7 +1405,7 @@ const Planning = () => {
 
                         {showVenueForm && (
                             <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-                                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-xl border-2" style={{ borderColor: colors.primary }}>
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-sm sm:max-w-lg max-h-[90vh] sm:max-h-[80vh] overflow-y-auto shadow-xl border-2" style={{ borderColor: colors.primary }}>
                                     <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
                                         {editingVenueId ? <Edit3 size={24} /> : <Plus size={24} />}
                                         <h3 className="text-xl font-semibold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
@@ -1461,7 +1468,7 @@ const Planning = () => {
                                                 } as React.CSSProperties}
                                             />
                                         </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                                             <div>
                                                 <label htmlFor="venuePrice" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Preço do Local:</label>
                                                 <input
@@ -1619,7 +1626,7 @@ const Planning = () => {
                     <div className="p-4">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
                             <button
-                                className="flex items-center gap-2 bg-transparent border-2 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 font-medium cursor-pointer transform hover:scale-105"
+                                className="flex items-center gap-2 bg-transparent border-2 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 w-auto lg:w-auto self-start"
                                 style={{
                                     borderColor: colors.primary,
                                     color: colors.primary
@@ -1679,9 +1686,13 @@ const Planning = () => {
                             </div>
                         ) : (
                             <div
-                                className="grid gap-6"
+                                className="grid gap-4 lg:gap-6"
                                 style={{
-                                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
+                                    gridTemplateColumns: window.innerWidth < 768
+                                        ? '1fr'
+                                        : window.innerWidth < 1024
+                                            ? 'repeat(auto-fill, minmax(280px, 1fr))'
+                                            : 'repeat(auto-fill, minmax(300px, 1fr))'
                                 }}
                             >
                                 {professionals.map(professional => (
@@ -1822,7 +1833,7 @@ const Planning = () => {
 
                         {showProfessionalForm && (
                             <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-                                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-xl border-2" style={{ borderColor: colors.primary }}>
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-sm sm:max-w-lg max-h-[90vh] sm:max-h-[80vh] overflow-y-auto shadow-xl border-2" style={{ borderColor: colors.primary }}>
                                     <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
                                         {editingProfessionalId ? <Edit3 size={24} /> : <Plus size={24} />}
                                         <h3 className="text-xl font-semibold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
@@ -1943,7 +1954,7 @@ const Planning = () => {
                     <div className="p-4">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                             <button
-                                className="flex items-center gap-2 bg-transparent border-2 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 font-medium cursor-pointer transform hover:scale-105"
+                                className="flex items-center gap-2 bg-transparent border-2 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 font-medium cursor-pointer transform hover:scale-105 w-auto self-start"
                                 style={{
                                     borderColor: colors.primary,
                                     color: colors.primary
@@ -2065,7 +2076,7 @@ const Planning = () => {
                         {
                             showTypeForm && (
                                 <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto shadow-xl border-2" style={{ borderColor: colors.primary }}>
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-xs sm:max-w-md max-h-[90vh] sm:max-h-[80vh] overflow-y-auto shadow-xl border-2" style={{ borderColor: colors.primary }}>
                                         <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
                                             {editingTypeId ? <Edit3 size={24} /> : <Plus size={24} />}
                                             <h3 className="text-xl font-semibold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">

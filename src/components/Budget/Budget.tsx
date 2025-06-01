@@ -410,31 +410,31 @@ const Budget = () => {
                 </div>
             )}
 
-            <div className="rounded-xl shadow-lg p-6 mb-8 border transform hover:scale-105 transition-all duration-300" style={{
+            <div className="rounded-xl shadow-lg p-4 sm:p-6 mb-8 border transform hover:scale-105 transition-all duration-300" style={{
                 backgroundColor: colors.surface,
                 borderColor: colors.border,
                 background: `linear-gradient(135deg, ${colors.surface} 0%, ${colors.accent} 100%)`
             }}>
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div className="text-center p-4 rounded-lg" style={{ backgroundColor: colors.background }}>
-                        <h3 className="text-lg font-semibold mb-2 flex items-center justify-center gap-2" style={{ color: colors.text }}>
-                            <DollarSign className="w-5 h-5" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="text-center p-3 sm:p-4 rounded-lg" style={{ backgroundColor: colors.background }}>
+                        <h3 className="text-base sm:text-lg font-semibold mb-2 flex items-center justify-center gap-2" style={{ color: colors.text }}>
+                            <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" />
                             Total Estimado
                         </h3>
-                        <p className="text-3xl font-bold" style={{ color: colors.primary }}>
+                        <p className="text-2xl sm:text-3xl font-bold" style={{ color: colors.primary }}>
                             R$ <CountUp end={totalEstimated} className="inline" />
                         </p>
                     </div>
-                    <div className="text-center p-4 rounded-lg" style={{ backgroundColor: colors.background }}>
-                        <h3 className="text-lg font-semibold mb-2 flex items-center justify-center gap-2" style={{ color: colors.text }}>
+                    <div className="text-center p-3 sm:p-4 rounded-lg" style={{ backgroundColor: colors.background }}>
+                        <h3 className="text-base sm:text-lg font-semibold mb-2 flex items-center justify-center gap-2" style={{ color: colors.text }}>
                             {totalActual <= totalEstimated ? (
-                                <TrendingDown className="w-5 h-5" style={{ color: colors.success }} />
+                                <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: colors.success }} />
                             ) : (
-                                <TrendingUp className="w-5 h-5" style={{ color: colors.error }} />
+                                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: colors.error }} />
                             )}
                             Total Gasto (Real)
                         </h3>
-                        <p className="text-3xl font-bold" style={{
+                        <p className="text-2xl sm:text-3xl font-bold" style={{
                             color: totalActual <= totalEstimated ? colors.success : colors.error
                         }}>
                             R$ <CountUp end={totalActual} className="inline" />
@@ -467,16 +467,16 @@ const Budget = () => {
                 </div>
 
                 {isFormExpanded && (
-                    <form className="p-6 pt-0 border-t animate-in slide-in-from-top duration-300"
+                    <form className="p-4 sm:p-6 pt-0 border-t animate-in slide-in-from-top duration-300"
                         style={{ borderColor: colors.border }}
                         onSubmit={addBudgetItem}>
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="description">
                                     Descrição
                                 </label>
                                 <input
-                                    className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                    className="w-full px-3 sm:px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
                                     style={{
                                         backgroundColor: colors.background,
                                         borderColor: colors.border,
@@ -496,7 +496,7 @@ const Budget = () => {
                                     Categoria
                                 </label>
                                 <select
-                                    className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                    className="w-full px-3 sm:px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
                                     style={{
                                         backgroundColor: colors.background,
                                         borderColor: colors.border,
@@ -519,7 +519,7 @@ const Budget = () => {
                                 Cidade
                             </label>
                             <select
-                                className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                className="w-full px-3 sm:px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
                                 style={{
                                     backgroundColor: colors.background,
                                     borderColor: colors.border,
@@ -538,13 +538,13 @@ const Budget = () => {
                             </select>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="estimatedCost">
                                     Custo Estimado (R$)
                                 </label>
                                 <input
-                                    className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                    className="w-full px-3 sm:px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
                                     style={{
                                         backgroundColor: colors.background,
                                         borderColor: colors.border,
@@ -566,7 +566,7 @@ const Budget = () => {
                                     Custo Real (R$)
                                 </label>
                                 <input
-                                    className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                    className="w-full px-3 sm:px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
                                     style={{
                                         backgroundColor: colors.background,
                                         borderColor: colors.border,
@@ -583,7 +583,7 @@ const Budget = () => {
                             </div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div className="flex items-center">
                                 <label className="flex items-center cursor-pointer hover:scale-105 transition-transform duration-200">
                                     <input
@@ -661,21 +661,21 @@ const Budget = () => {
                 backgroundColor: colors.surface,
                 borderColor: colors.border
             }}>
-                <h2 className="text-xl font-semibold p-6 border-b" style={{
+                <h2 className="text-lg sm:text-xl font-semibold p-4 sm:p-6 border-b" style={{
                     color: colors.text,
                     borderColor: colors.border
                 }}>
                     Lista de Itens Extras
                 </h2>
 
-                <div className="p-6 border-b" style={{ borderColor: colors.border }}>
-                    <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-4 sm:p-6 border-b" style={{ borderColor: colors.border }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium mb-2" style={{ color: colors.text }} htmlFor="filterCategory">
                                 Filtrar por categoria:
                             </label>
                             <select
-                                className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                className="w-full px-3 sm:px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
                                 style={{
                                     backgroundColor: colors.background,
                                     borderColor: colors.border,
@@ -697,7 +697,7 @@ const Budget = () => {
                                 Filtrar por cidade:
                             </label>
                             <select
-                                className="w-full px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
+                                className="w-full px-3 sm:px-4 py-2 border rounded-lg transition-all duration-200 hover:scale-105 focus:scale-105 cursor-pointer"
                                 style={{
                                     backgroundColor: colors.background,
                                     borderColor: colors.border,
@@ -723,7 +723,7 @@ const Budget = () => {
                         </p>
                     </div>
                 ) : (
-                    <div className="p-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="p-4 sm:p-6 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                         {filteredItems.map(item => (
                             <div key={item.id}
                                 className={`border rounded-xl p-4 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${item.isFavorite ? 'ring-2' : ''}`}
