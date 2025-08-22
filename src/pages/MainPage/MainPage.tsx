@@ -11,6 +11,7 @@ import Calendar from "../../components/Calendar/Calendar";
 import Budget from "../../components/Budget/Budget";
 import { ThemeContext } from "../../contexts/ThemeContext";
 import ExpenseChart from "../../components/ExpenseChart/ExpenseChart";
+import FinalCosts from "../../components/FinalCosts/FinalCosts";
 import { useLoading } from "../../contexts/LoadingContext";
 
 const MainPage = () => {
@@ -19,6 +20,7 @@ const MainPage = () => {
     const [activeSection, setActiveSection] = useState('planning');
     const [isAdmin, setIsAdmin] = useState(false);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const [hasChosenVenue, setHasChosenVenue] = useState(false);
     const { setIsLoading, setLoadingMessage } = useLoading();
     const isMountedRef = useRef(true);
 
@@ -73,6 +75,24 @@ const MainPage = () => {
         };
     }, [navigate]);
 
+    // Verificar se existe local escolhido (polling simples)
+    useEffect(() => {
+        let canceled = false;
+        const checkChosen = async () => {
+            try {
+                const { collection, getDocs, query, where } = await import('firebase/firestore');
+                const q = query(collection(db, 'venues'), where('isChosen', '==', true));
+                const snap = await getDocs(q);
+                if (!canceled) setHasChosenVenue(!snap.empty);
+            } catch (e) {
+                console.error('Erro ao verificar local escolhido', e);
+            }
+        };
+        checkChosen();
+        const interval = setInterval(checkChosen, 8000);
+        return () => { canceled = true; clearInterval(interval); };
+    }, []);
+
     const handleLogout = async () => {
         if (!isMountedRef.current) return;
 
@@ -109,6 +129,8 @@ const MainPage = () => {
                 return <Budget />;
             case 'chart':
                 return <ExpenseChart />;
+            case 'finalCosts':
+                return <FinalCosts />;
             case 'guests':
                 return (
                     <div style={{
@@ -151,6 +173,7 @@ const MainPage = () => {
                 darkTheme={darkTheme}
                 toggleTheme={toggleTheme}
                 isAdmin={isAdmin}
+                hasChosenVenue={hasChosenVenue}
             />
 
             <main className="flex-1 transition-all duration-300 min-h-screen"

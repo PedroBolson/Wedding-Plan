@@ -25,7 +25,8 @@ type NavProps = {
     onLogout: () => void;
     darkTheme: boolean;
     toggleTheme: () => void;
-    isAdmin: boolean; // Nova propriedade para verificar se é admin
+    isAdmin: boolean;
+    hasChosenVenue: boolean; // habilita custos definitivos
 };
 
 const Nav: React.FC<NavProps> = ({
@@ -34,12 +35,13 @@ const Nav: React.FC<NavProps> = ({
     onLogout,
     darkTheme,
     toggleTheme,
-    isAdmin // Nova propriedade
+    isAdmin,
+    hasChosenVenue
 }) => {
     const { colors } = useContext(ThemeContext);
     const [navOptions] = useState<NavOption[]>([
         { id: 'planning', label: 'Planejamento de Locais e Profissionais', isAvailable: true },
-        { id: 'budget', label: 'Orçamento', isAvailable: true },
+        { id: 'budget', label: 'Previsão de Custos', isAvailable: true },
         { id: 'favorites', label: 'Locais Favoritos', isAvailable: true },
         { id: 'chart', label: 'Gráfico de Orçamento', isAvailable: true },
         { id: 'calendar', label: 'Calendário', isAvailable: true },
@@ -62,11 +64,11 @@ const Nav: React.FC<NavProps> = ({
     }, []);
 
     const handleNavClick = (optionId: string) => {
-        if (navOptions.find(opt => opt.id === optionId)?.isAvailable) {
+        const dynamicOptions: NavOption[] = hasChosenVenue ? [{ id: 'finalCosts', label: 'Custos Definitivos', isAvailable: true }] : [];
+        const all = [...navOptions, ...dynamicOptions];
+        if (all.find(opt => opt.id === optionId)?.isAvailable) {
             onSectionChange(optionId);
-            if (windowWidth < 768) {
-                setMobileMenuOpen(false);
-            }
+            if (windowWidth < 768) setMobileMenuOpen(false);
         }
     };
 
@@ -160,7 +162,7 @@ const Nav: React.FC<NavProps> = ({
 
                     <div className="flex-1 overflow-y-auto">
                         <ul className="list-none p-3 m-0 flex flex-col gap-3">
-                            {navOptions.map(option => (
+                            {[...navOptions, ...(hasChosenVenue ? [{ id: 'finalCosts', label: 'Custos Definitivos', isAvailable: true }] : [])].map(option => (
                                 <li key={option.id} className="w-full">
                                     {option.isAvailable ? (
                                         <button

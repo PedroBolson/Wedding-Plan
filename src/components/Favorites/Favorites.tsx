@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useLoading } from '../../contexts/LoadingContext';
 import { ThemeContext } from '../../contexts/ThemeContext';
@@ -17,6 +17,7 @@ interface FavoriteVenue {
     dateAdded: Date;
     selectedProfessionalNames?: { name: string; price: number }[];
     budgetExtrasItems?: { description: string; cost: number }[];
+    isChosen?: boolean;
 }
 
 interface Professional {
@@ -137,7 +138,8 @@ const Favorites = () => {
                             budgetExtrasItems: cityBudgetExtras.map(item => ({
                                 description: item.description,
                                 cost: item.actualCost > 0 ? item.actualCost : item.estimatedCost
-                            }))
+                            })),
+                            isChosen: venueData.isChosen === true
                         } as FavoriteVenue;
 
                         // Buscar o nome da cidade
@@ -203,126 +205,167 @@ const Favorites = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {favorites.map(favorite => (
-                        <div key={favorite.id} className="rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border overflow-hidden" style={{
-                            backgroundColor: colors.surface,
-                            borderColor: colors.border
-                        }}>
-                            <div className="p-6">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex-1">
-                                        <h3 className="text-xl font-bold mb-1" style={{ color: colors.text }}>
-                                            {favorite.venueName || 'Local não encontrado'}
-                                        </h3>
-                                        <p className="flex items-center" style={{ color: colors.textSecondary }}>
-                                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    {favorites.map(favorite => {
+                        const someChosen = favorites.some(f => f.isChosen);
+                        return (
+                            <div key={favorite.id} className="rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border overflow-hidden" style={{
+                                backgroundColor: colors.surface,
+                                borderColor: colors.border
+                            }}>
+                                <div className="p-6">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex-1">
+                                            <h3 className="text-xl font-bold mb-1" style={{ color: colors.text }}>
+                                                {favorite.venueName || 'Local não encontrado'}
+                                            </h3>
+                                            <p className="flex items-center" style={{ color: colors.textSecondary }}>
+                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                {favorite.cityName || 'Cidade desconhecida'}
+                                            </p>
+                                        </div>
+                                        <div style={{ color: colors.accent }}>
+                                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                                             </svg>
-                                            {favorite.cityName || 'Cidade desconhecida'}
+                                        </div>
+                                    </div>
+                                    <div className="mb-4 flex flex-wrap gap-2">
+                                        {favorite.isChosen ? (
+                                            <button
+                                                className="px-3 py-1 rounded-full text-xs font-semibold transition-all hover:scale-105"
+                                                style={{ backgroundColor: colors.primary, color: 'white' }}
+                                                onClick={async () => {
+                                                    try {
+                                                        await updateDoc(doc(db, 'venues', favorite.id), { isChosen: false });
+                                                        setFavorites(prev => prev.map(f => f.id === favorite.id ? { ...f, isChosen: false } : f));
+                                                    } catch (e) {
+                                                        console.error('Erro ao remover local escolhido', e);
+                                                    }
+                                                }}
+                                                title="Clique para remover o local escolhido"
+                                            >Remover Local Escolhido</button>
+                                        ) : (
+                                            <button
+                                                disabled={someChosen}
+                                                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${someChosen ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+                                                style={{ backgroundColor: colors.accent, color: colors.text, border: `1px solid ${colors.primary}` }}
+                                                onClick={async () => {
+                                                    if (someChosen) return;
+                                                    try {
+                                                        // garantir que nenhum outro esteja marcado (só por segurança)
+                                                        const venuesRef = collection(db, 'venues');
+                                                        const q = query(venuesRef, where('isChosen', '==', true));
+                                                        const snap = await getDocs(q);
+                                                        await Promise.all(snap.docs.map(d => updateDoc(doc(db, 'venues', d.id), { isChosen: false })));
+                                                        await updateDoc(doc(db, 'venues', favorite.id), { isChosen: true });
+                                                        setFavorites(prev => prev.map(f => ({ ...f, isChosen: f.id === favorite.id })));
+                                                    } catch (e) {
+                                                        console.error('Erro ao definir local escolhido', e);
+                                                    }
+                                                }}
+                                                title={someChosen ? 'Já existe um local escolhido – remova-o primeiro para trocar' : 'Definir este local como escolhido'}
+                                            >Definir como Local Escolhido</button>
+                                        )}
+                                    </div>
+
+                                    {favorite.venueCost && (
+                                        <div className="space-y-4">
+                                            <div className="p-4 rounded-lg" style={{
+                                                backgroundColor: colors.primary.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
+                                                borderColor: colors.primary.replace('rgb(', 'rgba(').replace(')', ', 0.3)')
+                                            }}>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <span className="text-sm font-medium" style={{ color: colors.textSecondary }}>Custo do Local:</span>
+                                                    <span className="text-sm font-bold" style={{ color: colors.primary }}>
+                                                        R$ {favorite.venueCost.toLocaleString('pt-BR')}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {(favorite.professionalsCost ?? 0) > 0 && (
+                                                <div className="p-4 rounded-lg" style={{
+                                                    backgroundColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
+                                                    borderColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.3)')
+                                                }}>
+                                                    <div className="flex justify-between items-center mb-3">
+                                                        <span className="text-sm font-medium" style={{ color: colors.textSecondary }}>Custo de Profissionais:</span>
+                                                        <span className="text-sm font-bold" style={{ color: colors.success }}>
+                                                            R$ {(favorite.professionalsCost ?? 0).toLocaleString('pt-BR')}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="pt-3" style={{ borderTopColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.3)'), borderTopWidth: '1px' }}>
+                                                        <p className="text-xs font-medium mb-2" style={{ color: colors.textSecondary }}>Profissionais Incluídos:</p>
+                                                        <ul className="space-y-1">
+                                                            {favorite.selectedProfessionalNames?.map((prof, index) => (
+                                                                <li key={index} className="text-xs flex justify-between" style={{ color: colors.textSecondary }}>
+                                                                    <span>{prof.name}</span>
+                                                                    <span>R$ {prof.price.toLocaleString('pt-BR')}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {(favorite.budgetExtrasCost ?? 0) > 0 && (
+                                                <div className="p-4 rounded-lg" style={{
+                                                    backgroundColor: colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
+                                                    borderColor: colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.3)')
+                                                }}>
+                                                    <div className="flex justify-between items-center mb-3">
+                                                        <span className="text-sm font-medium" style={{ color: colors.textSecondary }}>Custos Extras:</span>
+                                                        <span className="text-sm font-bold" style={{ color: colors.secondary }}>
+                                                            R$ {(favorite.budgetExtrasCost ?? 0).toLocaleString('pt-BR')}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="pt-3" style={{ borderTopColor: colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.3)'), borderTopWidth: '1px' }}>
+                                                        <p className="text-xs font-medium mb-2" style={{ color: colors.textSecondary }}>Itens Extras Incluídos:</p>
+                                                        <ul className="space-y-1">
+                                                            {favorite.budgetExtrasItems?.map((item, index) => (
+                                                                <li key={index} className="text-xs flex justify-between" style={{ color: colors.textSecondary }}>
+                                                                    <span>{item.description}</span>
+                                                                    <span>R$ {item.cost.toLocaleString('pt-BR')}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="p-4 rounded-lg border-2" style={{
+                                                backgroundColor: colors.accent.replace('rgb(', 'rgba(').replace(')', ', 0.2)'),
+                                                borderColor: colors.accent
+                                            }}>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-base font-bold" style={{ color: colors.text }}>Custo Total Estimado:</span>
+                                                    <span className="text-lg font-bold" style={{ color: colors.text }}>
+                                                        R$ {favorite.totalCost?.toLocaleString('pt-BR')}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="mt-6 pt-4" style={{ borderTopColor: colors.border, borderTopWidth: '1px' }}>
+                                        <p className="text-sm flex items-center" style={{ color: colors.textSecondary }}>
+                                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            Adicionado em: {favorite.dateAdded instanceof Date
+                                                ? favorite.dateAdded.toLocaleDateString('pt-BR')
+                                                : new Date(favorite.dateAdded).toLocaleDateString('pt-BR')
+                                            }
                                         </p>
                                     </div>
-                                    <div style={{ color: colors.accent }}>
-                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                                        </svg>
-                                    </div>
-                                </div>
-
-                                {favorite.venueCost && (
-                                    <div className="space-y-4">
-                                        <div className="p-4 rounded-lg" style={{
-                                            backgroundColor: colors.primary.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
-                                            borderColor: colors.primary.replace('rgb(', 'rgba(').replace(')', ', 0.3)')
-                                        }}>
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-sm font-medium" style={{ color: colors.textSecondary }}>Custo do Local:</span>
-                                                <span className="text-sm font-bold" style={{ color: colors.primary }}>
-                                                    R$ {favorite.venueCost.toLocaleString('pt-BR')}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {(favorite.professionalsCost ?? 0) > 0 && (
-                                            <div className="p-4 rounded-lg" style={{
-                                                backgroundColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
-                                                borderColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.3)')
-                                            }}>
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <span className="text-sm font-medium" style={{ color: colors.textSecondary }}>Custo de Profissionais:</span>
-                                                    <span className="text-sm font-bold" style={{ color: colors.success }}>
-                                                        R$ {(favorite.professionalsCost ?? 0).toLocaleString('pt-BR')}
-                                                    </span>
-                                                </div>
-
-                                                <div className="pt-3" style={{ borderTopColor: colors.success.replace('rgb(', 'rgba(').replace(')', ', 0.3)'), borderTopWidth: '1px' }}>
-                                                    <p className="text-xs font-medium mb-2" style={{ color: colors.textSecondary }}>Profissionais Incluídos:</p>
-                                                    <ul className="space-y-1">
-                                                        {favorite.selectedProfessionalNames?.map((prof, index) => (
-                                                            <li key={index} className="text-xs flex justify-between" style={{ color: colors.textSecondary }}>
-                                                                <span>{prof.name}</span>
-                                                                <span>R$ {prof.price.toLocaleString('pt-BR')}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {(favorite.budgetExtrasCost ?? 0) > 0 && (
-                                            <div className="p-4 rounded-lg" style={{
-                                                backgroundColor: colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
-                                                borderColor: colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.3)')
-                                            }}>
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <span className="text-sm font-medium" style={{ color: colors.textSecondary }}>Custos Extras:</span>
-                                                    <span className="text-sm font-bold" style={{ color: colors.secondary }}>
-                                                        R$ {(favorite.budgetExtrasCost ?? 0).toLocaleString('pt-BR')}
-                                                    </span>
-                                                </div>
-
-                                                <div className="pt-3" style={{ borderTopColor: colors.secondary.replace('rgb(', 'rgba(').replace(')', ', 0.3)'), borderTopWidth: '1px' }}>
-                                                    <p className="text-xs font-medium mb-2" style={{ color: colors.textSecondary }}>Itens Extras Incluídos:</p>
-                                                    <ul className="space-y-1">
-                                                        {favorite.budgetExtrasItems?.map((item, index) => (
-                                                            <li key={index} className="text-xs flex justify-between" style={{ color: colors.textSecondary }}>
-                                                                <span>{item.description}</span>
-                                                                <span>R$ {item.cost.toLocaleString('pt-BR')}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div className="p-4 rounded-lg border-2" style={{
-                                            backgroundColor: colors.accent.replace('rgb(', 'rgba(').replace(')', ', 0.2)'),
-                                            borderColor: colors.accent
-                                        }}>
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-base font-bold" style={{ color: colors.text }}>Custo Total Estimado:</span>
-                                                <span className="text-lg font-bold" style={{ color: colors.text }}>
-                                                    R$ {favorite.totalCost?.toLocaleString('pt-BR')}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="mt-6 pt-4" style={{ borderTopColor: colors.border, borderTopWidth: '1px' }}>
-                                    <p className="text-sm flex items-center" style={{ color: colors.textSecondary }}>
-                                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        Adicionado em: {favorite.dateAdded instanceof Date
-                                            ? favorite.dateAdded.toLocaleDateString('pt-BR')
-                                            : new Date(favorite.dateAdded).toLocaleDateString('pt-BR')
-                                        }
-                                    </p>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>
