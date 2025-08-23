@@ -3,7 +3,7 @@ import { ThemeContext } from '../../contexts/ThemeContext';
 import { auth, db } from '../../firebase/config';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy } from 'firebase/firestore';
 import CountUp from '../common/CountUp';
-import { Plus, Trash2, Edit3, Check, X, Users, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Edit3, Check, X, Users, ChevronDown, RefreshCcw } from 'lucide-react';
 
 interface GuestItem {
     id: string;
@@ -12,6 +12,9 @@ interface GuestItem {
     createdAt?: any;
     updatedAt?: any;
     userId?: string;
+    rsvpStatus?: 'pending' | 'confirmed' | 'declined';
+    inviteCode?: string; // código curto para link público
+    confirmedAt?: any;
 }
 
 const Guests: React.FC = () => {
@@ -26,15 +29,35 @@ const Guests: React.FC = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState('');
     const [editingSide, setEditingSide] = useState<'noivo' | 'noiva'>('noivo');
+    // estado de controle de cópia de link
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+
+    // util para gerar código curto único (8 chars base36)
+    const makeInviteCode = () => (Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).slice(-8).toUpperCase();
 
     const fetchGuests = useCallback(async () => {
         setLoading(true); setError(null);
         try {
-            const col = collection(db, 'guests');
-            // podemos filtrar futuramente por casamento id se houver multi-casamentos
-            const q = query(col, orderBy('createdAt', 'asc'));
-            const snap = await getDocs(q);
-            const data: GuestItem[] = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+            const colRef = collection(db, 'guests');
+            const qy = query(colRef, orderBy('createdAt', 'asc'));
+            const snap = await getDocs(qy);
+            let data: GuestItem[] = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+
+            // atribui códigos faltantes localmente e dispara atualizações em paralelo sem bloquear UI
+            const updates: Promise<any>[] = [];
+            data = data.map(g => {
+                if (!g.inviteCode) {
+                    const newCode = makeInviteCode();
+                    updates.push(updateDoc(doc(db, 'guests', g.id), { inviteCode: newCode, updatedAt: new Date() }));
+                    return { ...g, inviteCode: newCode };
+                }
+                return g;
+            });
+
+            if (updates.length) {
+                // executa em background
+                Promise.allSettled(updates).catch(() => {/* silencia erros individuais */});
+            }
             setGuests(data);
         } catch (e: any) {
             console.error(e); setError('Erro ao carregar convidados.');
@@ -46,6 +69,9 @@ const Guests: React.FC = () => {
     const total = guests.length;
     const totalNoivo = guests.filter(g => g.side === 'noivo').length;
     const totalNoiva = guests.filter(g => g.side === 'noiva').length;
+    const totalConfirmed = guests.filter(g => g.rsvpStatus === 'confirmed').length;
+    const totalDeclined = guests.filter(g => g.rsvpStatus === 'declined').length;
+    const totalPending = total - totalConfirmed - totalDeclined;
 
     const filteredGuests = guests.filter(g => {
         const sideOk = sideFilter === 'todos' ? true : g.side === sideFilter;
@@ -90,7 +116,9 @@ const Guests: React.FC = () => {
                 name: draftName.trim(),
                 side: draftSide,
                 createdAt: new Date(),
-                userId: auth.currentUser?.uid || null
+                userId: auth.currentUser?.uid || null,
+                rsvpStatus: 'pending',
+                inviteCode: makeInviteCode()
             });
             setDraftName('');
             fetchGuests();
@@ -121,6 +149,46 @@ const Guests: React.FC = () => {
         try { await deleteDoc(doc(db, 'guests', id)); fetchGuests(); } catch (e) { console.error(e); setError('Erro ao excluir.'); } finally { setLoading(false); }
     };
 
+    const updateRsvp = async (g: GuestItem, status: 'pending' | 'confirmed' | 'declined') => {
+        setLoading(true); setError(null);
+        try {
+            await updateDoc(doc(db, 'guests', g.id), { rsvpStatus: status, confirmedAt: status === 'confirmed' ? new Date() : null, updatedAt: new Date() });
+            fetchGuests();
+        } catch (e) { console.error(e); setError('Erro ao atualizar RSVP.'); } finally { setLoading(false); }
+    };
+
+    // geração manual não é mais necessária porque agora é automática (placeholder removido).
+
+    const copyInviteLink = async (g: GuestItem) => {
+        if (!g.inviteCode) return;
+        const url = `${window.location.origin}/invite/${g.inviteCode}`;
+        let success = false;
+        if (navigator.clipboard && window.isSecureContext) {
+            try { await navigator.clipboard.writeText(url); success = true; } catch { success = false; }
+        }
+        if (!success) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = url;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                success = true;
+            } catch {
+                success = false;
+            }
+        }
+        if (success) {
+            setCopiedId(g.id);
+            setTimeout(() => setCopiedId(prev => prev === g.id ? null : prev), 1800);
+        } else {
+            alert('Não foi possível copiar. Copie manualmente: ' + url);
+        }
+    };
+
     return (
         <div className="max-w-5xl mx-auto p-4">
             <div className="flex items-center gap-3 mb-6">
@@ -130,7 +198,7 @@ const Guests: React.FC = () => {
 
             {error && <div className="mb-4 px-4 py-3 rounded-lg" style={{ backgroundColor: colors.error + '15', color: colors.error }}> {error} </div>}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
                 <div className="p-4 rounded-xl shadow-md text-center" style={{ backgroundColor: colors.surface }}>
                     <h3 className="text-sm font-medium mb-1" style={{ color: colors.textSecondary }}>Total</h3>
                     <p className="text-3xl font-bold" style={{ color: colors.primary }}><CountUp end={total} duration={1200} decimals={0} /></p>
@@ -142,6 +210,14 @@ const Guests: React.FC = () => {
                 <div className="p-4 rounded-xl shadow-md text-center" style={{ backgroundColor: colors.surface }}>
                     <h3 className="text-sm font-medium mb-1" style={{ color: colors.textSecondary }}>Lado Noiva</h3>
                     <p className="text-3xl font-bold" style={{ color: colors.warning }}><CountUp end={totalNoiva} duration={1200} decimals={0} /></p>
+                </div>
+                <div className="p-4 rounded-xl shadow-md text-center" style={{ backgroundColor: colors.surface }}>
+                    <h3 className="text-sm font-medium mb-1" style={{ color: colors.textSecondary }}>Confirmados</h3>
+                    <p className="text-3xl font-bold" style={{ color: colors.success }}><CountUp end={totalConfirmed} duration={1200} decimals={0} /></p>
+                </div>
+                <div className="p-4 rounded-xl shadow-md text-center" style={{ backgroundColor: colors.surface }}>
+                    <h3 className="text-sm font-medium mb-1" style={{ color: colors.textSecondary }}>Pendentes</h3>
+                    <p className="text-3xl font-bold" style={{ color: colors.primary }}><CountUp end={totalPending} duration={1200} decimals={0} /></p>
                 </div>
             </div>
 
@@ -220,13 +296,54 @@ const Guests: React.FC = () => {
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <div className="flex-1">
-                                                            <p className="font-semibold" style={{ color: colors.text }}>{g.name}</p>
-                                                            <p className="text-[11px]" style={{ color: colors.textSecondary }}>Lado: {g.side === 'noivo' ? 'Noivo' : 'Noiva'}</p>
-                                                        </div>
-                                                        <div className="flex gap-2 ml-auto">
-                                                            <button onClick={() => startEdit(g)} className="px-3 py-2 rounded text-xs font-semibold" style={{ backgroundColor: colors.primary + '20', color: colors.primary, cursor: 'pointer' }}><Edit3 className="inline w-4 h-4" /></button>
-                                                            <button onClick={() => deleteGuest(g.id)} className="px-3 py-2 rounded text-xs font-semibold" style={{ backgroundColor: colors.error, color: 'white', cursor: 'pointer' }}><Trash2 className="inline w-4 h-4" /></button>
+                                                        <div className="flex flex-col md:flex-row md:items-center w-full gap-4">
+                                                            {/* Coluna Nome */}
+                                                            <div className="flex min-w-[160px] flex-col flex-shrink-0">
+                                                                <p className="font-semibold leading-tight" style={{ color: colors.text }}>{g.name}</p>
+                                                                <p className="text-[11px]" style={{ color: colors.textSecondary }}>Lado: {g.side === 'noivo' ? 'Noivo' : 'Noiva'}</p>
+                                                            </div>
+                                                            {/* RSVP + Status */}
+                                                            <div className="flex flex-col gap-2 md:flex-row md:items-center flex-1 min-w-[240px]">
+                                                                <div className="flex items-center gap-2 flex-wrap text-[11px]">
+                                                                    <span className="px-2 py-0.5 rounded-full font-medium tracking-wide" style={{ backgroundColor: g.rsvpStatus === 'confirmed' ? colors.success + '25' : g.rsvpStatus === 'declined' ? colors.error + '25' : colors.accent, color: g.rsvpStatus === 'confirmed' ? colors.success : g.rsvpStatus === 'declined' ? colors.error : colors.textSecondary }}>
+                                                                        {g.rsvpStatus === 'pending' ? 'Pendente' : g.rsvpStatus === 'confirmed' ? 'Confirmado' : 'Não irá'}
+                                                                    </span>
+                                                                    {g.confirmedAt && g.rsvpStatus === 'confirmed' && (
+                                                                        <span className="text-[10px] opacity-70" style={{ color: colors.textSecondary }}>em {new Date(g.confirmedAt.seconds ? g.confirmedAt.seconds * 1000 : g.confirmedAt).toLocaleDateString('pt-BR')}</span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center">
+                                                                    <div className="flex rounded-lg overflow-hidden border shadow-sm" style={{ borderColor: colors.border }}>
+                                                                        <button type="button" onClick={() => updateRsvp(g, 'confirmed')} className="px-3 py-1.5 text-[11px] font-semibold flex items-center gap-1" style={{ backgroundColor: g.rsvpStatus === 'confirmed' ? colors.success : 'transparent', color: g.rsvpStatus === 'confirmed' ? 'white' : colors.success, borderRight: `1px solid ${colors.border}`, cursor: 'pointer' }}>
+                                                                            <Check className="w-3 h-3" /> <span>Sim</span>
+                                                                        </button>
+                                                                        <button type="button" onClick={() => updateRsvp(g, 'declined')} className="px-3 py-1.5 text-[11px] font-semibold flex items-center gap-1" style={{ backgroundColor: g.rsvpStatus === 'declined' ? colors.error : 'transparent', color: g.rsvpStatus === 'declined' ? 'white' : colors.error, borderRight: `1px solid ${colors.border}`, cursor: 'pointer' }}>
+                                                                            <X className="w-3 h-3" /> <span>Não</span>
+                                                                        </button>
+                                                                        <button type="button" onClick={() => updateRsvp(g, 'pending')} className="px-3 py-1.5 text-[11px] font-semibold flex items-center gap-1" style={{ backgroundColor: g.rsvpStatus === 'pending' ? colors.primary : 'transparent', color: g.rsvpStatus === 'pending' ? 'white' : colors.primary, cursor: 'pointer' }}>
+                                                                            <RefreshCcw className="w-3 h-3" /> <span>Reset</span>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            {/* Convite */}
+                                                            <div className="flex items-center gap-2 flex-wrap md:justify-end md:flex-row flex-1">
+                                                                <button
+                                                                    onClick={() => g.inviteCode && copyInviteLink(g)}
+                                                                    disabled={!g.inviteCode}
+                                                                    className="px-3 py-1.5 rounded text-[11px] font-semibold disabled:opacity-50"
+                                                                    style={{ backgroundColor: copiedId === g.id ? colors.success : colors.primary, color: 'white', cursor: g.inviteCode ? 'pointer' : 'default', transition: 'background-color .25s' }}
+                                                                >
+                                                                    {!g.inviteCode ? 'Gerando...' : (copiedId === g.id ? 'Copiado!' : 'Copiar Link')}
+                                                                </button>
+                                                                {g.inviteCode && (
+                                                                    <span className="px-2 py-1 rounded text-[11px] select-all" style={{ backgroundColor: colors.accent, color: colors.textSecondary }}>Cod: {g.inviteCode}</span>
+                                                                )}
+                                                                <div className="flex gap-2 ml-auto">
+                                                                    <button onClick={() => startEdit(g)} className="px-3 py-1.5 rounded text-[11px] font-semibold" style={{ backgroundColor: colors.primary + '20', color: colors.primary, cursor: 'pointer' }}><Edit3 className="inline w-4 h-4" /></button>
+                                                                    <button onClick={() => deleteGuest(g.id)} className="px-3 py-1.5 rounded text-[11px] font-semibold" style={{ backgroundColor: colors.error, color: 'white', cursor: 'pointer' }}><Trash2 className="inline w-4 h-4" /></button>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </>
                                                 )}

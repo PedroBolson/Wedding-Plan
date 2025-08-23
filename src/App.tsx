@@ -4,6 +4,7 @@ import LoginPage from "./pages/Login/Login";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import MainPage from "./pages/MainPage/MainPage";
 import PrivateRoute from "./routes/PrivateRoute";
+import InvitePage from './pages/Invite/InvitePage';
 import { LoadingProvider } from "./contexts/LoadingContext";
 
 
@@ -15,6 +16,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/login" />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/invite/:code" element={<InvitePage />} />
             <Route
               path="/main"
               element={
