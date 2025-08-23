@@ -10,7 +10,6 @@ import Favorites from "../../components/Favorites/Favorites";
 import Calendar from "../../components/Calendar/Calendar";
 import Budget from "../../components/Budget/Budget";
 import { ThemeContext } from "../../contexts/ThemeContext";
-import ExpenseChart from "../../components/ExpenseChart/ExpenseChart";
 import FinalCosts from "../../components/FinalCosts/FinalCosts";
 import { useLoading } from "../../contexts/LoadingContext";
 
@@ -127,8 +126,6 @@ const MainPage = () => {
                 return <Calendar />;
             case 'budget':
                 return <Budget />;
-            case 'chart':
-                return <ExpenseChart />;
             case 'finalCosts':
                 return <FinalCosts />;
             case 'guests':
