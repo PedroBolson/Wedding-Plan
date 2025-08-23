@@ -44,7 +44,7 @@ const Nav: React.FC<NavProps> = ({
         { id: 'budget', label: 'Previsão de Custos', isAvailable: true },
         { id: 'favorites', label: 'Locais Favoritos', isAvailable: true },
         { id: 'calendar', label: 'Calendário', isAvailable: true },
-        { id: 'guests', label: 'Lista de Convidados', isAvailable: false }
+        { id: 'guests', label: 'Lista de Convidados', isAvailable: true }
     ]);
 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

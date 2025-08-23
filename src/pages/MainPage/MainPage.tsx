@@ -11,6 +11,7 @@ import Calendar from "../../components/Calendar/Calendar";
 import Budget from "../../components/Budget/Budget";
 import { ThemeContext } from "../../contexts/ThemeContext";
 import FinalCosts from "../../components/FinalCosts/FinalCosts";
+import Guests from "../../components/Guests/Guests";
 import { useLoading } from "../../contexts/LoadingContext";
 
 const MainPage = () => {
@@ -129,28 +130,7 @@ const MainPage = () => {
             case 'finalCosts':
                 return <FinalCosts />;
             case 'guests':
-                return (
-                    <div style={{
-                        textAlign: 'center',
-                        padding: '3rem',
-                        backgroundColor: colors.surface,
-                        borderRadius: '0.5rem',
-                        margin: '2rem',
-                        maxWidth: '32rem',
-                        marginLeft: 'auto',
-                        marginRight: 'auto'
-                    }}>
-                        <h2 style={{
-                            fontSize: '1.5rem',
-                            fontWeight: 'bold',
-                            color: colors.text,
-                            marginBottom: '1rem'
-                        }}>Em breve!</h2>
-                        <p style={{
-                            color: colors.textSecondary
-                        }}>Esta funcionalidade estará disponível em uma atualização futura.</p>
-                    </div>
-                );
+                return <Guests />;
             default:
                 return <Planning />;
         }

@@ -3,7 +3,8 @@ import { ThemeContext } from "../../contexts/ThemeContext";
 import { collection, getDocs, addDoc, updateDoc, doc, deleteDoc, query, where } from "firebase/firestore";
 import { db, auth } from "../../firebase/config";
 import { useLoading } from "../../contexts/LoadingContext";
-import { Pie, Doughnut } from "react-chartjs-2";
+import { Pie, Doughnut } from 'react-chartjs-2';
+import CountUp from '../common/CountUp';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { DollarSign, CheckCircle, Clock, Trash2, Edit3, X, Layers, BarChart3 } from "lucide-react";
 
@@ -430,15 +431,21 @@ const FinalCosts = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                     <div className="p-4 rounded-xl shadow-md text-center" style={{ backgroundColor: colors.surface }}>
                         <h3 className="text-sm font-medium mb-1" style={{ color: colors.textSecondary }}>Total</h3>
-                        <p className="text-2xl font-bold" style={{ color: colors.primary }}>R$ {total.toLocaleString('pt-BR')}</p>
+                        <p className="text-2xl font-bold" style={{ color: colors.primary }}>
+                            <CountUp end={total} duration={1200} decimals={0} prefix="R$ " />
+                        </p>
                     </div>
                     <div className="p-4 rounded-xl shadow-md text-center" style={{ backgroundColor: colors.surface }}>
                         <h3 className="text-sm font-medium mb-1" style={{ color: colors.textSecondary }}>Pago</h3>
-                        <p className="text-2xl font-bold" style={{ color: colors.success }}>R$ {paidTotal.toLocaleString('pt-BR')}</p>
+                        <p className="text-2xl font-bold" style={{ color: colors.success }}>
+                            <CountUp end={paidTotal} duration={1200} decimals={0} prefix="R$ " />
+                        </p>
                     </div>
                     <div className="p-4 rounded-xl shadow-md text-center" style={{ backgroundColor: colors.surface }}>
                         <h3 className="text-sm font-medium mb-1" style={{ color: colors.textSecondary }}>Pendente</h3>
-                        <p className="text-2xl font-bold" style={{ color: colors.warning }}>R$ {(total - paidTotal).toLocaleString('pt-BR')}</p>
+                        <p className="text-2xl font-bold" style={{ color: colors.warning }}>
+                            <CountUp end={Math.max(total - paidTotal, 0)} duration={1200} decimals={0} prefix="R$ " />
+                        </p>
                     </div>
                 </div>
                 {/* Form removido: criação inline */}
