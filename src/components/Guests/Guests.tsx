@@ -15,6 +15,8 @@ interface GuestItem {
     rsvpStatus?: 'pending' | 'confirmed' | 'declined';
     inviteCode?: string; // código curto para link público
     confirmedAt?: any;
+    relatedIds?: string[];
+    groupPrimaryId?: string; // id do convidado principal do grupo
 }
 
 const Guests: React.FC = () => {
@@ -31,6 +33,10 @@ const Guests: React.FC = () => {
     const [editingSide, setEditingSide] = useState<'noivo' | 'noiva'>('noivo');
     // estado de controle de cópia de link
     const [copiedId, setCopiedId] = useState<string | null>(null);
+    // seleção para vincular convidados
+    const [linkMode, setLinkMode] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [linking, setLinking] = useState(false);
 
     // util para gerar código curto único (8 chars base36)
     const makeInviteCode = () => (Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).slice(-8).toUpperCase();
@@ -56,9 +62,11 @@ const Guests: React.FC = () => {
 
             if (updates.length) {
                 // executa em background
-                Promise.allSettled(updates).catch(() => {/* silencia erros individuais */});
+                Promise.allSettled(updates).catch(() => {/* silencia erros individuais */ });
             }
             setGuests(data);
+            // limpar seleção se ids não existem mais
+            setSelectedIds(prev => new Set([...prev].filter(id => data.some(g => g.id === id))));
         } catch (e: any) {
             console.error(e); setError('Erro ao carregar convidados.');
         } finally { setLoading(false); }
@@ -189,6 +197,45 @@ const Guests: React.FC = () => {
         }
     };
 
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev => {
+            const n = new Set(prev);
+            if (n.has(id)) n.delete(id); else n.add(id);
+            return n;
+        });
+    };
+
+    const linkSelected = async () => {
+        if (selectedIds.size < 2) { alert('Selecione pelo menos 2 convidados.'); return; }
+        setLinking(true); setError(null);
+        try {
+            const selected = guests.filter(g => selectedIds.has(g.id));
+            // construir mapa ID -> relatedIds sem próprio
+            const allIds = selected.map(g => g.id);
+            const invitesMap: Record<string, string> = {};
+            selected.forEach(g => { if (g.inviteCode) invitesMap[g.id] = g.inviteCode.toUpperCase(); });
+            // Verificação: todos têm inviteCode válido
+            if (Object.keys(invitesMap).length !== selected.length) {
+                alert('Alguns selecionados ainda não possuem inviteCode. Recarregue e tente novamente.');
+                setLinking(false); return;
+            }
+            const primaryId = selected[0].id; // primeiro vira principal do grupo
+            const batchPromises: Promise<any>[] = [];
+            for (const g of selected) {
+                const related = allIds.filter(id => id !== g.id).map(id => invitesMap[id]);
+                batchPromises.push(updateDoc(doc(db, 'guests', g.id), { relatedIds: related, groupPrimaryId: primaryId, updatedAt: new Date() }));
+            }
+            await Promise.all(batchPromises);
+            setLinkMode(false);
+            setSelectedIds(new Set());
+            fetchGuests();
+        } catch (e) {
+            console.error(e); setError('Erro ao vincular.');
+        } finally { setLinking(false); }
+    };
+
+    const clearSelection = () => { setSelectedIds(new Set()); };
+
     return (
         <div className="max-w-5xl mx-auto p-4">
             <div className="flex items-center gap-3 mb-6">
@@ -248,9 +295,21 @@ const Guests: React.FC = () => {
                 <div className="p-6">
                     {filteredGuests.length === 0 && <p className="text-sm text-center" style={{ color: colors.textSecondary }}>Nenhum convidado encontrado.</p>}
                     {filteredGuests.length > 0 && (
-                        <div className="flex gap-2 mb-4 flex-wrap text-xs">
-                            <button onClick={expandAll} className="px-3 py-1 rounded font-semibold" style={{ backgroundColor: colors.primary + '20', color: colors.primary, cursor: 'pointer' }}>Expandir todos</button>
-                            <button onClick={collapseAll} className="px-3 py-1 rounded font-semibold" style={{ backgroundColor: colors.primary + '20', color: colors.primary, cursor: 'pointer' }}>Colapsar todos</button>
+                        <div className="flex flex-wrap gap-2 mb-4 text-xs items-center">
+                            <button onClick={expandAll} className="px-3 py-1 rounded font-semibold" style={{ backgroundColor: colors.primary + '20', color: colors.primary }}>Expandir</button>
+                            <button onClick={collapseAll} className="px-3 py-1 rounded font-semibold" style={{ backgroundColor: colors.primary + '20', color: colors.primary }}>Colapsar</button>
+                            <span className="opacity-50">|</span>
+                            {!linkMode && (
+                                <button onClick={() => { setLinkMode(true); clearSelection(); }} className="px-3 py-1 rounded font-semibold" style={{ backgroundColor: colors.primary, color: 'white' }}>Modo Vincular</button>
+                            )}
+                            {linkMode && (
+                                <>
+                                    <button onClick={linkSelected} disabled={linking || selectedIds.size < 2} className="px-3 py-1 rounded font-semibold disabled:opacity-50" style={{ backgroundColor: colors.success, color: 'white' }}>{linking ? 'Salvando...' : `Salvar (${selectedIds.size})`}</button>
+                                    <button onClick={clearSelection} disabled={selectedIds.size === 0 || linking} className="px-3 py-1 rounded font-semibold disabled:opacity-50" style={{ backgroundColor: colors.warning || '#d39e00', color: '#222' }}>Limpar</button>
+                                    <button onClick={() => { setLinkMode(false); clearSelection(); }} disabled={linking} className="px-3 py-1 rounded font-semibold" style={{ backgroundColor: colors.error, color: 'white' }}>Cancelar</button>
+                                    <span className="ml-2 text-[11px] font-medium" style={{ color: colors.textSecondary }}>Selecione convidados para vinculá-los em grupo. Cada um receberá relatedIds dos demais.</span>
+                                </>
+                            )}
                         </div>
                     )}
                     <ul className="space-y-4">
@@ -280,75 +339,95 @@ const Guests: React.FC = () => {
                                 </button>
                                 {!collapsed[init] && (
                                     <ul className="divide-y" style={{ borderColor: colors.border }}>
-                                        {groups[init].map(g => (
-                                            <li key={g.id} className="flex flex-col md:flex-row md:items-center gap-3 px-4 py-3" style={{ backgroundColor: colors.surface }}>
-                                                {editingId === g.id ? (
-                                                    <>
-                                                        <input value={editingName} onChange={e => setEditingName(e.target.value)} className="px-3 py-2 rounded border flex-1" style={{ backgroundColor: colors.background, borderColor: colors.border, color: colors.text }} />
-                                                        <select value={editingSide} onChange={e => setEditingSide(e.target.value as any)} className="px-3 py-2 rounded border" style={{ backgroundColor: colors.background, borderColor: colors.border, color: colors.text }}>
-                                                            <option value="noivo">Noivo</option>
-                                                            <option value="noiva">Noiva</option>
-                                                        </select>
-                                                        <div className="flex gap-2 ml-auto">
-                                                            <button onClick={saveEdit} className="px-3 py-2 rounded text-xs font-semibold" style={{ backgroundColor: colors.success, color: 'white', cursor: 'pointer' }}><Check className="inline w-4 h-4" /></button>
-                                                            <button onClick={() => setEditingId(null)} className="px-3 py-2 rounded text-xs font-semibold" style={{ backgroundColor: colors.error, color: 'white', cursor: 'pointer' }}><X className="inline w-4 h-4" /></button>
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <div className="flex flex-col md:flex-row md:items-center w-full gap-4">
-                                                            {/* Coluna Nome */}
-                                                            <div className="flex min-w-[160px] flex-col flex-shrink-0">
-                                                                <p className="font-semibold leading-tight" style={{ color: colors.text }}>{g.name}</p>
-                                                                <p className="text-[11px]" style={{ color: colors.textSecondary }}>Lado: {g.side === 'noivo' ? 'Noivo' : 'Noiva'}</p>
+                                        {groups[init].map(g => {
+                                            const selected = selectedIds.has(g.id);
+                                            return (
+                                                <li key={g.id} className="flex flex-col md:flex-row md:items-center gap-3 px-4 py-3" style={{ backgroundColor: linkMode && selected ? colors.primary + '10' : colors.surface, outline: linkMode && selected ? `2px solid ${colors.primary}` : 'none', borderRadius: 6 }}>
+                                                    {editingId === g.id ? (
+                                                        <>
+                                                            <input value={editingName} onChange={e => setEditingName(e.target.value)} className="px-3 py-2 rounded border flex-1" style={{ backgroundColor: colors.background, borderColor: colors.border, color: colors.text }} />
+                                                            <select value={editingSide} onChange={e => setEditingSide(e.target.value as any)} className="px-3 py-2 rounded border" style={{ backgroundColor: colors.background, borderColor: colors.border, color: colors.text }}>
+                                                                <option value="noivo">Noivo</option>
+                                                                <option value="noiva">Noiva</option>
+                                                            </select>
+                                                            <div className="flex gap-2 ml-auto">
+                                                                <button onClick={saveEdit} className="px-3 py-2 rounded text-xs font-semibold" style={{ backgroundColor: colors.success, color: 'white', cursor: 'pointer' }}><Check className="inline w-4 h-4" /></button>
+                                                                <button onClick={() => setEditingId(null)} className="px-3 py-2 rounded text-xs font-semibold" style={{ backgroundColor: colors.error, color: 'white', cursor: 'pointer' }}><X className="inline w-4 h-4" /></button>
                                                             </div>
-                                                            {/* RSVP + Status */}
-                                                            <div className="flex flex-col gap-2 md:flex-row md:items-center flex-1 min-w-[240px]">
-                                                                <div className="flex items-center gap-2 flex-wrap text-[11px]">
-                                                                    <span className="px-2 py-0.5 rounded-full font-medium tracking-wide" style={{ backgroundColor: g.rsvpStatus === 'confirmed' ? colors.success + '25' : g.rsvpStatus === 'declined' ? colors.error + '25' : colors.accent, color: g.rsvpStatus === 'confirmed' ? colors.success : g.rsvpStatus === 'declined' ? colors.error : colors.textSecondary }}>
-                                                                        {g.rsvpStatus === 'pending' ? 'Pendente' : g.rsvpStatus === 'confirmed' ? 'Confirmado' : 'Não irá'}
-                                                                    </span>
-                                                                    {g.confirmedAt && g.rsvpStatus === 'confirmed' && (
-                                                                        <span className="text-[10px] opacity-70" style={{ color: colors.textSecondary }}>em {new Date(g.confirmedAt.seconds ? g.confirmedAt.seconds * 1000 : g.confirmedAt).toLocaleDateString('pt-BR')}</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className="flex flex-col md:flex-row md:items-center w-full gap-4">
+                                                                {linkMode && (
+                                                                    <div className="flex items-start pt-1">
+                                                                        <input type="checkbox" checked={selected} onChange={() => toggleSelect(g.id)} className="w-4 h-4 cursor-pointer" />
+                                                                    </div>
+                                                                )}
+                                                                {/* Coluna Nome */}
+                                                                <div className="flex min-w-[160px] flex-col flex-shrink-0">
+                                                                    <p className="font-semibold leading-tight" style={{ color: colors.text }}>{g.name}</p>
+                                                                    <p className="text-[11px]" style={{ color: colors.textSecondary }}>Lado: {g.side === 'noivo' ? 'Noivo' : 'Noiva'}</p>
+                                                                    {g.relatedIds && g.relatedIds.length > 0 && (
+                                                                        <p className="text-[10px] mt-1" style={{ color: colors.primary }}>Grupo: {g.relatedIds.length + 1} pessoas</p>
                                                                     )}
                                                                 </div>
-                                                                <div className="flex items-center">
-                                                                    <div className="flex rounded-lg overflow-hidden border shadow-sm" style={{ borderColor: colors.border }}>
-                                                                        <button type="button" onClick={() => updateRsvp(g, 'confirmed')} className="px-3 py-1.5 text-[11px] font-semibold flex items-center gap-1" style={{ backgroundColor: g.rsvpStatus === 'confirmed' ? colors.success : 'transparent', color: g.rsvpStatus === 'confirmed' ? 'white' : colors.success, borderRight: `1px solid ${colors.border}`, cursor: 'pointer' }}>
-                                                                            <Check className="w-3 h-3" /> <span>Sim</span>
-                                                                        </button>
-                                                                        <button type="button" onClick={() => updateRsvp(g, 'declined')} className="px-3 py-1.5 text-[11px] font-semibold flex items-center gap-1" style={{ backgroundColor: g.rsvpStatus === 'declined' ? colors.error : 'transparent', color: g.rsvpStatus === 'declined' ? 'white' : colors.error, borderRight: `1px solid ${colors.border}`, cursor: 'pointer' }}>
-                                                                            <X className="w-3 h-3" /> <span>Não</span>
-                                                                        </button>
-                                                                        <button type="button" onClick={() => updateRsvp(g, 'pending')} className="px-3 py-1.5 text-[11px] font-semibold flex items-center gap-1" style={{ backgroundColor: g.rsvpStatus === 'pending' ? colors.primary : 'transparent', color: g.rsvpStatus === 'pending' ? 'white' : colors.primary, cursor: 'pointer' }}>
-                                                                            <RefreshCcw className="w-3 h-3" /> <span>Reset</span>
-                                                                        </button>
+                                                                {/* RSVP + Status */}
+                                                                <div className="flex flex-col gap-2 md:flex-row md:items-center flex-1 min-w-[240px]">
+                                                                    <div className="flex items-center gap-2 flex-wrap text-[11px]">
+                                                                        <span className="px-2 py-0.5 rounded-full font-medium tracking-wide" style={{ backgroundColor: g.rsvpStatus === 'confirmed' ? colors.success + '25' : g.rsvpStatus === 'declined' ? colors.error + '25' : colors.accent, color: g.rsvpStatus === 'confirmed' ? colors.success : g.rsvpStatus === 'declined' ? colors.error : colors.textSecondary }}>
+                                                                            {g.rsvpStatus === 'pending' ? 'Pendente' : g.rsvpStatus === 'confirmed' ? 'Confirmado' : 'Não irá'}
+                                                                        </span>
+                                                                        {g.confirmedAt && g.rsvpStatus === 'confirmed' && (
+                                                                            <span className="text-[10px] opacity-70" style={{ color: colors.textSecondary }}>em {new Date(g.confirmedAt.seconds ? g.confirmedAt.seconds * 1000 : g.confirmedAt).toLocaleDateString('pt-BR')}</span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="flex items-center">
+                                                                        <div className="flex rounded-lg overflow-hidden border shadow-sm" style={{ borderColor: colors.border }}>
+                                                                            <button type="button" onClick={() => updateRsvp(g, 'confirmed')} className="px-3 py-1.5 text-[11px] font-semibold flex items-center gap-1" style={{ backgroundColor: g.rsvpStatus === 'confirmed' ? colors.success : 'transparent', color: g.rsvpStatus === 'confirmed' ? 'white' : colors.success, borderRight: `1px solid ${colors.border}`, cursor: 'pointer' }}>
+                                                                                <Check className="w-3 h-3" /> <span>Sim</span>
+                                                                            </button>
+                                                                            <button type="button" onClick={() => updateRsvp(g, 'declined')} className="px-3 py-1.5 text-[11px] font-semibold flex items-center gap-1" style={{ backgroundColor: g.rsvpStatus === 'declined' ? colors.error : 'transparent', color: g.rsvpStatus === 'declined' ? 'white' : colors.error, borderRight: `1px solid ${colors.border}`, cursor: 'pointer' }}>
+                                                                                <X className="w-3 h-3" /> <span>Não</span>
+                                                                            </button>
+                                                                            <button type="button" onClick={() => updateRsvp(g, 'pending')} className="px-3 py-1.5 text-[11px] font-semibold flex items-center gap-1" style={{ backgroundColor: g.rsvpStatus === 'pending' ? colors.primary : 'transparent', color: g.rsvpStatus === 'pending' ? 'white' : colors.primary, cursor: 'pointer' }}>
+                                                                                <RefreshCcw className="w-3 h-3" /> <span>Reset</span>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                {/* Convite */}
+                                                                <div className="flex items-center gap-2 flex-wrap md:justify-end md:flex-row flex-1">
+                                                                    {(() => {
+                                                                        const primaryObj = g.groupPrimaryId && g.groupPrimaryId !== g.id ? guests.find(x => x.id === g.groupPrimaryId) : g;
+                                                                        const primary = primaryObj || g;
+                                                                        const primaryCode = primary.inviteCode;
+                                                                        return (
+                                                                            <>
+                                                                                <button
+                                                                                    onClick={() => primaryCode && copyInviteLink(primary)}
+                                                                                    disabled={!primaryCode}
+                                                                                    className="px-3 py-1.5 rounded text-[11px] font-semibold disabled:opacity-50"
+                                                                                    style={{ backgroundColor: copiedId === primary.id ? colors.success : colors.primary, color: 'white', cursor: primaryCode ? 'pointer' : 'default', transition: 'background-color .25s' }}
+                                                                                >
+                                                                                    {!primaryCode ? 'Gerando...' : (copiedId === primary.id ? 'Copiado!' : (primary.id !== g.id ? 'Link Grupo' : 'Copiar Link'))}
+                                                                                </button>
+                                                                                {primaryCode && (
+                                                                                    <span className="px-2 py-1 rounded text-[11px] select-all" style={{ backgroundColor: colors.accent, color: colors.textSecondary }}>Cod: {primaryCode}</span>
+                                                                                )}
+                                                                            </>
+                                                                        );
+                                                                    })()}
+                                                                    <div className="flex gap-2 ml-auto">
+                                                                        <button onClick={() => startEdit(g)} className="px-3 py-1.5 rounded text-[11px] font-semibold" style={{ backgroundColor: colors.primary + '20', color: colors.primary, cursor: 'pointer' }}><Edit3 className="inline w-4 h-4" /></button>
+                                                                        <button onClick={() => deleteGuest(g.id)} className="px-3 py-1.5 rounded text-[11px] font-semibold" style={{ backgroundColor: colors.error, color: 'white', cursor: 'pointer' }}><Trash2 className="inline w-4 h-4" /></button>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            {/* Convite */}
-                                                            <div className="flex items-center gap-2 flex-wrap md:justify-end md:flex-row flex-1">
-                                                                <button
-                                                                    onClick={() => g.inviteCode && copyInviteLink(g)}
-                                                                    disabled={!g.inviteCode}
-                                                                    className="px-3 py-1.5 rounded text-[11px] font-semibold disabled:opacity-50"
-                                                                    style={{ backgroundColor: copiedId === g.id ? colors.success : colors.primary, color: 'white', cursor: g.inviteCode ? 'pointer' : 'default', transition: 'background-color .25s' }}
-                                                                >
-                                                                    {!g.inviteCode ? 'Gerando...' : (copiedId === g.id ? 'Copiado!' : 'Copiar Link')}
-                                                                </button>
-                                                                {g.inviteCode && (
-                                                                    <span className="px-2 py-1 rounded text-[11px] select-all" style={{ backgroundColor: colors.accent, color: colors.textSecondary }}>Cod: {g.inviteCode}</span>
-                                                                )}
-                                                                <div className="flex gap-2 ml-auto">
-                                                                    <button onClick={() => startEdit(g)} className="px-3 py-1.5 rounded text-[11px] font-semibold" style={{ backgroundColor: colors.primary + '20', color: colors.primary, cursor: 'pointer' }}><Edit3 className="inline w-4 h-4" /></button>
-                                                                    <button onClick={() => deleteGuest(g.id)} className="px-3 py-1.5 rounded text-[11px] font-semibold" style={{ backgroundColor: colors.error, color: 'white', cursor: 'pointer' }}><Trash2 className="inline w-4 h-4" /></button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </li>
-                                        ))}
+                                                        </>
+                                                    )}
+                                                </li>
+                                            );
+                                        })}
                                     </ul>
                                 )}
                             </li>
