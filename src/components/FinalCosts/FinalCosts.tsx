@@ -87,11 +87,21 @@ const FinalCosts = () => {
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
     const [viewChart, setViewChart] = useState<'categories' | 'paid'>('categories');
     const [paymentsModalItem, setPaymentsModalItem] = useState<FinalCostItem | null>(null);
+    const [modalItem, setModalItem] = useState<FinalCostItem | null>(null);
 
     useEffect(() => {
         fetchChosenVenue();
         fetchItems();
     }, []);
+
+    // Sincronizar modalItem quando paymentsModalItem muda
+    useEffect(() => {
+        if (paymentsModalItem) {
+            setModalItem({ ...paymentsModalItem });
+        } else {
+            setModalItem(null);
+        }
+    }, [paymentsModalItem]);
 
     const fetchChosenVenue = async () => {
         try {
@@ -223,7 +233,10 @@ const FinalCosts = () => {
 
     // ----- Gestão de pagamentos detalhados -----
     // Modal helpers
-    const closePaymentsModal = () => setPaymentsModalItem(null);
+    const closePaymentsModal = () => {
+        setPaymentsModalItem(null);
+        setModalItem(null);
+    };
 
     const ensurePaymentsStructure = (id: string) => {
         setItems(prev => prev.map(it => {
@@ -240,22 +253,32 @@ const FinalCosts = () => {
     };
 
     const addPayment = (id: string) => {
-        setItems(prev => prev.map(it => it.id === id ? {
+        const updateFn = (it: FinalCostItem) => ({
             ...it,
             paymentPlanType: it.paymentPlanType === 'single' ? 'installments' : (it.paymentPlanType || 'installments'),
             payments: [...(it.payments || []), { id: safeUUID(), label: `Parcela ${(it.payments?.length || 0) + 1}`, amount: 0, paid: false, method: 'pix' }]
-        } : it));
+        });
+        
+        setItems(prev => prev.map(it => it.id === id ? updateFn(it) : it));
+        if (modalItem && modalItem.id === id) {
+            setModalItem(updateFn(modalItem));
+        }
     };
 
     const updatePaymentField = (itemId: string, paymentId: string, field: keyof PaymentEntry, value: any) => {
-        setItems(prev => prev.map(it => it.id === itemId ? {
+        const updateFn = (it: FinalCostItem) => ({
             ...it,
             payments: (it.payments || []).map(p => p.id === paymentId ? { ...p, [field]: field === 'amount' ? parseFloat(value) || 0 : value } : p)
-        } : it));
+        });
+        
+        setItems(prev => prev.map(it => it.id === itemId ? updateFn(it) : it));
+        if (modalItem && modalItem.id === itemId) {
+            setModalItem(updateFn(modalItem));
+        }
     };
 
     const togglePaymentPaid = (itemId: string, paymentId: string) => {
-        setItems(prev => prev.map(it => it.id === itemId ? {
+        const updateFn = (it: FinalCostItem) => ({
             ...it,
             payments: (it.payments || []).map(p => {
                 if (p.id !== paymentId) return p;
@@ -266,14 +289,24 @@ const FinalCosts = () => {
                     paidAt: willPay ? (p.paidAt || p.dueDate || new Date().toISOString().slice(0, 10)) : undefined
                 };
             })
-        } : it));
+        });
+        
+        setItems(prev => prev.map(it => it.id === itemId ? updateFn(it) : it));
+        if (modalItem && modalItem.id === itemId) {
+            setModalItem(updateFn(modalItem));
+        }
     };
 
     const removePayment = (itemId: string, paymentId: string) => {
-        setItems(prev => prev.map(it => it.id === itemId ? {
+        const updateFn = (it: FinalCostItem) => ({
             ...it,
             payments: (it.payments || []).filter(p => p.id !== paymentId)
-        } : it));
+        });
+        
+        setItems(prev => prev.map(it => it.id === itemId ? updateFn(it) : it));
+        if (modalItem && modalItem.id === itemId) {
+            setModalItem(updateFn(modalItem));
+        }
     };
 
     // ----- Utilidades de geração rápida de planos -----
@@ -672,23 +705,23 @@ const FinalCosts = () => {
                     <p className="text-xs mt-8 text-center" style={{ color: colors.textSecondary }}>Os custos definitivos ajudam a controlar contratos já fechados após a escolha do local.</p>
                 </div>
             </div>
-            {paymentsModalItem ? (
+            {modalItem ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-xl shadow-xl flex flex-col" style={{ backgroundColor: colors.surface }}>
                         <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: colors.border }}>
                             <div>
-                                <h3 className="font-semibold text-lg" style={{ color: colors.text }}>Pagamentos - {paymentsModalItem?.description}</h3>
-                                <p className="text-sm" style={{ color: colors.textSecondary }}>Total Final: R$ {(paymentsModalItem?.amount || Math.max(0, (paymentsModalItem?.totalAgreed || 0) - (paymentsModalItem?.discountValue || 0))).toLocaleString('pt-BR')}</p>
+                                <h3 className="font-semibold text-lg" style={{ color: colors.text }}>Pagamentos - {modalItem?.description}</h3>
+                                <p className="text-sm" style={{ color: colors.textSecondary }}>Total Final: R$ {(modalItem?.amount || Math.max(0, (modalItem?.totalAgreed || 0) - (modalItem?.discountValue || 0))).toLocaleString('pt-BR')}</p>
                             </div>
                             <button onClick={closePaymentsModal} className="px-4 py-2 rounded text-sm font-medium cursor-pointer hover:opacity-80" style={{ backgroundColor: colors.primary, color: '#fff' }}><X className="inline w-4 h-4 mr-1" /> Fechar</button>
                         </div>
                         <div className="p-5 space-y-5 overflow-auto text-sm">
-                            {paymentsModalItem && (() => {
-                                const discount = paymentsModalItem.discountValue || 0;
-                                const totalPagRaw = (paymentsModalItem.payments || []).reduce((a, p) => a + (p.amount || 0), 0);
-                                const baseTotal = (paymentsModalItem.totalAgreed && paymentsModalItem.totalAgreed > 0) ? paymentsModalItem.totalAgreed : (totalPagRaw || paymentsModalItem.amount || 0);
+                            {modalItem && (() => {
+                                const discount = modalItem.discountValue || 0;
+                                const totalPagRaw = (modalItem.payments || []).reduce((a, p) => a + (p.amount || 0), 0);
+                                const baseTotal = (modalItem.totalAgreed && modalItem.totalAgreed > 0) ? modalItem.totalAgreed : (totalPagRaw || modalItem.amount || 0);
                                 const finalExpect = Math.max(0, baseTotal - discount);
-                                const pago = (paymentsModalItem.payments || []).filter(p => p.paid).reduce((a, p) => a + (p.amount || 0), 0);
+                                const pago = (modalItem.payments || []).filter(p => p.paid).reduce((a, p) => a + (p.amount || 0), 0);
                                 const pend = Math.max(0, finalExpect - pago);
                                 const pct = finalExpect ? Math.min(100, Math.round((pago / finalExpect) * 100)) : 0;
                                 return (
@@ -714,11 +747,11 @@ const FinalCosts = () => {
                                 );
                             })()}
                             <div className="flex gap-3 flex-wrap">
-                                <button onClick={() => { if (!paymentsModalItem) return; addPayment(paymentsModalItem.id!); setPaymentsModalItem(items.find(i => i.id === paymentsModalItem.id!) || null); }} className="px-4 py-2 rounded text-sm font-medium cursor-pointer hover:opacity-90" style={{ backgroundColor: colors.primary, color: 'white' }}>+ Parcela</button>
-                                <button onClick={() => { if (!paymentsModalItem) return; saveEdit(paymentsModalItem.id!); }} className="px-4 py-2 rounded text-sm font-medium cursor-pointer hover:opacity-90" style={{ backgroundColor: colors.success, color: 'white' }}>Salvar</button>
+                                <button onClick={() => { if (!modalItem) return; addPayment(modalItem.id!); }} className="px-4 py-2 rounded text-sm font-medium cursor-pointer hover:opacity-90" style={{ backgroundColor: colors.primary, color: 'white' }}>+ Parcela</button>
+                                <button onClick={() => { if (!modalItem) return; saveEdit(modalItem.id!); }} className="px-4 py-2 rounded text-sm font-medium cursor-pointer hover:opacity-90" style={{ backgroundColor: colors.success, color: 'white' }}>Salvar</button>
                             </div>
                             <div className="space-y-3 max-h-[50vh] overflow-auto pr-1">
-                                {(paymentsModalItem?.payments || []).map(p => {
+                                {(modalItem?.payments || []).map(p => {
                                     const due = p.dueDate ? new Date(p.dueDate) : null;
                                     const today = new Date();
                                     let statusLabel = p.paid ? 'Pago' : (due ? (due < new Date(today.getFullYear(), today.getMonth(), today.getDate()) ? 'Atrasado' : (due.toISOString().slice(0, 10) === today.toISOString().slice(0, 10) ? 'Hoje' : 'Futuro')) : 'Sem data');
@@ -727,9 +760,9 @@ const FinalCosts = () => {
                                         <div key={p.id} className="rounded-lg border p-4 flex flex-col gap-2" style={{ backgroundColor: colors.background, borderColor: colors.border }}>
                                             <div className="flex justify-between items-start gap-2 flex-wrap">
                                                 <div className="flex items-center gap-3 flex-wrap">
-                                                    <input value={p.label} onChange={e => { if (!paymentsModalItem) return; updatePaymentField(paymentsModalItem.id!, p.id, 'label', e.target.value); setPaymentsModalItem(items.find(i => i.id === paymentsModalItem.id!) || null); }} className="text-sm font-medium px-3 py-2 rounded border" style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }} />
+                                                    <input value={p.label} onChange={e => { if (!modalItem) return; updatePaymentField(modalItem.id!, p.id, 'label', e.target.value); }} className="text-sm font-medium px-3 py-2 rounded border" style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }} />
                                                     <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ backgroundColor: statusColor + '22', color: statusColor }}>{statusLabel}</span>
-                                                    <select value={p.method || 'pix'} onChange={e => { if (!paymentsModalItem) return; updatePaymentField(paymentsModalItem.id!, p.id, 'method', e.target.value); setPaymentsModalItem(items.find(i => i.id === paymentsModalItem.id!) || null); }} className="text-sm px-3 py-2 rounded border" style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }}>
+                                                    <select value={p.method || 'pix'} onChange={e => { if (!modalItem) return; updatePaymentField(modalItem.id!, p.id, 'method', e.target.value); }} className="text-sm px-3 py-2 rounded border" style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }}>
                                                         <option value="pix">Pix</option>
                                                         <option value="cartao">Cartão</option>
                                                         <option value="boleto">Boleto</option>
@@ -738,22 +771,22 @@ const FinalCosts = () => {
                                                         <option value="cheque">Cheque</option>
                                                         <option value="outro">Outro</option>
                                                     </select>
-                                                    <input type="date" value={p.dueDate || ''} onChange={e => { if (!paymentsModalItem) return; updatePaymentField(paymentsModalItem.id!, p.id, 'dueDate', e.target.value); setPaymentsModalItem(items.find(i => i.id === paymentsModalItem.id!) || null); }} className="text-sm px-3 py-2 rounded border" style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }} />
-                                                    <input type="number" step="0.01" value={p.amount} onChange={e => { if (!paymentsModalItem) return; updatePaymentField(paymentsModalItem.id!, p.id, 'amount', e.target.value); setPaymentsModalItem(items.find(i => i.id === paymentsModalItem.id!) || null); }} className="text-sm w-32 text-right px-3 py-2 rounded border" style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }} />
+                                                    <input type="date" value={p.dueDate || ''} onChange={e => { if (!modalItem) return; updatePaymentField(modalItem.id!, p.id, 'dueDate', e.target.value); }} className="text-sm px-3 py-2 rounded border" style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }} />
+                                                    <input type="number" step="0.01" value={p.amount} onChange={e => { if (!modalItem) return; updatePaymentField(modalItem.id!, p.id, 'amount', e.target.value); }} className="text-sm w-32 text-right px-3 py-2 rounded border" style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }} />
                                                     <label className="text-[11px] flex items-center gap-1 px-3 py-2 rounded border cursor-pointer" style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.textSecondary }}>
-                                                        <input type="checkbox" checked={p.paid} onChange={() => { if (!paymentsModalItem) return; togglePaymentPaid(paymentsModalItem.id!, p.id); setPaymentsModalItem(items.find(i => i.id === paymentsModalItem.id!) || null); }} style={{ accentColor: colors.primary }} /> Pago
+                                                        <input type="checkbox" checked={p.paid} onChange={() => { if (!modalItem) return; togglePaymentPaid(modalItem.id!, p.id); }} style={{ accentColor: colors.primary }} /> Pago
                                                     </label>
                                                     {p.paid && (
-                                                        <input type="date" value={p.paidAt || ''} onChange={e => { if (!paymentsModalItem) return; updatePaymentField(paymentsModalItem.id!, p.id, 'paidAt', e.target.value); setPaymentsModalItem(items.find(i => i.id === paymentsModalItem.id!) || null); }} className="text-sm px-3 py-2 rounded border" style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }} />
+                                                        <input type="date" value={p.paidAt || ''} onChange={e => { if (!modalItem) return; updatePaymentField(modalItem.id!, p.id, 'paidAt', e.target.value); }} className="text-sm px-3 py-2 rounded border" style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }} />
                                                     )}
-                                                    <button onClick={() => { if (!paymentsModalItem) return; removePayment(paymentsModalItem.id!, p.id); setPaymentsModalItem(items.find(i => i.id === paymentsModalItem.id!) || null); }} className="px-3 py-2 rounded text-xs font-medium cursor-pointer hover:opacity-90" style={{ backgroundColor: colors.error, color: 'white' }}>Del</button>
+                                                    <button onClick={() => { if (!modalItem) return; removePayment(modalItem.id!, p.id); }} className="px-3 py-2 rounded text-xs font-medium cursor-pointer hover:opacity-90" style={{ backgroundColor: colors.error, color: 'white' }}>Del</button>
                                                 </div>
                                             </div>
                                             {p.paidAt && p.paid && <div className="text-[11px]" style={{ color: colors.textSecondary }}>Pago em {p.paidAt.split('-').reverse().join('/')}</div>}
                                         </div>
                                     );
                                 })}
-                                {(paymentsModalItem?.payments || []).length === 0 && <div className="text-center text-sm py-8 rounded border" style={{ backgroundColor: colors.accent, borderColor: colors.border, color: colors.textSecondary }}>Nenhuma parcela.</div>}
+                                {(modalItem?.payments || []).length === 0 && <div className="text-center text-sm py-8 rounded border" style={{ backgroundColor: colors.accent, borderColor: colors.border, color: colors.textSecondary }}>Nenhuma parcela.</div>}
                             </div>
                         </div>
                     </div>
