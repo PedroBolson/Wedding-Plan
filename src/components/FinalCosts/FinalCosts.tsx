@@ -128,9 +128,8 @@ const FinalCosts = () => {
             setIsLoading(true);
             const refCol = collection(db, 'finalCosts');
             const snap = await getDocs(refCol);
-            const uid = auth.currentUser?.uid;
             const list = snap.docs.map(d => ({ id: d.id, ...d.data() })) as FinalCostItem[];
-            setItems(uid ? list.filter(i => i.userId === uid) : []);
+            setItems(list);
         } catch (e) {
             console.error(e);
             setError("Erro ao carregar custos definitivos.");
