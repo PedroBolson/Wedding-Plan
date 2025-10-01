@@ -258,7 +258,7 @@ const FinalCosts = () => {
             paymentPlanType: it.paymentPlanType === 'single' ? 'installments' : (it.paymentPlanType || 'installments'),
             payments: [...(it.payments || []), { id: safeUUID(), label: `Parcela ${(it.payments?.length || 0) + 1}`, amount: 0, paid: false, method: 'pix' }]
         });
-        
+
         setItems(prev => prev.map(it => it.id === id ? updateFn(it) : it));
         if (modalItem && modalItem.id === id) {
             setModalItem(updateFn(modalItem));
@@ -270,7 +270,7 @@ const FinalCosts = () => {
             ...it,
             payments: (it.payments || []).map(p => p.id === paymentId ? { ...p, [field]: field === 'amount' ? parseFloat(value) || 0 : value } : p)
         });
-        
+
         setItems(prev => prev.map(it => it.id === itemId ? updateFn(it) : it));
         if (modalItem && modalItem.id === itemId) {
             setModalItem(updateFn(modalItem));
@@ -290,7 +290,7 @@ const FinalCosts = () => {
                 };
             })
         });
-        
+
         setItems(prev => prev.map(it => it.id === itemId ? updateFn(it) : it));
         if (modalItem && modalItem.id === itemId) {
             setModalItem(updateFn(modalItem));
@@ -302,7 +302,7 @@ const FinalCosts = () => {
             ...it,
             payments: (it.payments || []).filter(p => p.id !== paymentId)
         });
-        
+
         setItems(prev => prev.map(it => it.id === itemId ? updateFn(it) : it));
         if (modalItem && modalItem.id === itemId) {
             setModalItem(updateFn(modalItem));
