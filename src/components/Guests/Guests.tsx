@@ -3,7 +3,7 @@ import { ThemeContext } from '../../contexts/ThemeContext';
 import { auth, db } from '../../firebase/config';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy } from 'firebase/firestore';
 import CountUp from '../common/CountUp';
-import { Plus, Trash2, Edit3, Check, X, Users, ChevronDown, RefreshCcw } from 'lucide-react';
+import { Plus, Trash2, Edit3, Check, X, Users, ChevronDown, RefreshCcw, Download, Copy, FileText } from 'lucide-react';
 
 interface GuestItem {
     id: string;
@@ -37,6 +37,7 @@ const Guests: React.FC = () => {
     const [linkMode, setLinkMode] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [linking, setLinking] = useState(false);
+    const [exportMenuOpen, setExportMenuOpen] = useState(false);
 
     // util para gerar código curto único (8 chars base36)
     const makeInviteCode = () => (Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).slice(-8).toUpperCase();
@@ -80,6 +81,10 @@ const Guests: React.FC = () => {
     const totalConfirmed = guests.filter(g => g.rsvpStatus === 'confirmed').length;
     const totalDeclined = guests.filter(g => g.rsvpStatus === 'declined').length;
     const totalPending = total - totalConfirmed - totalDeclined;
+    const declinedNoivo = guests.filter(g => g.side === 'noivo' && g.rsvpStatus === 'declined').length;
+    const declinedNoiva = guests.filter(g => g.side === 'noiva' && g.rsvpStatus === 'declined').length;
+    const activeNoivo = totalNoivo - declinedNoivo;
+    const activeNoiva = totalNoiva - declinedNoiva;
 
     const filteredGuests = guests.filter(g => {
         const sideOk = sideFilter === 'todos' ? true : g.side === sideFilter;
@@ -236,6 +241,129 @@ const Guests: React.FC = () => {
 
     const clearSelection = () => { setSelectedIds(new Set()); };
 
+    const extractConfirmedGuests = () => {
+        return guests
+            .filter(g => g.rsvpStatus === 'confirmed')
+            .sort((a, b) => normalize(a.name).localeCompare(normalize(b.name), 'pt-BR'));
+    };
+
+    const formatGuestAsText = (g: GuestItem) => {
+        const side = g.side === 'noivo' ? 'Noivo' : 'Noiva';
+        const date = g.confirmedAt
+            ? new Date(g.confirmedAt.seconds ? g.confirmedAt.seconds * 1000 : g.confirmedAt).toLocaleDateString('pt-BR')
+            : 'N/A';
+        return `${g.name} - ${side} - Confirmado em: ${date}`;
+    };
+
+    const copyConfirmedToClipboard = async () => {
+        const confirmed = extractConfirmedGuests();
+        if (confirmed.length === 0) {
+            alert('Nenhum convidado confirmado para exportar.');
+            return;
+        }
+
+        const text = confirmed.map(g => g.name).join('\n');
+
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            }
+            setExportMenuOpen(false);
+            alert(`${confirmed.length} nomes copiados para a área de transferência!`);
+        } catch (error) {
+            console.error('Erro ao copiar:', error);
+            alert('Erro ao copiar para área de transferência.');
+        }
+    };
+
+    const downloadConfirmedAsTXT = () => {
+        const confirmed = extractConfirmedGuests();
+        if (confirmed.length === 0) {
+            alert('Nenhum convidado confirmado para exportar.');
+            return;
+        }
+
+        const content = [
+            '='.repeat(60),
+            'LISTA DE CONVIDADOS CONFIRMADOS',
+            '='.repeat(60),
+            `Total: ${confirmed.length}`,
+            `Data da exportação: ${new Date().toLocaleString('pt-BR')}`,
+            '',
+            ...confirmed.map(formatGuestAsText),
+            '',
+            '='.repeat(60)
+        ].join('\n');
+
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `convidados-confirmados-${new Date().toISOString().split('T')[0]}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        setExportMenuOpen(false);
+    };
+
+    const downloadConfirmedAsCSV = () => {
+        const confirmed = extractConfirmedGuests();
+        if (confirmed.length === 0) {
+            alert('Nenhum convidado confirmado para exportar.');
+            return;
+        }
+
+        const headers = ['Nome', 'Lado', 'Data de Confirmação'];
+        const rows = confirmed.map(g => {
+            const date = g.confirmedAt
+                ? new Date(g.confirmedAt.seconds ? g.confirmedAt.seconds * 1000 : g.confirmedAt).toLocaleDateString('pt-BR')
+                : '';
+            const side = g.side === 'noivo' ? 'Noivo' : 'Noiva';
+            return [g.name, side, date];
+        });
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+        ].join('\n');
+
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `convidados-confirmados-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        setExportMenuOpen(false);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (!target.closest('.export-dropdown')) {
+                setExportMenuOpen(false);
+            }
+        };
+
+        if (exportMenuOpen) {
+            document.addEventListener('click', handleClickOutside);
+            return () => document.removeEventListener('click', handleClickOutside);
+        }
+    }, [exportMenuOpen]);
+
     return (
         <div className="max-w-5xl mx-auto p-4">
             <div className="flex items-center gap-3 mb-6">
@@ -252,11 +380,25 @@ const Guests: React.FC = () => {
                 </div>
                 <div className="p-4 rounded-xl shadow-md text-center" style={{ backgroundColor: colors.surface }}>
                     <h3 className="text-sm font-medium mb-1" style={{ color: colors.textSecondary }}>Lado Noivo</h3>
-                    <p className="text-3xl font-bold" style={{ color: colors.success }}><CountUp end={totalNoivo} duration={1200} decimals={0} /></p>
+                    <div className="flex items-center justify-center gap-1.5">
+                        <p className="text-3xl font-bold" style={{ color: colors.success }}><CountUp end={activeNoivo} duration={1200} decimals={0} /></p>
+                        {declinedNoivo > 0 && (
+                            <span className="text-sm font-semibold" style={{ color: colors.error }}>
+                                (+{declinedNoivo} {declinedNoivo === 1 ? 'cancelado' : 'cancelados'})
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="p-4 rounded-xl shadow-md text-center" style={{ backgroundColor: colors.surface }}>
                     <h3 className="text-sm font-medium mb-1" style={{ color: colors.textSecondary }}>Lado Noiva</h3>
-                    <p className="text-3xl font-bold" style={{ color: colors.warning }}><CountUp end={totalNoiva} duration={1200} decimals={0} /></p>
+                    <div className="flex items-center justify-center gap-1.5">
+                        <p className="text-3xl font-bold" style={{ color: colors.warning }}><CountUp end={activeNoiva} duration={1200} decimals={0} /></p>
+                        {declinedNoiva > 0 && (
+                            <span className="text-sm font-semibold" style={{ color: colors.error }}>
+                                (+{declinedNoiva} {declinedNoiva === 1 ? 'cancelado' : 'cancelados'})
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="p-4 rounded-xl shadow-md text-center" style={{ backgroundColor: colors.surface }}>
                     <h3 className="text-sm font-medium mb-1" style={{ color: colors.textSecondary }}>Confirmados</h3>
@@ -265,6 +407,72 @@ const Guests: React.FC = () => {
                 <div className="p-4 rounded-xl shadow-md text-center" style={{ backgroundColor: colors.surface }}>
                     <h3 className="text-sm font-medium mb-1" style={{ color: colors.textSecondary }}>Pendentes</h3>
                     <p className="text-3xl font-bold" style={{ color: colors.primary }}><CountUp end={totalPending} duration={1200} decimals={0} /></p>
+                </div>
+            </div>
+
+            <div className="mb-6 flex justify-end">
+                <div className="export-dropdown relative inline-block">
+                    <button
+                        onClick={() => setExportMenuOpen(!exportMenuOpen)}
+                        disabled={totalConfirmed === 0}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg"
+                        style={{
+                            backgroundColor: totalConfirmed > 0 ? colors.success : colors.accent,
+                            color: totalConfirmed > 0 ? 'white' : colors.textSecondary
+                        }}
+                    >
+                        <Download className="w-4 h-4" />
+                        <span>Exportar Confirmados</span>
+                        {totalConfirmed > 0 && (
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ backgroundColor: 'rgba(255,255,255,0.25)' }}>
+                                {totalConfirmed}
+                            </span>
+                        )}
+                        <ChevronDown className={`w-4 h-4 transition-transform ${exportMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {exportMenuOpen && (
+                        <div
+                            className="absolute right-0 mt-2 w-64 rounded-lg shadow-xl border overflow-hidden z-50"
+                            style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+                        >
+                            <button
+                                onClick={copyConfirmedToClipboard}
+                                className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:opacity-90"
+                                style={{ backgroundColor: colors.surface, color: colors.text, borderBottom: `1px solid ${colors.border}` }}
+                            >
+                                <Copy className="w-4 h-4" style={{ color: colors.primary }} />
+                                <div className="flex-1">
+                                    <div className="font-semibold">Copiar Nomes</div>
+                                    <div className="text-xs" style={{ color: colors.textSecondary }}>Lista simples para clipboard</div>
+                                </div>
+                            </button>
+
+                            <button
+                                onClick={downloadConfirmedAsTXT}
+                                className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:opacity-90"
+                                style={{ backgroundColor: colors.surface, color: colors.text, borderBottom: `1px solid ${colors.border}` }}
+                            >
+                                <FileText className="w-4 h-4" style={{ color: colors.primary }} />
+                                <div className="flex-1">
+                                    <div className="font-semibold">Baixar TXT</div>
+                                    <div className="text-xs" style={{ color: colors.textSecondary }}>Com detalhes completos</div>
+                                </div>
+                            </button>
+
+                            <button
+                                onClick={downloadConfirmedAsCSV}
+                                className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:opacity-90"
+                                style={{ backgroundColor: colors.surface, color: colors.text }}
+                            >
+                                <Download className="w-4 h-4" style={{ color: colors.primary }} />
+                                <div className="flex-1">
+                                    <div className="font-semibold">Baixar CSV</div>
+                                    <div className="text-xs" style={{ color: colors.textSecondary }}>Para planilhas (Excel)</div>
+                                </div>
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
